@@ -1,8 +1,8 @@
-package com.mapnaom.ticketingmanagerserver.mapper;
+package com.mapnaom.ticketingplatform.mapper;
 
-import com.mapnaom.ticketingmanagerserver.dto.SlaContractRequestDto;
-import com.mapnaom.ticketingmanagerserver.dto.SlaContractResponseDto;
-import com.mapnaom.ticketingmanagerserver.model.SlaContract;
+import com.mapnaom.ticketingplatform.dto.SlaContractRequestDto;
+import com.mapnaom.ticketingplatform.dto.SlaContractResponseDto;
+import com.mapnaom.ticketingplatform.model.SlaContract;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

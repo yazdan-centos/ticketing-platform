@@ -1,7 +1,7 @@
-package com.mapnaom.ticketingmanagerserver.repository;
+package com.mapnaom.ticketingplatform.repository;
 
-import com.mapnaom.ticketingmanagerserver.model.AppUser;
-import com.mapnaom.ticketingmanagerserver.model.TeamMember;
+import com.mapnaom.ticketingplatform.model.AppUser;
+import com.mapnaom.ticketingplatform.model.TeamMember;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

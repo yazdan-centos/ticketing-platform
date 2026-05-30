@@ -1,6 +1,6 @@
-package com.mapnaom.ticketingmanagerserver.model;
+package com.mapnaom.ticketingplatform.model;
 
-import com.mapnaom.ticketingmanagerserver.model.enums.AvailabilityStatus;
+import com.mapnaom.ticketingplatform.model.enums.AvailabilityStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;

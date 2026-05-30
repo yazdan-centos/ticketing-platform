@@ -1,4 +1,4 @@
-package com.mapnaom.ticketingmanagerserver.model;
+package com.mapnaom.ticketingplatform.model;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.DiscriminatorValue;

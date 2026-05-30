@@ -1,6 +1,6 @@
-package com.mapnaom.ticketingmanagerserver.dto;
+package com.mapnaom.ticketingplatform.dto;
 
-import com.mapnaom.ticketingmanagerserver.model.enums.AvailabilityStatus;
+import com.mapnaom.ticketingplatform.model.enums.AvailabilityStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

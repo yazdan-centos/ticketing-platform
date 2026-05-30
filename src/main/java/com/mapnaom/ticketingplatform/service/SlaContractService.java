@@ -1,12 +1,13 @@
-package com.mapnaom.ticketingmanagerserver.service;
+package com.mapnaom.ticketingplatform.service;
 
-import com.mapnaom.ticketingmanagerserver.dto.SlaContractRequestDto;
-import com.mapnaom.ticketingmanagerserver.dto.SlaContractResponseDto;
-import com.mapnaom.ticketingmanagerserver.mapper.SlaContractMapper;
-import com.mapnaom.ticketingmanagerserver.model.Customer;
-import com.mapnaom.ticketingmanagerserver.model.SlaContract;
-import com.mapnaom.ticketingmanagerserver.repository.CustomerRepository;
-import com.mapnaom.ticketingmanagerserver.repository.SlaContractRepository;
+import com.mapnaom.ticketingplatform.dto.SlaContractRequestDto;
+import com.mapnaom.ticketingplatform.dto.SlaContractResponseDto;
+import com.mapnaom.ticketingplatform.mapper.SlaContractMapper;
+import com.mapnaom.ticketingplatform.model.Customer;
+import com.mapnaom.ticketingplatform.model.SlaContract;
+import com.mapnaom.ticketingplatform.repository.CustomerRepository;
+import com.mapnaom.ticketingplatform.repository.SlaContractRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,7 +29,7 @@ public class SlaContractService {
 
         // Resolve and set Customer
         Customer customer = customerRepository.findById(dto.getCustomerId())
-                .orElseThrow(() -> new TicketService.ResourceNotFoundException("Customer not found with id: " + dto.getCustomerId()));
+                .orElseThrow(() -> new EntityNotFoundException("Customer not found with id: " + dto.getCustomerId()));
         contract.setCustomer(customer);
 
         SlaContract savedContract = slaContractRepository.save(contract);
@@ -45,7 +46,7 @@ public class SlaContractService {
     // --- Get SLA Contract By ID ---
     public SlaContractResponseDto getSlaContractById(Long id) {
         SlaContract contract = slaContractRepository.findById(id)
-                .orElseThrow(() -> new TicketService.ResourceNotFoundException("SLA Contract not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("SLA Contract not found with id: " + id));
         return slaContractMapper.toResponseDto(contract);
     }
 
@@ -53,7 +54,7 @@ public class SlaContractService {
     @Transactional
     public SlaContractResponseDto updateSlaContract(Long id, SlaContractRequestDto dto) {
         SlaContract existingContract = slaContractRepository.findById(id)
-                .orElseThrow(() -> new TicketService.ResourceNotFoundException("SLA Contract not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("SLA Contract not found with id: " + id));
 
         // Update simple fields using Mapper
         slaContractMapper.updateContractFromDto(dto, existingContract);
@@ -64,7 +65,7 @@ public class SlaContractService {
             // If the contract has no customer yet, or if the ID is different
             if (existingContract.getCustomer() == null || !existingContract.getCustomer().getId().equals(dto.getCustomerId())) {
                 Customer customer = customerRepository.findById(dto.getCustomerId())
-                        .orElseThrow(() -> new TicketService.ResourceNotFoundException("Customer not found with id: " + dto.getCustomerId()));
+                        .orElseThrow(() -> new EntityNotFoundException("Customer not found with id: " + dto.getCustomerId()));
                 existingContract.setCustomer(customer);
             }
         }
@@ -77,7 +78,7 @@ public class SlaContractService {
     @Transactional
     public void deleteSlaContract(Long id) {
         SlaContract contract = slaContractRepository.findById(id)
-                .orElseThrow(() -> new TicketService.ResourceNotFoundException("SLA Contract not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("SLA Contract not found with id: " + id));
         slaContractRepository.delete(contract);
     }
 }

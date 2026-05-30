@@ -1,8 +1,8 @@
-package com.mapnaom.ticketingmanagerserver.mapper;
+package com.mapnaom.ticketingplatform.mapper;
 
-import com.mapnaom.ticketingmanagerserver.dto.CustomerRequestDto;
-import com.mapnaom.ticketingmanagerserver.dto.CustomerResponseDto;
-import com.mapnaom.ticketingmanagerserver.model.Customer;
+import com.mapnaom.ticketingplatform.dto.CustomerRequestDto;
+import com.mapnaom.ticketingplatform.dto.CustomerResponseDto;
+import com.mapnaom.ticketingplatform.model.Customer;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -13,7 +13,7 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring",implementationName = "Customer.class")
+@Mapper(componentModel = "spring")
 public interface CustomerMapper {
 
     // --- Request to Entity ---
@@ -42,12 +42,12 @@ public interface CustomerMapper {
 
     // Helper method to extract IDs from the entity set to the DTO list
     @Named("mapContractIds")
-    default Set<Long> mapContractIds(Set<com.mapnaom.ticketingmanagerserver.model.SlaContract> contracts) {
+    default Set<Long> mapContractIds(Set<com.mapnaom.ticketingplatform.model.SlaContract> contracts) {
         if (contracts == null) {
             return null;
         }
         return contracts.stream()
-                .map(com.mapnaom.ticketingmanagerserver.model.SlaContract::getId)
+                .map(com.mapnaom.ticketingplatform.model.SlaContract::getId)
                 .collect(Collectors.toSet());
     }
 }

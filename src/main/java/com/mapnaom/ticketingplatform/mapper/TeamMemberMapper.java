@@ -1,8 +1,8 @@
-package com.mapnaom.ticketingmanagerserver.mapper;
+package com.mapnaom.ticketingplatform.mapper;
 
-import com.mapnaom.ticketingmanagerserver.dto.TeamMemberRequestDto;
-import com.mapnaom.ticketingmanagerserver.dto.TeamMemberResponseDto;
-import com.mapnaom.ticketingmanagerserver.model.TeamMember;
+import com.mapnaom.ticketingplatform.dto.TeamMemberRequestDto;
+import com.mapnaom.ticketingplatform.dto.TeamMemberResponseDto;
+import com.mapnaom.ticketingplatform.model.TeamMember;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -38,7 +38,7 @@ public interface TeamMemberMapper {
     void updateMemberFromDto(TeamMemberRequestDto dto, @MappingTarget TeamMember entity);
 
     @Named("mapManagerId")
-    default Long mapManagerId(com.mapnaom.ticketingmanagerserver.model.TeamManager manager) {
+    default Long mapManagerId(com.mapnaom.ticketingplatform.model.TeamManager manager) {
         return manager != null ? manager.getId() : null;
     }
 }

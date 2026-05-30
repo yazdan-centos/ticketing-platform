@@ -1,8 +1,8 @@
-package com.mapnaom.ticketingmanagerserver.controller;
+package com.mapnaom.ticketingplatform.controller;
 
-import com.mapnaom.ticketingmanagerserver.dto.SlaContractRequestDto;
-import com.mapnaom.ticketingmanagerserver.dto.SlaContractResponseDto;
-import com.mapnaom.ticketingmanagerserver.service.SlaContractService;
+import com.mapnaom.ticketingplatform.dto.SlaContractRequestDto;
+import com.mapnaom.ticketingplatform.dto.SlaContractResponseDto;
+import com.mapnaom.ticketingplatform.service.SlaContractService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+@CrossOrigin
 
 @RestController
 @RequestMapping("/api/sla-contracts")

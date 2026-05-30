@@ -1,4 +1,4 @@
-package com.mapnaom.ticketingmanagerserver.dto;
+package com.mapnaom.ticketingplatform.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;

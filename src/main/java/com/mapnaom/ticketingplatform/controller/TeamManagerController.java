@@ -1,8 +1,8 @@
-package com.mapnaom.ticketingmanagerserver.controller;
+package com.mapnaom.ticketingplatform.controller;
 
-import com.mapnaom.ticketingmanagerserver.dto.TeamManagerRequestDto;
-import com.mapnaom.ticketingmanagerserver.dto.TeamManagerResponseDto;
-import com.mapnaom.ticketingmanagerserver.service.TeamManagerService;
+import com.mapnaom.ticketingplatform.dto.TeamManagerRequestDto;
+import com.mapnaom.ticketingplatform.dto.TeamManagerResponseDto;
+import com.mapnaom.ticketingplatform.service.TeamManagerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+@CrossOrigin
 
 @RestController
 @RequestMapping("/api/team-managers")

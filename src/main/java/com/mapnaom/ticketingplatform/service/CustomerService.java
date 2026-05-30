@@ -1,13 +1,13 @@
-package com.mapnaom.ticketingmanagerserver.service;
+package com.mapnaom.ticketingplatform.service;
 
-import com.mapnaom.ticketingmanagerserver.dto.CustomerRequestDto;
-import com.mapnaom.ticketingmanagerserver.dto.CustomerResponseDto;
-import com.mapnaom.ticketingmanagerserver.mapper.CustomerMapper;
-import com.mapnaom.ticketingmanagerserver.model.Customer;
-import com.mapnaom.ticketingmanagerserver.repository.CustomerRepository;
+import com.mapnaom.ticketingplatform.dto.CustomerRequestDto;
+import com.mapnaom.ticketingplatform.dto.CustomerResponseDto;
+import com.mapnaom.ticketingplatform.mapper.CustomerMapper;
+import com.mapnaom.ticketingplatform.model.Customer;
+import com.mapnaom.ticketingplatform.repository.CustomerRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,23 +18,21 @@ public class CustomerService {
 
     private final CustomerRepository customerRepository;
     private final CustomerMapper customerMapper;
-    private final PasswordEncoder passwordEncoder; // Injected to encode passwords
 
     // --- Create Customer ---
     @Transactional
     public CustomerResponseDto createCustomer(CustomerRequestDto dto) {
         // Check if username or email already exists (optional validation)
         if (customerRepository.existsByUsername(dto.getUsername())) {
-            throw new TicketService.ResourceNotFoundException("Username already exists: " + dto.getUsername());
+            throw new EntityNotFoundException("Username already exists: " + dto.getUsername());
         }
         if (customerRepository.existsByEmail(dto.getEmail())) {
-            throw new TicketService.ResourceNotFoundException("Email already exists: " + dto.getEmail());
+            throw new EntityNotFoundException("Email already exists: " + dto.getEmail());
         }
 
         Customer customer = customerMapper.toEntity(dto);
 
         // Encode password before saving
-        customer.setPassword(passwordEncoder.encode(customer.getPassword()));
 
         Customer savedCustomer = customerRepository.save(customer);
         return customerMapper.toResponseDto(savedCustomer);
@@ -51,7 +49,7 @@ public class CustomerService {
     // --- Get Customer By ID ---
     public CustomerResponseDto getCustomerById(Long id) {
         Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new TicketService.ResourceNotFoundException("Customer not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Customer not found with id: " + id));
         return customerMapper.toResponseDto(customer);
     }
 
@@ -59,7 +57,7 @@ public class CustomerService {
     @Transactional
     public CustomerResponseDto updateCustomer(Long id, CustomerRequestDto dto) {
         Customer existingCustomer = customerRepository.findById(id)
-                .orElseThrow(() -> new TicketService.ResourceNotFoundException("Customer not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Customer not found with id: " + id));
 
         // Map non-null fields from DTO to Entity
         // Note: The mapper is configured to ignore 'password' in update methods.
@@ -79,7 +77,7 @@ public class CustomerService {
     @Transactional
     public void deleteCustomer(Long id) {
         Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new TicketService.ResourceNotFoundException("Customer not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Customer not found with id: " + id));
 
         // The @SQLDelete annotation on AppUser handles the soft delete logic (sets deleted = true)
         customerRepository.delete(customer);

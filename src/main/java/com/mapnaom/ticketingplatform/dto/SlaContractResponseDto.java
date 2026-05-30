@@ -1,4 +1,4 @@
-package com.mapnaom.ticketingmanagerserver.dto;
+package com.mapnaom.ticketingplatform.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

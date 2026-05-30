@@ -1,8 +1,8 @@
-package com.mapnaom.ticketingmanagerserver.mapper;
+package com.mapnaom.ticketingplatform.mapper;
 
-import com.mapnaom.ticketingmanagerserver.dto.TeamManagerRequestDto;
-import com.mapnaom.ticketingmanagerserver.dto.TeamManagerResponseDto;
-import com.mapnaom.ticketingmanagerserver.model.TeamManager;
+import com.mapnaom.ticketingplatform.dto.TeamManagerRequestDto;
+import com.mapnaom.ticketingplatform.dto.TeamManagerResponseDto;
+import com.mapnaom.ticketingplatform.model.TeamManager;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -42,12 +42,12 @@ public interface TeamManagerMapper {
 
     // Extracts IDs from the TeamMember entity set to the DTO list of IDs
     @Named("mapMemberIds")
-    default Set<Long> mapMemberIds(Set<com.mapnaom.ticketingmanagerserver.model.TeamMember> members) {
+    default Set<Long> mapMemberIds(Set<com.mapnaom.ticketingplatform.model.TeamMember> members) {
         if (members == null) {
             return null;
         }
         return members.stream()
-                .map(com.mapnaom.ticketingmanagerserver.model.TeamMember::getId)
+                .map(com.mapnaom.ticketingplatform.model.TeamMember::getId)
                 .collect(Collectors.toSet());
     }
 }

@@ -1,7 +1,7 @@
-package com.mapnaom.ticketingmanagerserver.repository;
+package com.mapnaom.ticketingplatform.repository;
 
-import com.mapnaom.ticketingmanagerserver.model.Ticket;
-import com.mapnaom.ticketingmanagerserver.model.enums.TicketStatus;
+import com.mapnaom.ticketingplatform.model.Ticket;
+import com.mapnaom.ticketingplatform.model.enums.TicketStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,6 +1,6 @@
-package com.mapnaom.ticketingmanagerserver.exception;
+package com.mapnaom.ticketingplatform.exception;
 
-import com.mapnaom.ticketingmanagerserver.service.TicketService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +17,9 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     // --- Handle Resource Not Found (404) ---
-    @ExceptionHandler(TicketService.ResourceNotFoundException.class)
+    @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFoundException(
-            TicketService.ResourceNotFoundException ex,
+            EntityNotFoundException ex,
             HttpServletRequest request) {
 
         ErrorResponse errorResponse = new ErrorResponse(

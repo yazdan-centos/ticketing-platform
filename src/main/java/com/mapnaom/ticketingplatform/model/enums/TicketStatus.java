@@ -1,4 +1,4 @@
-package com.mapnaom.ticketingmanagerserver.model.enums;
+package com.mapnaom.ticketingplatform.model.enums;
 
 
 public enum TicketStatus {

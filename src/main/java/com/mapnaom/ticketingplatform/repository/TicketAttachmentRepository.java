@@ -1,4 +1,9 @@
 package com.mapnaom.ticketingplatform.repository;
 
-public interface TicketAttachmentRepository extends org.springframework.data.jpa.repository.JpaRepository<com.mapnaom.ticketingplatform.model.TicketAttachment, java.lang.Long> {
+import com.mapnaom.ticketingplatform.model.TicketAttachment;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface TicketAttachmentRepository extends JpaRepository<TicketAttachment, Long> {
 }

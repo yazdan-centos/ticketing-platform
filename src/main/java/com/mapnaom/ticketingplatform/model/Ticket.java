@@ -1,13 +1,15 @@
-package com.mapnaom.ticketingmanagerserver.model;
+package com.mapnaom.ticketingplatform.model;
 
-import com.mapnaom.ticketingmanagerserver.model.enums.Priority;
-import com.mapnaom.ticketingmanagerserver.model.enums.TicketStatus;
+import com.mapnaom.ticketingplatform.model.enums.Priority;
+import com.mapnaom.ticketingplatform.model.enums.TicketStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "tickets")
@@ -59,6 +61,15 @@ public class Ticket {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_member_id")
     private TeamMember assignedMember;
+
+    @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<TicketAttachment> ticketAttachments = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<TicketMessage> ticketMessages = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<TicketStatusHistory> ticketStatusHistories = new LinkedHashSet<>();
 
     @PrePersist
     protected void onCreate() {

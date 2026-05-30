@@ -1,4 +1,9 @@
 package com.mapnaom.ticketingplatform.repository;
 
-public interface TicketStatusHistoryRepository extends org.springframework.data.jpa.repository.JpaRepository<com.mapnaom.ticketingplatform.model.TicketStatusHistory, java.lang.Long> {
+import com.mapnaom.ticketingplatform.model.TicketStatusHistory;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface TicketStatusHistoryRepository extends JpaRepository<TicketStatusHistory, Long> {
 }
