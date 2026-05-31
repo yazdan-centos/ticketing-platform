@@ -20,7 +20,6 @@ public class TeamMember extends AppUser {
 
     // Specific Member Fields
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private AvailabilityStatus availabilityStatus = AvailabilityStatus.AVAILABLE;
 
     private String jobTitle;

@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FORGE ELITE | Performance Training Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'neon-orange': '#FF4D00',
+                        'neon-orange-light': '#FF6B2C',
+                        'metallic': '#B8B8B8',
+                        'metallic-light': '#E0E0E0',
+                        'dark': {
+                            900: '#000000',
+                            800: '#0A0A0A',
+                            700: '#111111',
+                            600: '#171717',
+                            500: '#1A1A1A',
+                            400: '#262626',
+                        }
+                    },
+                    fontFamily: {
+                        'heading': ['Oswald', 'sans-serif'],
+                        'body': ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000;
+            color: #fff;
+        }
+
+        /* Noise texture overlay */
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        }
+
+        /* Background gradient texture */
+        .bg-texture {
+            background:
+                radial-gradient(ellipse at 20% 0%, rgba(255,77,0,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 100%, rgba(255,77,0,0.05) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, #0a0a0a 0%, #000 100%);
+        }
+
+        /* Grid lines background */
+        .grid-bg {
+            background-image:
+                linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #FF4D00;
+            border-radius: 3px;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+                filter: blur(8px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+                filter: blur(0);
+            }
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(255,77,0,0.4);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(255,77,0,0.6);
+            }
+        }
+
+        @keyframes slideIn {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        .animate-delay-1 { animation-delay: 0.1s; }
+        .animate-delay-2 { animation-delay: 0.2s; }
+        .animate-delay-3 { animation-delay: 0.3s; }
+        .animate-delay-4 { animation-delay: 0.4s; }
+        .animate-delay-5 { animation-delay: 0.5s; }
+
+        /* Glitch text effect */
+        .glitch {
+            position: relative;
+        }
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .glitch::before {
+            color: #FF4D00;
+            animation: glitch-1 2s infinite linear alternate-reverse;
+            clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+        }
+        .glitch::after {
+            color: #00ffff;
+            animation: glitch-2 3s infinite linear alternate-reverse;
+            clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+        }
+
+        @keyframes glitch-1 {
+            0% { transform: translateX(0); }
+            20% { transform: translateX(-2px); }
+            40% { transform: translateX(2px); }
+            60% { transform: translateX(-1px); }
+            80% { transform: translateX(1px); }
+            100% { transform: translateX(0); }
+        }
+
+        @keyframes glitch-2 {
+            0% { transform: translateX(0); }
+            20% { transform: translateX(2px); }
+            40% { transform: translateX(-2px); }
+            60% { transform: translateX(1px); }
+            80% { transform: translateX(-1px); }
+            100% { transform: translateX(0); }
+        }
+
+        /* Neon button */
+        .neon-btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .neon-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        .neon-btn:hover::before {
+            left: 100%;
+        }
+        .neon-btn:hover {
+            box-shadow: 0 0 30px rgba(255,77,0,0.5), 0 0 60px rgba(255,77,0,0.3);
+        }
+
+        /* Card hover effect */
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(255,77,0,0.1);
+        }
+        .card-hover:hover .card-image {
+            transform: scale(1.05);
+        }
+
+        /* Text gradient */
+        .text-gradient {
+            background: linear-gradient(180deg, #fff 0%, #B8B8B8 50%, #FF4D00 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Orange accent line */
+        .accent-line {
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #FF4D00, transparent);
+        }
+
+        /* Stat counter */
+        .stat-item {
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+        .stat-item:last-child {
+            border-right: none;
+        }
+
+        /* Coach card overlay */
+        .coach-overlay {
+            background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 50%, transparent 100%);
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            background: linear-gradient(90deg, #FF4D00 0%, #FF6B2C 100%);
+        }
+
+        /* Marquee */
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .marquee-content {
+            animation: marquee 20s linear infinite;
+        }
+
+        /* Mobile menu */
+        .mobile-menu {
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .mobile-menu.active {
+            transform: translateX(0);
+        }
+
+        /* Parallax sections */
+        .parallax-section {
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+    </style>
+</head>
+<body class="bg-black text-white overflow-x-hidden">
+<!-- Noise Overlay -->
+<div class="noise-overlay"></div>
+
+<!-- Navigation -->
+<nav class="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="flex items-center justify-between h-16 md:h-20">
+            <!-- Logo -->
+            <a href="#" class="flex items-center gap-2">
+                <div class="w-10 h-10 bg-neon-orange flex items-center justify-center">
+                    <span class="font-heading font-bold text-black text-xl">F</span>
+                </div>
+                <span class="font-heading font-bold text-xl tracking-wider">FORGE ELITE</span>
+            </a>
+
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex items-center gap-8">
+                <a href="#programs" class="text-xs font-semibold uppercase tracking-widest text-gray-400 hover:text-neon-orange transition-colors">Programs</a>
+                <a href="#coaches" class="text-xs font-semibold uppercase tracking-widest text-gray-400 hover:text-neon-orange transition-colors">Coaches</a>
+                <a href="#stories" class="text-xs font-semibold uppercase tracking-widest text-gray-400 hover:text-neon-orange transition-colors">Stories</a>
+                <a href="#pricing" class="text-xs font-semibold uppercase tracking-widest text-gray-400 hover:text-neon-orange transition-colors">Pricing</a>
+                <a href="#book" class="neon-btn bg-neon-orange text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-neon-orange-light transition-colors">
+                    Book Trial
+                </a>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button id="mobileMenuBtn" class="md:hidden w-10 h-10 flex flex-col items-center justify-center gap-1.5">
+                <span class="w-6 h-0.5 bg-white transition-all"></span>
+                <span class="w-6 h-0.5 bg-white transition-all"></span>
+                <span class="w-4 h-0.5 bg-white transition-all"></span>
+            </button>
+        </div>
+    </div>
+</nav>
+
+<!-- Mobile Menu -->
+<div id="mobileMenu" class="mobile-menu fixed inset-0 z-40 bg-black/95 backdrop-blur-lg flex flex-col justify-center items-center gap-8">
+    <a href="#programs" class="mobile-link font-heading text-3xl font-bold uppercase tracking-wider hover:text-neon-orange transition-colors">Programs</a>
+    <a href="#coaches" class="mobile-link font-heading text-3xl font-bold uppercase tracking-wider hover:text-neon-orange transition-colors">Coaches</a>
+    <a href="#stories" class="mobile-link font-heading text-3xl font-bold uppercase tracking-wider hover:text-neon-orange transition-colors">Stories</a>
+    <a href="#pricing" class="mobile-link font-heading text-3xl font-bold uppercase tracking-wider hover:text-neon-orange transition-colors">Pricing</a>
+    <a href="#book" class="mobile-link neon-btn bg-neon-orange text-black px-8 py-4 font-bold uppercase tracking-wider mt-4">Book Trial</a>
+</div>
+
+<!-- Hero Section -->
+<section class="relative min-h-screen bg-texture grid-bg overflow-hidden">
+    <!-- Background Video/Image Placeholder -->
+    <div class="absolute inset-0">
+        <img src="https://picsum.photos/seed/fitness-hero/1920/1080.jpg" alt="Athletic Background" class="w-full h-full object-cover opacity-30" style="filter: grayscale(100%) contrast(1.2);">
+        <div class="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-black/80"></div>
+    </div>
+
+    <!-- Hero Content -->
+    <div class="relative z-10 max-w-7xl mx-auto px-4 pt-32 pb-20 min-h-screen flex flex-col justify-center">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <!-- Left Content -->
+            <div class="lg:col-span-7 space-y-6">
+                <!-- Badge -->
+                <div class="animate-fade-in opacity-0 animate-delay-1 inline-flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2">
+                    <span class="w-2 h-2 bg-neon-orange rounded-full animate-pulse"></span>
+                    <span class="text-xs font-semibold uppercase tracking-widest text-metallic">Est. 2018 • Elite Performance</span>
+                </div>
+
+                <!-- Main Headline -->
+                <h1 class="animate-fade-in opacity-0 animate-delay-2 font-heading text-5xl md:text-7xl lg:text-8xl font-bold uppercase leading-[0.9] tracking-tight">
+                    <span class="block">FORGE YOUR</span>
+                    <span class="block text-gradient">STRONGEST</span>
+                    <span class="block">SELF</span>
+                </h1>
+
+                <!-- Subtext -->
+                <p class="animate-fade-in opacity-0 animate-delay-3 text-lg md:text-xl text-gray-400 max-w-xl leading-relaxed">
+                    Professional coaching, proven programs, and a community that pushes limits.
+                    <span class="text-white font-semibold">Transform your body. Transform your life.</span>
+                </p>
+
+                <!-- CTA Buttons -->
+                <div class="animate-fade-in opacity-0 animate-delay-4 flex flex-wrap gap-4 pt-4">
+                    <a href="#book" class="neon-btn bg-neon-orange text-black px-8 py-4 font-bold uppercase tracking-widest text-sm hover:bg-neon-orange-light transition-colors flex items-center gap-3">
+                        <span>Start Your Journey</span>
+                        <span class="iconify" data-icon="lucide:arrow-right" data-width="20"></span>
+                    </a>
+                    <a href="#programs" class="border border-white/20 px-8 py-4 font-bold uppercase tracking-widest text-sm hover:border-neon-orange hover:text-neon-orange transition-colors flex items-center gap-3">
+                        <span>View Programs</span>
+                    </a>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="animate-fade-in opacity-0 animate-delay-5 grid grid-cols-3 gap-0 mt-8 border-t border-b border-white/10">
+                    <div class="stat-item p-4 text-center">
+                        <div class="font-heading text-3xl md:text-4xl font-bold text-neon-orange">2,500+</div>
+                        <div class="text-xs text-gray-500 uppercase tracking-wider mt-1">Active Members</div>
+                    </div>
+                    <div class="stat-item p-4 text-center">
+                        <div class="font-heading text-3xl md:text-4xl font-bold text-neon-orange">15+</div>
+                        <div class="text-xs text-gray-500 uppercase tracking-wider mt-1">Elite Coaches</div>
+                    </div>
+                    <div class="stat-item p-4 text-center">
+                        <div class="font-heading text-3xl md:text-4xl font-bold text-neon-orange">98%</div>
+                        <div class="text-xs text-gray-500 uppercase tracking-wider mt-1">Success Rate</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Content - Coach Showcase -->
+            <div class="lg:col-span-5 relative">
+                <div class="relative animate-fade-in opacity-0 animate-delay-3">
+                    <!-- Main Image -->
+                    <div class="relative overflow-hidden">
+                        <img src="https://picsum.photos/seed/coach-main/600/800.jpg" alt="Head Coach" class="w-full grayscale contrast-125 hover:grayscale-0 transition-all duration-700">
+                        <div class="coach-overlay absolute inset-0"></div>
+                    </div>
+
+                    <!-- Coach Info Card -->
+                    <div class="absolute bottom-0 left-0 right-0 p-6">
+                        <div class="accent-line mb-4"></div>
+                        <h3 class="font-heading text-2xl font-bold uppercase">Marcus Chen</h3>
+                        <p class="text-neon-orange text-sm font-semibold uppercase tracking-wider">Head Coach • 12 Years Experience</p>
+                        <p class="text-gray-400 text-sm mt-2">NSCA-CPT, CSCS, Sports Performance Specialist</p>
+                    </div>
+
+                    <!-- Floating Badge -->
+                    <div class="absolute -top-4 -right-4 bg-neon-orange p-4 text-black">
+                        <div class="text-center">
+                            <div class="font-heading text-3xl font-bold">#1</div>
+                            <div class="text-xs font-semibold uppercase">Rated Gym</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scroll Indicator -->
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-bounce">
+        <span class="text-xs uppercase tracking-widest text-gray-500">Scroll</span>
+        <span class="iconify text-neon-orange" data-icon="lucide:chevron-down" data-width="24"></span>
+    </div>
+</section>
+
+<!-- Marquee Banner -->
+<div class="bg-neon-orange py-3 overflow-hidden">
+    <div class="marquee-content flex whitespace-nowrap">
+        <span class="font-heading text-black text-sm font-bold uppercase tracking-widest mx-8">★ STRENGTH IS EARNED</span>
+        <span class="font-heading text-black text-sm font-bold uppercase tracking-widest mx-8">★ NO SHORTCUTS</span>
+        <span class="font-heading text-black text-sm font-bold uppercase tracking-widest mx-8">★ TRANSFORM YOUR BODY</span>
+        <span class="font-heading text-black text-sm font-bold uppercase tracking-widest mx-8">★ JOIN THE COMMUNITY</span>
+        <span class="font-heading text-black text-sm font-bold uppercase tracking-widest mx-8">★ STRENGTH IS EARNED</span>
+        <span class="font-heading text-black text-sm font-bold uppercase tracking-widest mx-8">★ NO SHORTCUTS</span>
+        <span class="font-heading text-black text-sm font-bold uppercase tracking-widest mx-8">★ TRANSFORM YOUR BODY</span>
+        <span class="font-heading text-black text-sm font-bold uppercase tracking-widest mx-8">★ JOIN THE COMMUNITY</span>
+        <span class="font-heading text-black text-sm font-bold uppercase tracking-widest mx-8">★ STRENGTH IS EARNED</span>
+        <span class="font-heading text-black text-sm font-bold uppercase tracking-widest mx-8">★ NO SHORTCUTS</span>
+        <span class="font-heading text-black text-sm font-bold uppercase tracking-widest mx-8">★ TRANSFORM YOUR BODY</span>
+        <span class="font-heading text-black text-sm font-bold uppercase tracking-widest mx-8">★ JOIN THE COMMUNITY</span>
+    </div>
+</div>
+
+<!-- Programs Section -->
+<section id="programs" class="bg-dark-800 py-24 relative">
+    <div class="max-w-7xl mx-auto px-4">
+        <!-- Section Header -->
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
+            <div>
+                <div class="accent-line mb-4"></div>
+                <h2 class="font-heading text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-tight">
+                    Training Programs
+                </h2>
+                <p class="text-gray-400 mt-4 max-w-xl">
+                    Science-backed programs designed for real results. Choose your path and commit to the process.
+                </p>
+            </div>
+            <a href="#" class="text-neon-orange font-semibold uppercase tracking-widest text-sm flex items-center gap-2 hover:gap-4 transition-all">
+                View All Programs
+                <span class="iconify" data-icon="lucide:arrow-right" data-width="18"></span>
+            </a>
+        </div>
+
+        <!-- Programs Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0">
+            <!-- Program 1 - Muscle Gain -->
+            <div class="card-hover group border border-white/5 bg-dark-700 relative overflow-hidden">
+                <div class="relative h-64 overflow-hidden">
+                    <img src="https://picsum.photos/seed/muscle-gain/600/400.jpg" alt="Muscle Gain" class="card-image w-full h-full object-cover grayscale contrast-110 group-hover:grayscale-0 transition-all duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-dark-700 via-transparent to-transparent"></div>
+                    <div class="absolute top-4 left-4 bg-neon-orange px-3 py-1">
+                        <span class="text-xs font-bold uppercase text-black">Popular</span>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="iconify text-neon-orange" data-icon="lucide:dumbbell" data-width="20"></span>
+                        <span class="text-xs font-semibold uppercase tracking-widest text-metallic">12 Weeks</span>
+                    </div>
+                    <h3 class="font-heading text-2xl font-bold uppercase mb-3">Hypertrophy Protocol</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed mb-4">
+                        Progressive overload system designed for maximum muscle growth. 4-5 days per week with periodized intensity.
+                    </p>
+                    <div class="flex items-center justify-between pt-4 border-t border-white/10">
+                        <div class="flex items-center gap-4">
+                            <div class="text-center">
+                                <div class="text-lg font-bold">4-5</div>
+                                <div class="text-xs text-gray-500">Days/Wk</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-lg font-bold">60-90</div>
+                                <div class="text-xs text-gray-500">Minutes</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-lg font-bold">Adv</div>
+                                <div class="text-xs text-gray-500">Level</div>
+                            </div>
+                        </div>
+                        <a href="#" class="text-neon-orange hover:text-white transition-colors">
+                            <span class="iconify" data-icon="lucide:arrow-right" data-width="24"></span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Program 2 - Fat Loss -->
+            <div class="card-hover group border border-white/5 bg-dark-700 relative overflow-hidden">
+                <div class="relative h-64 overflow-hidden">
+                    <img src="https://picsum.photos/seed/fat-loss/600/400.jpg" alt="Fat Loss" class="card-image w-full h-full object-cover grayscale contrast-110 group-hover:grayscale-0 transition-all duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-dark-700 via-transparent to-transparent"></div>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="iconify text-neon-orange" data-icon="lucide:flame" data-width="20"></span>
+                        <span class="text-xs font-semibold uppercase tracking-widest text-metallic">8 Weeks</span>
+                    </div>
+                    <h3 class="font-heading text-2xl font-bold uppercase mb-3">Metabolic Burn</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed mb-4">
+                        High-intensity training combined with strategic cardio. Optimize fat loss while preserving lean muscle mass.
+                    </p>
+                    <div class="flex items-center justify-between pt-4 border-t border-white/10">
+                        <div class="flex items-center gap-4">
+                            <div class="text-center">
+                                <div class="text-lg font-bold">5-6</div>
+                                <div class="text-xs text-gray-500">Days/Wk</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-lg font-bold">45-60</div>
+                                <div class="text-xs text-gray-500">Minutes</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-lg font-bold">Int</div>
+                                <div class="text-xs text-gray-500">Level</div>
+                            </div>
+                        </div>
+                        <a href="#" class="text-neon-orange hover:text-white transition-colors">
+                            <span class="iconify" data-icon="lucide:arrow-right" data-width="24"></span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Program 3 - Strength -->
+            <div class="card-hover group border border-white/5 bg-dark-700 relative overflow-hidden">
+                <div class="relative h-64 overflow-hidden">
+                    <img src="https://picsum.photos/seed/strength-training/600/400.jpg" alt="Strength Training" class="card-image w-full h-full object-cover grayscale contrast-110 group-hover:grayscale-0 transition-all duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-dark-700 via-transparent to-transparent"></div>
+                    <div class="absolute top-4 left-4 bg-white/10 backdrop-blur px-3 py-1">
+                        <span class="text-xs font-bold uppercase">New</span>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="iconify text-neon-orange" data-icon="lucide:target" data-width="20"></span>
+                        <span class="text-xs font-semibold uppercase tracking-widest text-metallic">16 Weeks</span>
+                    </div>
+                    <h3 class="font-heading text-2xl font-bold uppercase mb-3">Power Foundations</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed mb-4">
+                        Build raw strength with compound movements. Perfect for athletes and those seeking functional power.
+                    </p>
+                    <div class="flex items-center justify-between pt-4 border-t border-white/10">
+                        <div class="flex items-center gap-4">
+                            <div class="text-center">
+                                <div class="text-lg font-bold">4</div>
+                                <div class="text-xs text-gray-500">Days/Wk</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-lg font-bold">75-90</div>
+                                <div class="text-xs text-gray-500">Minutes</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-lg font-bold">Beg-Int</div>
+                                <div class="text-xs text-gray-500">Level</div>
+                            </div>
+                        </div>
+                        <a href="#" class="text-neon-orange hover:text-white transition-colors">
+                            <span class="iconify" data-icon="lucide:arrow-right" data-width="24"></span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Programs Row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-0 mt-0">
+            <!-- Program 4 -->
+            <div class="card-hover group border border-white/5 bg-dark-700 relative overflow-hidden">
+                <div class="flex flex-col md:flex-row">
+                    <div class="md:w-1/3 h-48 md:h-auto overflow-hidden">
+                        <img src="https://picsum.photos/seed/functional/400/300.jpg" alt="Functional Fitness" class="card-image w-full h-full object-cover grayscale contrast-110 group-hover:grayscale-0 transition-all duration-700">
+                    </div>
+                    <div class="md:w-2/3 p-6 flex flex-col justify-center">
+                        <span class="text-xs font-semibold uppercase tracking-widest text-metallic mb-2">6 Weeks • All Levels</span>
+                        <h3 class="font-heading text-xl font-bold uppercase mb-2">Functional Fitness</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed mb-4">
+                            Movement-based training for real-world strength. Improve mobility, stability, and functional power.
+                        </p>
+                        <a href="#" class="text-neon-orange text-sm font-semibold uppercase tracking-wider flex items-center gap-2 hover:gap-3 transition-all">
+                            Learn More <span class="iconify" data-icon="lucide:arrow-right" data-width="16"></span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Program 5 -->
+            <div class="card-hover group border border-white/5 bg-dark-700 relative overflow-hidden">
+                <div class="flex flex-col md:flex-row">
+                    <div class="md:w-1/3 h-48 md:h-auto overflow-hidden">
+                        <img src="https://picsum.photos/seed/athletic/400/300.jpg" alt="Athletic Performance" class="card-image w-full h-full object-cover grayscale contrast-110 group-hover:grayscale-0 transition-all duration-700">
+                    </div>
+                    <div class="md:w-2/3 p-6 flex flex-col justify-center">
+                        <span class="text-xs font-semibold uppercase tracking-widest text-metallic mb-2">12 Weeks • Advanced</span>
+                        <h3 class="font-heading text-xl font-bold uppercase mb-2">Athletic Performance</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed mb-4">
+                            Sport-specific training for competitive athletes. Speed, agility, power, and explosive performance.
+                        </p>
+                        <a href="#" class="text-neon-orange text-sm font-semibold uppercase tracking-wider flex items-center gap-2 hover:gap-3 transition-all">
+                            Learn More <span class="iconify" data-icon="lucide:arrow-right" data-width="16"></span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Coaches Section -->
+<section id="coaches" class="bg-dark-900 py-24 relative">
+    <!-- Background Texture -->
+    <div class="absolute inset-0 opacity-20">
+        <img src="https://picsum.photos/seed/gym-texture/1920/1080.jpg" alt="" class="w-full h-full object-cover grayscale" style="filter: brightness(0.3);">
+    </div>
+
+    <div class="relative z-10 max-w-7xl mx-auto px-4">
+        <!-- Section Header -->
+        <div class="text-center mb-16">
+            <div class="accent-line mx-auto mb-4"></div>
+            <h2 class="font-heading text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-tight">
+                Elite Coaching Team
+            </h2>
+            <p class="text-gray-400 mt-4 max-w-2xl mx-auto">
+                World-class coaches with proven track records. Our team brings decades of combined experience in professional athletics and personal training.
+            </p>
+        </div>
+
+        <!-- Coaches Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0">
+            <!-- Coach 1 -->
+            <div class="card-hover group relative overflow-hidden border border-white/5 bg-dark-700">
+                <div class="relative h-80 overflow-hidden">
+                    <img src="https://picsum.photos/seed/coach1/400/500.jpg" alt="Marcus Chen" class="card-image w-full h-full object-cover grayscale contrast-110 group-hover:grayscale-0 transition-all duration-700">
+                    <div class="coach-overlay absolute inset-0"></div>
+                </div>
+                <div class="absolute bottom-0 left-0 right-0 p-5">
+                    <h3 class="font-heading text-xl font-bold uppercase">Marcus Chen</h3>
+                    <p class="text-neon-orange text-xs font-semibold uppercase tracking-wider mt-1">Head Coach • CSCS</p>
+                    <p class="text-gray-400 text-xs mt-2">12 Years • Strength & Hypertrophy</p>
+                    <div class="flex gap-2 mt-3">
+                        <span class="bg-white/10 px-2 py-1 text-xs">NSCA-CPT</span>
+                        <span class="bg-white/10 px-2 py-1 text-xs">USA-W</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coach 2 -->
+            <div class="card-hover group relative overflow-hidden border border-white/5 bg-dark-700">
+                <div class="relative h-80 overflow-hidden">
+                    <img src="https://picsum.photos/seed/coach2/400/500.jpg" alt="Sarah Mitchell" class="card-image w-full h-full object-cover grayscale contrast-110 group-hover:grayscale-0 transition-all duration-700">
+                    <div class="coach-overlay absolute inset-0"></div>
+                </div>
+                <div class="absolute bottom-0 left-0 right-0 p-5">
+                    <h3 class="font-heading text-xl font-bold uppercase">Sarah Mitchell</h3>
+                    <p class="text-neon-orange text-xs font-semibold uppercase tracking-wider mt-1">Senior Coach • NASM-PES</p>
+                    <p class="text-gray-400 text-xs mt-2">8 Years • Fat Loss & Conditioning</p>
+                    <div class="flex gap-2 mt-3">
+                        <span class="bg-white/10 px-2 py-1 text-xs">ACE</span>
+                        <span class="bg-white/10 px-2 py-1 text-xs">NCSF</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coach 3 -->
+            <div class="card-hover group relative overflow-hidden border border-white/5 bg-dark-700">
+                <div class="relative h-80 overflow-hidden">
+                    <img src="https://picsum.photos/seed/coach3/400/500.jpg" alt="David Park" class="card-image w-full h-full object-cover grayscale contrast-110 group-hover:grayscale-0 transition-all duration-700">
+                    <div class="coach-overlay absolute inset-0"></div>
+                </div>
+                <div class="absolute bottom-0 left-0 right-0 p-5">
+                    <h3 class="font-heading text-xl font-bold uppercase">David Park</h3>
+                    <p class="text-neon-orange text-xs font-semibold uppercase tracking-wider mt-1">Performance Coach • MS</p>
+                    <p class="text-gray-400 text-xs mt-2">10 Years • Athletic Performance</p>
+                    <div class="flex gap-2 mt-3">
+                        <span class="bg-white/10 px-2 py-1 text-xs">CSCS</span>
+                        <span class="bg-white/10 px-2 py-1 text-xs">USATF</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coach 4 -->
+            <div class="card-hover group relative overflow-hidden border border-white/5 bg-dark-700">
+                <div class="relative h-80 overflow-hidden">
+                    <img src="https://picsum.photos/seed/coach4/400/500.jpg" alt="Emma Rodriguez" class="card-image w-full h-full object-cover grayscale contrast-110 group-hover:grayscale-0 transition-all duration-700">
+                    <div class="coach-overlay absolute inset-0"></div>
+                </div>
+                <div class="absolute bottom-0 left-0 right-0 p-5">
+                    <h3 class="font-heading text-xl font-bold uppercase">Emma Rodriguez</h3>
+                    <p class="text-neon-orange text-xs font-semibold uppercase tracking-wider mt-1">Coach • ACSM-EP</p>
+                    <p class="text-gray-400 text-xs mt-2">6 Years • Functional Training</p>
+                    <div class="flex gap-2 mt-3">
+                        <span class="bg-white/10 px-2 py-1 text-xs">ACSM</span>
+                        <span class="bg-white/10 px-2 py-1 text-xs">FMS</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Team Stats -->
+        <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-0 border border-white/5">
+            <div class="p-8 text-center border-r border-white/5">
+                <div class="font-heading text-4xl md:text-5xl font-bold text-neon-orange">36+</div>
+                <div class="text-sm text-gray-400 uppercase tracking-wider mt-2">Combined Years Experience</div>
+            </div>
+            <div class="p-8 text-center border-r border-white/5">
+                <div class="font-heading text-4xl md:text-5xl font-bold text-neon-orange">25+</div>
+                <div class="text-sm text-gray-400 uppercase tracking-wider mt-2">Certifications</div>
+            </div>
+            <div class="p-8 text-center border-r border-white/5">
+                <div class="font-heading text-4xl md:text-5xl font-bold text-neon-orange">500+</div>
+                <div class="text-sm text-gray-400 uppercase tracking-wider mt-2">Clients Trained</div>
+            </div>
+            <div class="p-8 text-center">
+                <div class="font-heading text-4xl md:text-5xl font-bold text-neon-orange">15</div>
+                <div class="text-sm text-gray-400 uppercase tracking-wider mt-2">Pro Athletes Coached</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Member Stories Section -->
+<section id="stories" class="bg-dark-800 py-24 relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4">
+        <!-- Section Header -->
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
+            <div>
+                <div class="accent-line mb-4"></div>
+                <h2 class="font-heading text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-tight">
+                    Transformation Stories
+                </h2>
+                <p class="text-gray-400 mt-4 max-w-xl">
+                    Real results from real members. Their dedication inspires us every day.
+                </p>
+            </div>
+        </div>
+
+        <!-- Stories Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-0">
+            <!-- Story 1 - Featured -->
+            <div class="lg:col-span-2 lg:row-span-2 card-hover group border border-white/5 bg-dark-700 relative overflow-hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2">
+                    <div class="relative h-96 md:h-auto min-h-[400px] overflow-hidden">
+                        <img src="https://picsum.photos/seed/transform1/600/800.jpg" alt="Before & After" class="card-image w-full h-full object-cover grayscale contrast-110 group-hover:grayscale-0 transition-all duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-r from-transparent to-dark-700"></div>
+                    </div>
+                    <div class="p-8 flex flex-col justify-center">
+                        <div class="flex items-center gap-4 mb-4">
+                            <span class="bg-neon-orange px-3 py-1 text-xs font-bold uppercase text-black">Featured</span>
+                            <span class="text-xs text-gray-500 uppercase tracking-wider">16 Week Transformation</span>
+                        </div>
+                        <h3 class="font-heading text-2xl md:text-3xl font-bold uppercase mb-2">Michael Torres</h3>
+                        <p class="text-neon-orange text-sm font-semibold mb-4">Lost 45 lbs • Gained 12 lbs Muscle</p>
+                        <blockquote class="text-gray-400 text-sm leading-relaxed mb-6">
+                            "The coaches at Forge Elite changed my life. The structured program and constant support kept me accountable. I went from 225 lbs to 180 lbs while getting stronger than ever."
+                        </blockquote>
+                        <div class="flex items-center gap-4">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold">-45 lbs</div>
+                                <div class="text-xs text-gray-500">Weight</div>
+                            </div>
+                            <div class="w-px h-10 bg-white/10"></div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold">+12 lbs</div>
+                                <div class="text-xs text-gray-500">Muscle</div>
+                            </div>
+                            <div class="w-px h-10 bg-white/10"></div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold">-8"</div>
+                                <div class="text-xs text-gray-500">Waist</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Story 2 -->
+            <div class="card-hover group border border-white/5 bg-dark-700 relative overflow-hidden">
+                <div class="flex items-center gap-4 p-6">
+                    <div class="w-20 h-20 overflow-hidden flex-shrink-0">
+                        <img src="https://picsum.photos/seed/member2/200/200.jpg" alt="Jennifer Liu" class="w-full h-full object-cover grayscale contrast-110 group-hover:grayscale-0 transition-all duration-700">
+                    </div>
+                    <div>
+                        <h3 class="font-heading text-lg font-bold uppercase">Jennifer Liu</h3>
+                        <p class="text-neon-orange text-xs font-semibold">First Competition Win</p>
+                        <p class="text-gray-400 text-xs mt-1">"Prepped for my first bikini competition and took 1st place!"</p>
+                    </div>
+                </div>
+                <div class="px-6 pb-6">
+                    <div class="flex items-center justify-between text-xs">
+                        <div><span class="text-neon-orange font-bold">20 lbs</span> Lost</div>
+                        <div><span class="text-neon-orange font-bold">12</span> Weeks</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Story 3 -->
+            <div class="card-hover group border border-white/5 bg-dark-700 relative overflow-hidden">
+                <div class="flex items-center gap-4 p-6">
+                    <div class="w-20 h-20 overflow-hidden flex-shrink-0">
+                        <img src="https://picsum.photos/seed/member3/200/200.jpg" alt="Alex Johnson" class="w-full h-full object-cover grayscale contrast-110 group-hover:grayscale-0 transition-all duration-700">
+                    </div>
+                    <div>
+                        <h3 class="font-heading text-lg font-bold uppercase">Alex Johnson</h3>
+                        <p class="text-neon-orange text-xs font-semibold">Strength Milestone</p>
+                        <p class="text-gray-400 text-xs mt-1">"Went from a 185 lb bench to 315 lbs in 8 months."</p>
+                    </div>
+                </div>
+                <div class="px-6 pb-6">
+                    <div class="flex items-center justify-between text-xs">
+                        <div><span class="text-neon-orange font-bold">130 lbs</span> Added</div>
+                        <div><span class="text-neon-orange font-bold">8</span> Months</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- More Stories Row -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-0 mt-0">
+            <!-- Story 4 -->
+            <div class="card-hover group border border-white/5 bg-dark-700 p-6">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                        <img src="https://picsum.photos/seed/member4/100/100.jpg" alt="Robert Kim" class="w-full h-full object-cover grayscale">
+                    </div>
+                    <div>
+                        <h3 class="font-heading font-bold uppercase">Robert Kim</h3>
+                        <p class="text-neon-orange text-xs font-semibold">Age 52</p>
+                        <p class="text-gray-400 text-xs mt-2">"Best shape of my life at 52. The personalized approach made all the difference."</p>
+                        <div class="mt-3 text-xs text-metallic">6 Month Program</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Story 5 -->
+            <div class="card-hover group border border-white/5 bg-dark-700 p-6">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                        <img src="https://picsum.photos/seed/member5/100/100.jpg" alt="Lisa Chen" class="w-full h-full object-cover grayscale">
+                    </div>
+                    <div>
+                        <h3 class="font-heading font-bold uppercase">Lisa Chen</h3>
+                        <p class="text-neon-orange text-xs font-semibold">Post-Pregnancy</p>
+                        <p class="text-gray-400 text-xs mt-2">"Safely got back to training and stronger than before my pregnancy."</p>
+                        <div class="mt-3 text-xs text-metallic">4 Month Program</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Story 6 -->
+            <div class="card-hover group border border-white/5 bg-dark-700 p-6">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                        <img src="https://picsum.photos/seed/member6/100/100.jpg" alt="Daniel Smith" class="w-full h-full object-cover grayscale">
+                    </div>
+                    <div>
+                        <h3 class="font-heading font-bold uppercase">Daniel Smith</h3>
+                        <p class="text-neon-orange text-xs font-semibold">Athletic Scholarship</p>
+                        <p class="text-gray-400 text-xs mt-2">"Performance training helped me earn a D1 football scholarship."</p>
+                        <div class="mt-3 text-xs text-metallic">1 Year Program</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- View All CTA -->
+        <div class="text-center mt-12">
+            <a href="#" class="inline-flex items-center gap-3 text-neon-orange font-semibold uppercase tracking-widest text-sm hover:text-white transition-colors">
+                View All Transformations
+                <span class="iconify" data-icon="lucide:arrow-right" data-width="18"></span>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Pricing Section -->
+<section id="pricing" class="bg-dark-900 py-24 relative">
+    <div class="max-w-7xl mx-auto px-4">
+        <!-- Section Header -->
+        <div class="text-center mb-16">
+            <div class="accent-line mx-auto mb-4"></div>
+            <h2 class="font-heading text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-tight">
+                Membership Options
+            </h2>
+            <p class="text-gray-400 mt-4 max-w-2xl mx-auto">
+                Invest in yourself. Choose the membership that fits your goals.
+            </p>
+        </div>
+
+        <!-- Pricing Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-0">
+            <!-- Basic Plan -->
+            <div class="card-hover border border-white/5 bg-dark-700 p-8 relative">
+                <div class="mb-6">
+                    <h3 class="font-heading text-2xl font-bold uppercase">Foundation</h3>
+                    <p class="text-gray-400 text-sm mt-2">Perfect for beginners starting their fitness journey</p>
+                </div>
+                <div class="mb-6">
+                    <span class="font-heading text-5xl font-bold">$99</span>
+                    <span class="text-gray-500">/month</span>
+                </div>
+                <ul class="space-y-3 mb-8">
+                    <li class="flex items-center gap-3 text-sm">
+                        <span class="iconify text-neon-orange" data-icon="lucide:check" data-width="18"></span>
+                        <span>Gym Access (6am - 10pm)</span>
+                    </li>
+                    <li class="flex items-center gap-3 text-sm">
+                        <span class="iconify text-neon-orange" data-icon="lucide:check" data-width="18"></span>
+                        <span>2 Group Classes/Week</span>
+                    </li>
+                    <li class="flex items-center gap-3 text-sm">
+                        <span class="iconify text-neon-orange" data-icon="lucide:check" data-width="18"></span>
+                        <span>Fitness Assessment</span>
+                    </li>
+                    <li class="flex items-center gap-3 text-sm">
+                        <span class="iconify text-neon-orange" data-icon="lucide:check" data-width="18"></span>
+                        <span>Locker Room Access</span>
+                    </li>
+                    <li class="flex items-center gap-3 text-sm text-gray-500">
+                        <span class="iconify" data-icon="lucide:x" data-width="18"></span>
+                        <span>Personal Training</span>
+                    </li>
+                </ul>
+                <a href="#book" class="block text-center border border-white/20 py-4 font-bold uppercase tracking-widest text-sm hover:border-neon-orange hover:text-neon-orange transition-colors">
+                    Get Started
+                </a>
+            </div>
+
+            <!-- Pro Plan - Featured -->
+            <div class="card-hover border-2 border-neon-orange bg-dark-700 p-8 relative md:-mt-4 md:mb-[-16px]">
+                <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-neon-orange px-6 py-2">
+                    <span class="text-xs font-bold uppercase text-black">Most Popular</span>
+                </div>
+                <div class="mb-6">
+                    <h3 class="font-heading text-2xl font-bold uppercase">Elite</h3>
+                    <p class="text-gray-400 text-sm mt-2">For serious athletes committed to results</p>
+                </div>
+                <div class="mb-6">
+                    <span class="font-heading text-5xl font-bold text-neon-orange">$199</span>
+                    <span class="text-gray-500">/month</span>
+                </div>
+                <ul class="space-y-3 mb-8">
+                    <li class="flex items-center gap-3 text-sm">
+                        <span class="iconify text-neon-orange" data-icon="lucide:check" data-width="18"></span>
+                        <span>24/7 Gym Access</span>
+                    </li>
+                    <li class="flex items-center gap-3 text-sm">
+                        <span class="iconify text-neon-orange" data-icon="lucide:check" data-width="18"></span>
+                        <span>Unlimited Group Classes</span>
+                    </li>
+                    <li class="flex items-center gap-3 text-sm">
+                        <span class="iconify text-neon-orange" data-icon="lucide:check" data-width="18"></span>
+                        <span>4 PT Sessions/Month</span>
+                    </li>
+                    <li class="flex items-center gap-3 text-sm">
+                        <span class="iconify text-neon-orange" data-icon="lucide:check" data-width="18"></span>
+                        <span>Nutrition Planning</span>
+                    </li>
+                    <li class="flex items-center gap-3 text-sm">
+                        <span class="iconify text-neon-orange" data-icon="lucide:check" data-width="18"></span>
+                        <span>Progress Tracking App</span>
+                    </li>
+                </ul>
+                <a href="#book" class="neon-btn block text-center bg-neon-orange text-black py-4 font-bold uppercase tracking-widest text-sm hover:bg-neon-orange-light transition-colors">
+                    Get Started
+                </a>
+            </div>
+
+            <!-- Premium Plan -->
+            <div class="card-hover border border-white/5 bg-dark-700 p-8 relative">
+                <div class="mb-6">
+                    <h3 class="font-heading text-2xl font-bold uppercase">Pro Athlete</h3>
+                    <p class="text-gray-400 text-sm mt-2">Complete transformation package</p>
+                </div>
+                <div class="mb-6">
+                    <span class="font-heading text-5xl font-bold">$349</span>
+                    <span class="text-gray-500">/month</span>
+                </div>
+                <ul class="space-y-3 mb-8">
+                    <li class="flex items-center gap-3 text-sm">
+                        <span class="iconify text-neon-orange" data-icon="lucide:check" data-width="18"></span>
+                        <span>Everything in Elite</span>
+                    </li>
+                    <li class="flex items-center gap-3 text-sm">
+                        <span class="iconify text-neon-orange" data-icon="lucide:check" data-width="18"></span>
+                        <span>8 PT Sessions/Month</span>
+                    </li>
+                    <li class="flex items-center gap-3 text-sm">
+                        <span class="iconify text-neon-orange" data-icon="lucide:check" data-width="18"></span>
+                        <span>Custom Program Design</span>
+                    </li>
+                    <li class="flex items-center gap-3 text-sm">
+                        <span class="iconify text-neon-orange" data-icon="lucide:check" data-width="18"></span>
+                        <span>Weekly Check-ins</span>
+                    </li>
+                    <li class="flex items-center gap-3 text-sm">
+                        <span class="iconify text-neon-orange" data-icon="lucide:check" data-width="18"></span>
+                        <span>Recovery Suite Access</span>
+                    </li>
+                </ul>
+                <a href="#book" class="block text-center border border-white/20 py-4 font-bold uppercase tracking-widest text-sm hover:border-neon-orange hover:text-neon-orange transition-colors">
+                    Get Started
+                </a>
+            </div>
+        </div>
+
+        <!-- Trial Offer -->
+        <div class="mt-16 border border-white/5 bg-dark-700 p-8 md:p-12 text-center">
+            <div class="max-w-2xl mx-auto">
+                <span class="text-neon-orange text-sm font-bold uppercase tracking-widest">Limited Time Offer</span>
+                <h3 class="font-heading text-3xl md:text-4xl font-bold uppercase mt-4">
+                    Try Forge Elite FREE for 7 Days
+                </h3>
+                <p class="text-gray-400 mt-4">
+                    Experience our facility, meet our coaches, and see why we're the #1 rated gym. No commitment required.
+                </p>
+                <a href="#book" class="neon-btn inline-flex items-center gap-3 bg-neon-orange text-black px-8 py-4 font-bold uppercase tracking-widest text-sm mt-6 hover:bg-neon-orange-light transition-colors">
+                    Claim Free Trial
+                    <span class="iconify" data-icon="lucide:arrow-right" data-width="18"></span>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Book Trial Section -->
+<section id="book" class="bg-dark-800 py-24 relative overflow-hidden">
+    <!-- Background -->
+    <div class="absolute inset-0">
+        <img src="https://picsum.photos/seed/gym-bg/1920/1080.jpg" alt="" class="w-full h-full object-cover grayscale opacity-20" style="filter: contrast(1.2);">
+        <div class="absolute inset-0 bg-gradient-to-t from-dark-800 via-dark-800/90 to-dark-800"></div>
+    </div>
+
+    <div class="relative z-10 max-w-7xl mx-auto px-4">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <!-- Left Content -->
+            <div>
+                <div class="accent-line mb-4"></div>
+                <h2 class="font-heading text-4xl md:text-5xl font-bold uppercase tracking-tight">
+                    Start Your Journey Today
+                </h2>
+                <p class="text-gray-400 mt-4 leading-relaxed">
+                    Fill out the form and one of our coaches will contact you within 24 hours to schedule your free trial session.
+                </p>
+
+                <!-- Benefits -->
+                <div class="mt-8 space-y-4">
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 bg-neon-orange/20 flex items-center justify-center flex-shrink-0">
+                            <span class="iconify text-neon-orange" data-icon="lucide:calendar" data-width="20"></span>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold">Flexible Scheduling</h4>
+                            <p class="text-gray-400 text-sm">Book sessions that fit your schedule, early morning to late night.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 bg-neon-orange/20 flex items-center justify-center flex-shrink-0">
+                            <span class="iconify text-neon-orange" data-icon="lucide:users" data-width="20"></span>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold">Expert Guidance</h4>
+                            <p class="text-gray-400 text-sm">Work with certified coaches who've trained professional athletes.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 bg-neon-orange/20 flex items-center justify-center flex-shrink-0">
+                            <span class="iconify text-neon-orange" data-icon="lucide:target" data-width="20"></span>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold">Personalized Plan</h4>
+                            <p class="text-gray-400 text-sm">Get a custom training plan based on your goals and assessment.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right - Form -->
+            <div class="bg-dark-700 border border-white/10 p-8">
+                <form id="bookingForm" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">First Name *</label>
+                            <input type="text" required class="w-full bg-dark-800 border border-white/10 px-4 py-3 text-sm focus:border-neon-orange focus:outline-none transition-colors" placeholder="John">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Last Name *</label>
+                            <input type="text" required class="w-full bg-dark-800 border border-white/10 px-4 py-3 text-sm focus:border-neon-orange focus:outline-none transition-colors" placeholder="Doe">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Email *</label>
+                        <input type="email" required class="w-full bg-dark-800 border border-white/10 px-4 py-3 text-sm focus:border-neon-orange focus:outline-none transition-colors" placeholder="john@example.com">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Phone *</label>
+                        <input type="tel" required class="w-full bg-dark-800 border border-white/10 px-4 py-3 text-sm focus:border-neon-orange focus:outline-none transition-colors" placeholder="(555) 123-4567">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Primary Goal</label>
+                        <select class="w-full bg-dark-800 border border-white/10 px-4 py-3 text-sm focus:border-neon-orange focus:outline-none transition-colors">
+                            <option value="">Select your goal</option>
+                            <option value="muscle">Build Muscle</option>
+                            <option value="fat-loss">Lose Fat</option>
+                            <option value="strength">Increase Strength</option>
+                            <option value="athletic">Athletic Performance</option>
+                            <option value="general">General Fitness</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Experience Level</label>
+                        <div class="flex flex-wrap gap-3">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="experience" value="beginner" class="accent-neon-orange">
+                                <span class="text-sm">Beginner</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="experience" value="intermediate" class="accent-neon-orange">
+                                <span class="text-sm">Intermediate</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="experience" value="advanced" class="accent-neon-orange">
+                                <span class="text-sm">Advanced</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="neon-btn w-full bg-neon-orange text-black py-4 font-bold uppercase tracking-widest text-sm hover:bg-neon-orange-light transition-colors flex items-center justify-center gap-3">
+                        <span>Book Free Trial</span>
+                        <span class="iconify" data-icon="lucide:arrow-right" data-width="18"></span>
+                    </button>
+
+                    <p class="text-xs text-gray-500 text-center">
+                        By submitting, you agree to our <a href="#" class="text-neon-orange hover:underline">Privacy Policy</a> and <a href="#" class="text-neon-orange hover:underline">Terms of Service</a>.
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-dark-900 pt-16 pb-8 border-t border-white/5">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+            <!-- Brand Column -->
+            <div class="lg:col-span-1">
+                <a href="#" class="flex items-center gap-2 mb-4">
+                    <div class="w-10 h-10 bg-neon-orange flex items-center justify-center">
+                        <span class="font-heading font-bold text-black text-xl">F</span>
+                    </div>
+                    <span class="font-heading font-bold text-xl tracking-wider">FORGE ELITE</span>
+                </a>
+                <p class="text-gray-400 text-sm leading-relaxed mb-4">
+                    Professional training facility dedicated to transforming lives through expert coaching and community support.
+                </p>
+                <div class="flex gap-3">
+                    <a href="#" class="w-10 h-10 bg-white/5 flex items-center justify-center hover:bg-neon-orange hover:text-black transition-colors">
+                        <span class="iconify" data-icon="lucide:instagram" data-width="18"></span>
+                    </a>
+                    <a href="#" class="w-10 h-10 bg-white/5 flex items-center justify-center hover:bg-neon-orange hover:text-black transition-colors">
+                        <span class="iconify" data-icon="lucide:youtube" data-width="18"></span>
+                    </a>
+                    <a href="#" class="w-10 h-10 bg-white/5 flex items-center justify-center hover:bg-neon-orange hover:text-black transition-colors">
+                        <span class="iconify" data-icon="lucide:facebook" data-width="18"></span>
+                    </a>
+                    <a href="#" class="w-10 h-10 bg-white/5 flex items-center justify-center hover:bg-neon-orange hover:text-black transition-colors">
+                        <span class="iconify" data-icon="lucide:twitter" data-width="18"></span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div>
+                <h4 class="font-heading font-bold uppercase mb-4">Quick Links</h4>
+                <ul class="space-y-2">
+                    <li><a href="#" class="text-gray-400 text-sm hover:text-neon-orange transition-colors">About Us</a></li>
+                    <li><a href="#programs" class="text-gray-400 text-sm hover:text-neon-orange transition-colors">Programs</a></li>
+                    <li><a href="#coaches" class="text-gray-400 text-sm hover:text-neon-orange transition-colors">Coaches</a></li>
+                    <li><a href="#pricing" class="text-gray-400 text-sm hover:text-neon-orange transition-colors">Pricing</a></li>
+                    <li><a href="#" class="text-gray-400 text-sm hover:text-neon-orange transition-colors">Schedule</a></li>
+                </ul>
+            </div>
+
+            <!-- Programs -->
+            <div>
+                <h4 class="font-heading font-bold uppercase mb-4">Programs</h4>
+                <ul class="space-y-2">
+                    <li><a href="#" class="text-gray-400 text-sm hover:text-neon-orange transition-colors">Hypertrophy Protocol</a></li>
+                    <li><a href="#" class="text-gray-400 text-sm hover:text-neon-orange transition-colors">Metabolic Burn</a></li>
+                    <li><a href="#" class="text-gray-400 text-sm hover:text-neon-orange transition-colors">Power Foundations</a></li>
+                    <li><a href="#" class="text-gray-400 text-sm hover:text-neon-orange transition-colors">Functional Fitness</a></li>
+                    <li><a href="#" class="text-gray-400 text-sm hover:text-neon-orange transition-colors">Athletic Performance</a></li>
+                </ul>
+            </div>
+
+            <!-- Contact -->
+            <div>
+                <h4 class="font-heading font-bold uppercase mb-4">Contact</h4>
+                <ul class="space-y-3">
+                    <li class="flex items-start gap-3">
+                        <span class="iconify text-neon-orange mt-1" data-icon="lucide:map-pin" data-width="16"></span>
+                        <span class="text-gray-400 text-sm">742 Strength Avenue<br>Los Angeles, CA 90012</span>
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <span class="iconify text-neon-orange" data-icon="lucide:phone" data-width="16"></span>
+                        <a href="tel:+15551234567" class="text-gray-400 text-sm hover:text-neon-orange transition-colors">(555) 123-4567</a>
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <span class="iconify text-neon-orange" data-icon="lucide:mail" data-width="16"></span>
+                        <a href="mailto:info@forgeelite.com" class="text-gray-400 text-sm hover:text-neon-orange transition-colors">info@forgeelite.com</a>
+                    </li>
+                </ul>
+                <div class="mt-4">
+                    <h5 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Hours</h5>
+                    <p class="text-gray-400 text-sm">Mon-Fri: 5am - 11pm<br>Sat-Sun: 6am - 10pm</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Bar -->
+        <div class="pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p class="text-gray-500 text-xs">
+                © 2024 Forge Elite Performance Center. All rights reserved.
+            </p>
+            <div class="flex gap-6">
+                <a href="#" class="text-gray-500 text-xs hover:text-neon-orange transition-colors">Privacy Policy</a>
+                <a href="#" class="text-gray-500 text-xs hover:text-neon-orange transition-colors">Terms of Service</a>
+                <a href="#" class="text-gray-500 text-xs hover:text-neon-orange transition-colors">Cookie Policy</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- JavaScript -->
+<script>
+    // Mobile Menu Toggle
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const mobileLinks = document.querySelectorAll('.mobile-link');
+    let isMenuOpen = false;
+
+    mobileMenuBtn.addEventListener('click', () => {
+        isMenuOpen = !isMenuOpen;
+        mobileMenu.classList.toggle('active');
+        document.body.style.overflow = isMenuOpen ? 'hidden' : '';
+    });
+
+    mobileLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            isMenuOpen = false;
+            mobileMenu.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+    });
+
+    // Scroll Reveal Animation
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.1
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate-fade-in');
+                entry.target.style.opacity = '1';
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.card-hover, section > div > div').forEach(el => {
+        el.style.opacity = '0';
+        observer.observe(el);
+    });
+
+    // Navbar Background on Scroll
+    const navbar = document.querySelector('nav');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 50) {
+            navbar.classList.add('bg-black/95');
+            navbar.classList.remove('bg-black/80');
+        } else {
+            navbar.classList.add('bg-black/80');
+            navbar.classList.remove('bg-black/95');
+        }
+    });
+
+    // Form Submission
+    const bookingForm = document.getElementById('bookingForm');
+    bookingForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        // Create success message
+        const successDiv = document.createElement('div');
+        successDiv.className = 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-dark-700 border border-neon-orange p-8 text-center z-50 max-w-md';
+        successDiv.innerHTML = `
+            <div class="w-16 h-16 bg-neon-orange mx-auto mb-4 flex items-center justify-center">
+                <span class="iconify text-black" data-icon="lucide:check" data-width="32"></span>
+            </div>
+            <h3 class="font-heading text-2xl font-bold uppercase mb-2">Request Received!</h3>
+            <p class="text-gray-400 text-sm">We'll contact you within 24 hours to schedule your free trial session.</p>
+            <button onclick="this.parentElement.remove()" class="mt-6 bg-neon-orange text-black px-6 py-3 font-bold uppercase text-sm">Got It</button>
+        `;
+        document.body.appendChild(successDiv);
+        bookingForm.reset();
+    });
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+
+    // Counter Animation for Stats
+    const animateCounter = (el, target) => {
+        let current = 0;
+        const increment = target / 50;
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                el.textContent = target + (el.dataset.suffix || '');
+                clearInterval(timer);
+            } else {
+                el.textContent = Math.floor(current) + (el.dataset.suffix || '');
+            }
+        }, 30);
+    };
+
+    // Initialize counters when in view
+    const counterObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && !entry.target.dataset.animated) {
+                entry.target.dataset.animated = 'true';
+                const target = parseInt(entry.target.textContent.replace(/[^0-9]/g, ''));
+                const suffix = entry.target.textContent.replace(/[0-9]/g, '');
+                entry.target.dataset.suffix = suffix;
+                animateCounter(entry.target, target);
+            }
+        });
+    }, { threshold: 0.5 });
+
+    document.querySelectorAll('.stat-item .font-heading, [class*="text-4xl"], [class*="text-5xl"]').forEach(el => {
+        if (el.textContent.match(/^[0-9]+/)) {
+            counterObserver.observe(el);
+        }
+    });
+</script>
+</body>
+</html>

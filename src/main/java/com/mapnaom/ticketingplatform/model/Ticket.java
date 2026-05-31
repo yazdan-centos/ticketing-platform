@@ -22,14 +22,12 @@ public class Ticket {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
     private String title;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private TicketStatus status = TicketStatus.UNALLOCATED;
 
     @Enumerated(EnumType.STRING)
@@ -48,7 +46,7 @@ public class Ticket {
     // Many tickets created by one Customer.
     // targetEntity ensures we link to the Customer subclass, not just AppUser.
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", nullable = false)
+    @JoinColumn(name = "customer_id")
     private Customer customer;
 
     // Many tickets under one SLA Contract.

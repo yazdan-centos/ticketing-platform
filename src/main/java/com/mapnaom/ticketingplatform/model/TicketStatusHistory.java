@@ -21,7 +21,7 @@ public class TicketStatusHistory {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ticket_id", nullable = false)
+    @JoinColumn(name = "ticket_id")
     private Ticket ticket;
 
     @Enumerated(EnumType.STRING)
@@ -29,10 +29,10 @@ public class TicketStatusHistory {
     private TicketStatus oldStatus;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "new_status", length = 50, nullable = false)
+    @Column(name = "new_status", length = 50)
     private TicketStatus newStatus;
 
-    @Column(name = "changed_at", nullable = false, updatable = false)
+    @Column(name = "changed_at",  updatable = false)
     private LocalDateTime changedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)

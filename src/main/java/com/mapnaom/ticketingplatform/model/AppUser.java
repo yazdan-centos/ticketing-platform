@@ -27,13 +27,14 @@ public abstract class AppUser {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false, length = 50)
-    private String username;
+    private String firstName;
+    private String lastName;
 
-    @Column(nullable = false)
+    @Column(unique = true,  length = 50)
+    private String username;
     private String password; // Encoded password (BCrypt)
 
-    @Column(nullable = false)
+
     private String email;
 
     // Stores roles for JJWT generation, e.g., "ROLE_MANAGER", "ROLE_CUSTOMER"
@@ -56,6 +57,9 @@ public abstract class AppUser {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
         if (roles == null) roles = new HashSet<>();
+    }
+    protected String getFullName(){
+        return firstName + " " + lastName;
     }
 
     @PreUpdate

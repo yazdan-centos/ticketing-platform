@@ -1,7 +1,5 @@
 package com.mapnaom.ticketingplatform.model;
 
-import com.mapnaom.ticketingplatform.model.AppUser;
-import com.mapnaom.ticketingplatform.model.Ticket;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,18 +19,18 @@ public class TicketMessage {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ticket_id", nullable = false)
+    @JoinColumn(name = "ticket_id")
     private Ticket ticket;
 
     // Using AppUser to allow Customer, TeamMember, or TeamManager to send messages
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sender_id", nullable = false)
+    @JoinColumn(name = "sender_id")
     private AppUser sender;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(columnDefinition = "TEXT")
     private String message;
 
-    @Column(name = "sent_at", nullable = false, updatable = false)
+    @Column(name = "sent_at", updatable = false)
     private LocalDateTime sentAt;
 
     @Column(name = "read_by_customer")

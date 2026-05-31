@@ -25,4 +25,14 @@ public class TeamManager extends AppUser {
     // One manager oversees many Team Members. Inverse side.
     @OneToMany(mappedBy = "manager", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<TeamMember> teamMembers = new HashSet<>();
+
+    public void addTeamMember(TeamMember teamMember) {
+        teamMembers.add(teamMember);
+        teamMember.setManager(this);
+    }
+
+    public void removeTeamMember(TeamMember teamMember) {
+        teamMembers.remove(teamMember);
+        teamMember.setManager(null);
+    }
 }

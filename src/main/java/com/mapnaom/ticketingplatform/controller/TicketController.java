@@ -17,7 +17,7 @@ import java.util.List;
  * GET /api/tickets/{id} → full detail
  * GET /api/tickets → summary list
  * **/
-
+@CrossOrigin
 @RestController
 @RequestMapping("/api/tickets")
 @RequiredArgsConstructor
