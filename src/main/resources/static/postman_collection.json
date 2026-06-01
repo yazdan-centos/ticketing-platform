@@ -1,0 +1,193 @@
+{
+  "info": {
+    "name": "ticketing-platform-20260529202549",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "exported at 2026-05-29 20:25:49"
+  },
+  "item": [
+    {
+      "name": "create",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text",
+            "description": ""
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"\",\n  \"description\": \"\",\n  \"customerId\": 0,\n  \"slaContractId\": 0,\n  \"assignedMemberId\": 0\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{host}}/api/tickets",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "api",
+            "tickets"
+          ],
+          "query": [],
+          "variable": []
+        },
+        "description": ""
+      },
+      "response": []
+    },
+    {
+      "name": "update",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text",
+            "description": ""
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"\",\n  \"description\": \"\",\n  \"slaContractId\": 0,\n  \"assignedMemberId\": 0,\n  \"status\": \"\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{host}}/api/tickets/:ticketId?actorId\u003d",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "api",
+            "tickets",
+            ":ticketId"
+          ],
+          "query": [
+            {
+              "key": "actorId",
+              "value": "",
+              "equals": true,
+              "description": ""
+            }
+          ],
+          "variable": [
+            {
+              "key": "ticketId",
+              "value": "",
+              "description": ""
+            }
+          ]
+        },
+        "description": ""
+      },
+      "response": []
+    },
+    {
+      "name": "getById",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{host}}/api/tickets/:ticketId",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "api",
+            "tickets",
+            ":ticketId"
+          ],
+          "query": [],
+          "variable": [
+            {
+              "key": "ticketId",
+              "value": "",
+              "description": ""
+            }
+          ]
+        },
+        "description": ""
+      },
+      "response": []
+    },
+    {
+      "name": "getAll",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{host}}/api/tickets",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "api",
+            "tickets"
+          ],
+          "query": [],
+          "variable": []
+        },
+        "description": ""
+      },
+      "response": []
+    },
+    {
+      "name": "addMessage",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text",
+            "description": ""
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"senderId\": 0,\n  \"message\": \"\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{host}}/api/tickets/:ticketId/messages",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "api",
+            "tickets",
+            ":ticketId",
+            "messages"
+          ],
+          "query": [],
+          "variable": [
+            {
+              "key": "ticketId",
+              "value": "",
+              "description": ""
+            }
+          ]
+        },
+        "description": ""
+      },
+      "response": []
+    }
+  ],
+  "event": [],
+  "variable": []
+}
