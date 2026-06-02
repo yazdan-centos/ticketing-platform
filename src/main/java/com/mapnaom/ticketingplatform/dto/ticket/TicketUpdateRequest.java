@@ -11,4 +11,7 @@ public class TicketUpdateRequest {
     private Long slaContractId;
     private Long assignedMemberId;
     private TicketStatus status;
+
+    /** Optional human-readable note describing why the status was changed. */
+    private String statusNote;
 }
