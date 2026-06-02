@@ -5,6 +5,7 @@ import com.mapnaom.ticketingplatform.service.TicketMessageService;
 import com.mapnaom.ticketingplatform.service.TicketService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -46,6 +47,8 @@ public class TicketController {
     }
 
     @GetMapping
+    @PostAuthorize("hasRole('TEAM_MANAGER') or returnObject.ownerUsername == authentication.name " +
+            "or returnObject.assigneeUsername == authentication.name")
     public List<TicketSummaryResponse> getAll() {
         return ticketService.getAll();
     }

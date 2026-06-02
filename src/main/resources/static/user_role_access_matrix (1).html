@@ -1,0 +1,245 @@
+<style>
+h2.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font-sans);}
+.wrap{padding:1rem 0;}
+.legend{display:flex;gap:16px;margin-bottom:1.25rem;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--color-text-secondary);}
+.dot{width:10px;height:10px;border-radius:50%;}
+.dot-full{background:#1D9E75;}
+.dot-partial{background:#EF9F27;}
+.dot-none{background:#E24B4A;}
+.section-label{font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--color-text-tertiary);padding:6px 12px;background:var(--color-background-tertiary);border-bottom:0.5px solid var(--color-border-tertiary);}
+table{width:100%;border-collapse:collapse;font-size:13.5px;}
+th{font-weight:500;font-size:12px;color:var(--color-text-secondary);padding:8px 12px;text-align:center;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);}
+th.action-col{text-align:left;min-width:200px;}
+td{padding:7px 12px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary);vertical-align:middle;}
+td.action-name{font-size:13.5px;color:var(--color-text-primary);}
+td.action-name .endpoint{display:block;font-size:11px;font-family:var(--font-mono);color:var(--color-text-tertiary);margin-top:2px;}
+td.cell{text-align:center;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--color-background-secondary);}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:500;padding:3px 9px;border-radius:20px;white-space:nowrap;}
+.full{background:#E1F5EE;color:#0F6E56;}
+.partial{background:#FAEEDA;color:#854F0B;}
+.none{background:#FCEBEB;color:#A32D2D;}
+@media (prefers-color-scheme:dark){
+  .full{background:#085041;color:#9FE1CB;}
+  .partial{background:#633806;color:#FAC775;}
+  .none{background:#791F1F;color:#F7C1C1;}
+}
+.section-spacer td{padding:0;height:4px;background:var(--color-background-tertiary);border-bottom:0.5px solid var(--color-border-tertiary);}
+.section-header td{padding:5px 12px;font-size:11px;font-weight:500;letter-spacing:.05em;color:var(--color-text-tertiary);background:var(--color-background-tertiary);border-bottom:0.5px solid var(--color-border-tertiary);}
+</style>
+<div class="wrap">
+<h2 class="sr-only">Role-based access matrix showing which actions each user type (Customer, Team Member, Team Manager) can perform across tickets, messages, customers, team members, team managers, and SLA contracts.</h2>
+<div class="legend">
+  <span class="legend-item"><span class="dot dot-full"></span>Full access</span>
+  <span class="legend-item"><span class="dot dot-partial"></span>Partial / own records only</span>
+  <span class="legend-item"><span class="dot dot-none"></span>No access</span>
+</div>
+<table>
+  <thead>
+    <tr>
+      <th class="action-col">Action</th>
+      <th>Customer</th>
+      <th>Team Member</th>
+      <th>Team Manager</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <tr class="section-header"><td colspan="4">🎫 Tickets — <span style="font-size:11px;font-family:var(--font-mono);letter-spacing:0">/api/tickets</span></td></tr>
+    <tr>
+      <td class="action-name">Create ticket<span class="endpoint">POST /api/tickets</span></td>
+      <td class="cell"><span class="badge full">✓ Full</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge full">✓ Full</span></td>
+    </tr>
+    <tr>
+      <td class="action-name">View ticket detail<span class="endpoint">GET /api/tickets/{id}</span></td>
+      <td class="cell"><span class="badge partial">~ Own tickets</span></td>
+      <td class="cell"><span class="badge partial">~ Assigned only</span></td>
+      <td class="cell"><span class="badge full">✓ Full</span></td>
+    </tr>
+    <tr>
+      <td class="action-name">List all tickets<span class="endpoint">GET /api/tickets</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge partial">~ Assigned only</span></td>
+      <td class="cell"><span class="badge full">✓ Full</span></td>
+    </tr>
+    <tr>
+      <td class="action-name">Update ticket (metadata)<span class="endpoint">PUT /api/tickets/{id}</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge partial">~ Title / desc</span></td>
+      <td class="cell"><span class="badge full">✓ Full</span></td>
+    </tr>
+    <tr>
+      <td class="action-name">Update ticket status<span class="endpoint">PUT /api/tickets/{id}</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge partial">~ IN_PROGRESS → RESOLVED</span></td>
+      <td class="cell"><span class="badge full">✓ All transitions</span></td>
+    </tr>
+    <tr>
+      <td class="action-name">Assign member to ticket<span class="endpoint">PUT /api/tickets/{id}</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge full">✓ Full</span></td>
+    </tr>
+    <tr>
+      <td class="action-name">Attach SLA contract<span class="endpoint">PUT /api/tickets/{id}</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge full">✓ Full</span></td>
+    </tr>
+
+    <tr class="section-spacer"><td colspan="4"></td></tr>
+    <tr class="section-header"><td colspan="4">💬 Ticket Messages — <span style="font-size:11px;font-family:var(--font-mono);letter-spacing:0">/api/tickets/{id}/messages</span></td></tr>
+    <tr>
+      <td class="action-name">Send message<span class="endpoint">POST /api/tickets/{id}/messages</span></td>
+      <td class="cell"><span class="badge partial">~ Own tickets</span></td>
+      <td class="cell"><span class="badge partial">~ Assigned only</span></td>
+      <td class="cell"><span class="badge full">✓ Full</span></td>
+    </tr>
+    <tr>
+      <td class="action-name">View messages<span class="endpoint">GET /api/tickets/{id}</span></td>
+      <td class="cell"><span class="badge partial">~ Own tickets</span></td>
+      <td class="cell"><span class="badge partial">~ Assigned only</span></td>
+      <td class="cell"><span class="badge full">✓ Full</span></td>
+    </tr>
+
+    <tr class="section-spacer"><td colspan="4"></td></tr>
+    <tr class="section-header"><td colspan="4">👤 Customers — <span style="font-size:11px;font-family:var(--font-mono);letter-spacing:0">/api/customers</span></td></tr>
+    <tr>
+      <td class="action-name">Create customer<span class="endpoint">POST /api/customers</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge full">✓ Full</span></td>
+    </tr>
+    <tr>
+      <td class="action-name">View own profile<span class="endpoint">GET /api/customers/{id}</span></td>
+      <td class="cell"><span class="badge partial">~ Own only</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge full">✓ Full</span></td>
+    </tr>
+    <tr>
+      <td class="action-name">List all customers<span class="endpoint">GET /api/customers</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge full">✓ Full</span></td>
+    </tr>
+    <tr>
+      <td class="action-name">Update customer<span class="endpoint">PUT /api/customers/{id}</span></td>
+      <td class="cell"><span class="badge partial">~ Own profile</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge full">✓ Full</span></td>
+    </tr>
+    <tr>
+      <td class="action-name">Delete customer<span class="endpoint">DELETE /api/customers/{id}</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge full">✓ Full</span></td>
+    </tr>
+
+    <tr class="section-spacer"><td colspan="4"></td></tr>
+    <tr class="section-header"><td colspan="4">🧑‍💼 Team Members — <span style="font-size:11px;font-family:var(--font-mono);letter-spacing:0">/api/team-members</span></td></tr>
+    <tr>
+      <td class="action-name">Create team member<span class="endpoint">POST /api/team-members</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge full">✓ Full</span></td>
+    </tr>
+    <tr>
+      <td class="action-name">View team member<span class="endpoint">GET /api/team-members/{id}</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge partial">~ Own profile</span></td>
+      <td class="cell"><span class="badge full">✓ Full</span></td>
+    </tr>
+    <tr>
+      <td class="action-name">List all team members<span class="endpoint">GET /api/team-members</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge full">✓ Full</span></td>
+    </tr>
+    <tr>
+      <td class="action-name">Update team member<span class="endpoint">PUT /api/team-members/{id}</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge partial">~ Own profile</span></td>
+      <td class="cell"><span class="badge full">✓ Full</span></td>
+    </tr>
+    <tr>
+      <td class="action-name">Delete team member<span class="endpoint">DELETE /api/team-members/{id}</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge full">✓ Full</span></td>
+    </tr>
+
+    <tr class="section-spacer"><td colspan="4"></td></tr>
+    <tr class="section-header"><td colspan="4">🏢 Team Managers — <span style="font-size:11px;font-family:var(--font-mono);letter-spacing:0">/api/team-managers</span></td></tr>
+    <tr>
+      <td class="action-name">Create team manager<span class="endpoint">POST /api/team-managers</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge full">✓ Full</span></td>
+    </tr>
+    <tr>
+      <td class="action-name">View team manager<span class="endpoint">GET /api/team-managers/{id}</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge full">✓ Own profile</span></td>
+    </tr>
+    <tr>
+      <td class="action-name">List all managers<span class="endpoint">GET /api/team-managers</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge full">✓ Full</span></td>
+    </tr>
+    <tr>
+      <td class="action-name">Update team manager<span class="endpoint">PUT /api/team-managers/{id}</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge full">✓ Full</span></td>
+    </tr>
+    <tr>
+      <td class="action-name">Delete team manager<span class="endpoint">DELETE /api/team-managers/{id}</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge full">✓ Full</span></td>
+    </tr>
+
+    <tr class="section-spacer"><td colspan="4"></td></tr>
+    <tr class="section-header"><td colspan="4">📄 SLA Contracts — <span style="font-size:11px;font-family:var(--font-mono);letter-spacing:0">/api/sla-contracts</span></td></tr>
+    <tr>
+      <td class="action-name">Create SLA contract<span class="endpoint">POST /api/sla-contracts</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge full">✓ Full</span></td>
+    </tr>
+    <tr>
+      <td class="action-name">View SLA contract<span class="endpoint">GET /api/sla-contracts/{id}</span></td>
+      <td class="cell"><span class="badge partial">~ Own contracts</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge full">✓ Full</span></td>
+    </tr>
+    <tr>
+      <td class="action-name">List all SLA contracts<span class="endpoint">GET /api/sla-contracts</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge full">✓ Full</span></td>
+    </tr>
+    <tr>
+      <td class="action-name">Update SLA contract<span class="endpoint">PUT /api/sla-contracts/{id}</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge full">✓ Full</span></td>
+    </tr>
+    <tr>
+      <td class="action-name">Delete SLA contract<span class="endpoint">DELETE /api/sla-contracts/{id}</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge none">✗ None</span></td>
+      <td class="cell"><span class="badge full">✓ Full</span></td>
+    </tr>
+
+  </tbody>
+</table>
+</div>

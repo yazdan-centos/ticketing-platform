@@ -1,13 +1,13 @@
 # API Documentation
 
-## POST /api/tickets → create ticket
+## AuthController
 
 ---
-### create
+### authenticate
 
 > BASIC
 
-**Path:** /api/tickets
+**Path:** /api/auth/authenticate
 
 **Method:** POST
 
@@ -24,22 +24,16 @@
 
 | name | type | desc |
 | ------------ | ------------ | ------------ |
-| title | string |  |
-| description | string |  |
-| customerId | long |  |
-| slaContractId | long |  |
-| assignedMemberId | long |  |
+| username | string |  |
+| password | string |  |
 
 
 **Request Demo:**
 
 ```json
 {
-  "title": "",
-  "description": "",
-  "customerId": 0,
-  "slaContractId": 0,
-  "assignedMemberId": 0
+  "username": "",
+  "password": ""
 }
 ```
 
@@ -49,413 +43,34 @@
 
 | name | type | desc |
 | ------------ | ------------ | ------------ |
-| id | long |  |
-| title | string |  |
-| description | string |  |
-| status | string | UNALLOCATED<br>ASSIGNED<br>IN_PROGRESS<br>CLOSED<br>RESOLVED |
-| customerId | long |  |
-| slaContractId | long |  |
-| assignedMemberId | long |  |
-| createdAt | string |  |
-| updatedAt | string |  |
-| messages | object[] |  |
-| &ensp;&ensp;&#124;─id | long |  |
-| &ensp;&ensp;&#124;─senderId | long |  |
-| &ensp;&ensp;&#124;─senderName | string |  |
-| &ensp;&ensp;&#124;─message | string |  |
-| &ensp;&ensp;&#124;─sentAt | string |  |
-| attachments | object[] |  |
-| &ensp;&ensp;&#124;─id | long |  |
-| &ensp;&ensp;&#124;─fileName | string |  |
-| &ensp;&ensp;&#124;─contentType | string |  |
-| &ensp;&ensp;&#124;─size | long |  |
-| &ensp;&ensp;&#124;─filePath | string |  |
-| &ensp;&ensp;&#124;─uploadedById | long |  |
-| &ensp;&ensp;&#124;─uploadedAt | string |  |
-| statusHistory | object[] |  |
-| &ensp;&ensp;&#124;─id | long |  |
-| &ensp;&ensp;&#124;─oldStatus | string | UNALLOCATED<br>ASSIGNED<br>IN_PROGRESS<br>CLOSED<br>RESOLVED |
-| &ensp;&ensp;&#124;─newStatus | string | UNALLOCATED<br>ASSIGNED<br>IN_PROGRESS<br>CLOSED<br>RESOLVED |
-| &ensp;&ensp;&#124;─changedById | long |  |
-| &ensp;&ensp;&#124;─changedByName | string |  |
-| &ensp;&ensp;&#124;─note | string |  |
-| &ensp;&ensp;&#124;─changedAt | string |  |
+| currentUser | string |  |
+| accessToken | string |  |
+| role | string |  |
 
 
 **Response Demo:**
 
 ```json
 {
-  "id": 0,
-  "title": "",
-  "description": "",
-  "status": "",
-  "customerId": 0,
-  "slaContractId": 0,
-  "assignedMemberId": 0,
-  "createdAt": "",
-  "updatedAt": "",
-  "messages": [
-    {
-      "id": 0,
-      "senderId": 0,
-      "senderName": "",
-      "message": "",
-      "sentAt": ""
-    }
-  ],
-  "attachments": [
-    {
-      "id": 0,
-      "fileName": "",
-      "contentType": "",
-      "size": 0,
-      "filePath": "",
-      "uploadedById": 0,
-      "uploadedAt": ""
-    }
-  ],
-  "statusHistory": [
-    {
-      "id": 0,
-      "oldStatus": "",
-      "newStatus": "",
-      "changedById": 0,
-      "changedByName": "",
-      "note": "",
-      "changedAt": ""
-    }
-  ]
+  "currentUser": "",
+  "accessToken": "",
+  "role": ""
 }
 ```
 
 ---
-### update
+### signout
 
 > BASIC
 
-**Path:** /api/tickets/{ticketId}
-
-**Method:** PUT
-
-
-> REQUEST
-
-**Path Params:**
-
-| name | value | required | desc |
-| ------------ | ------------ | ------------ | ------------ |
-| ticketId |  | NO |  |
-
-**Query:**
-
-| name | value | required | desc |
-| ------------ | ------------ | ------------ | ------------ |
-| actorId |  | NO |  |
-
-**Headers:**
-
-| name | value | required | desc |
-| ------------ | ------------ | ------------ | ------------ |
-| Content-Type | application/json | NO |  |
-
-**Request Body:**
-
-| name | type | desc |
-| ------------ | ------------ | ------------ |
-| title | string |  |
-| description | string |  |
-| slaContractId | long |  |
-| assignedMemberId | long |  |
-| status | string | UNALLOCATED<br>ASSIGNED<br>IN_PROGRESS<br>CLOSED<br>RESOLVED |
-
-
-**Request Demo:**
-
-```json
-{
-  "title": "",
-  "description": "",
-  "slaContractId": 0,
-  "assignedMemberId": 0,
-  "status": ""
-}
-```
-
-> RESPONSE
-
-**Body:**
-
-| name | type | desc |
-| ------------ | ------------ | ------------ |
-| id | long |  |
-| title | string |  |
-| description | string |  |
-| status | string | UNALLOCATED<br>ASSIGNED<br>IN_PROGRESS<br>CLOSED<br>RESOLVED |
-| customerId | long |  |
-| slaContractId | long |  |
-| assignedMemberId | long |  |
-| createdAt | string |  |
-| updatedAt | string |  |
-| messages | object[] |  |
-| &ensp;&ensp;&#124;─id | long |  |
-| &ensp;&ensp;&#124;─senderId | long |  |
-| &ensp;&ensp;&#124;─senderName | string |  |
-| &ensp;&ensp;&#124;─message | string |  |
-| &ensp;&ensp;&#124;─sentAt | string |  |
-| attachments | object[] |  |
-| &ensp;&ensp;&#124;─id | long |  |
-| &ensp;&ensp;&#124;─fileName | string |  |
-| &ensp;&ensp;&#124;─contentType | string |  |
-| &ensp;&ensp;&#124;─size | long |  |
-| &ensp;&ensp;&#124;─filePath | string |  |
-| &ensp;&ensp;&#124;─uploadedById | long |  |
-| &ensp;&ensp;&#124;─uploadedAt | string |  |
-| statusHistory | object[] |  |
-| &ensp;&ensp;&#124;─id | long |  |
-| &ensp;&ensp;&#124;─oldStatus | string | UNALLOCATED<br>ASSIGNED<br>IN_PROGRESS<br>CLOSED<br>RESOLVED |
-| &ensp;&ensp;&#124;─newStatus | string | UNALLOCATED<br>ASSIGNED<br>IN_PROGRESS<br>CLOSED<br>RESOLVED |
-| &ensp;&ensp;&#124;─changedById | long |  |
-| &ensp;&ensp;&#124;─changedByName | string |  |
-| &ensp;&ensp;&#124;─note | string |  |
-| &ensp;&ensp;&#124;─changedAt | string |  |
-
-
-**Response Demo:**
-
-```json
-{
-  "id": 0,
-  "title": "",
-  "description": "",
-  "status": "",
-  "customerId": 0,
-  "slaContractId": 0,
-  "assignedMemberId": 0,
-  "createdAt": "",
-  "updatedAt": "",
-  "messages": [
-    {
-      "id": 0,
-      "senderId": 0,
-      "senderName": "",
-      "message": "",
-      "sentAt": ""
-    }
-  ],
-  "attachments": [
-    {
-      "id": 0,
-      "fileName": "",
-      "contentType": "",
-      "size": 0,
-      "filePath": "",
-      "uploadedById": 0,
-      "uploadedAt": ""
-    }
-  ],
-  "statusHistory": [
-    {
-      "id": 0,
-      "oldStatus": "",
-      "newStatus": "",
-      "changedById": 0,
-      "changedByName": "",
-      "note": "",
-      "changedAt": ""
-    }
-  ]
-}
-```
-
----
-### getById
-
-> BASIC
-
-**Path:** /api/tickets/{ticketId}
-
-**Method:** GET
-
-
-> REQUEST
-
-**Path Params:**
-
-| name | value | required | desc |
-| ------------ | ------------ | ------------ | ------------ |
-| ticketId |  | NO |  |
-
-
-> RESPONSE
-
-**Body:**
-
-| name | type | desc |
-| ------------ | ------------ | ------------ |
-| id | long |  |
-| title | string |  |
-| description | string |  |
-| status | string | UNALLOCATED<br>ASSIGNED<br>IN_PROGRESS<br>CLOSED<br>RESOLVED |
-| customerId | long |  |
-| slaContractId | long |  |
-| assignedMemberId | long |  |
-| createdAt | string |  |
-| updatedAt | string |  |
-| messages | object[] |  |
-| &ensp;&ensp;&#124;─id | long |  |
-| &ensp;&ensp;&#124;─senderId | long |  |
-| &ensp;&ensp;&#124;─senderName | string |  |
-| &ensp;&ensp;&#124;─message | string |  |
-| &ensp;&ensp;&#124;─sentAt | string |  |
-| attachments | object[] |  |
-| &ensp;&ensp;&#124;─id | long |  |
-| &ensp;&ensp;&#124;─fileName | string |  |
-| &ensp;&ensp;&#124;─contentType | string |  |
-| &ensp;&ensp;&#124;─size | long |  |
-| &ensp;&ensp;&#124;─filePath | string |  |
-| &ensp;&ensp;&#124;─uploadedById | long |  |
-| &ensp;&ensp;&#124;─uploadedAt | string |  |
-| statusHistory | object[] |  |
-| &ensp;&ensp;&#124;─id | long |  |
-| &ensp;&ensp;&#124;─oldStatus | string | UNALLOCATED<br>ASSIGNED<br>IN_PROGRESS<br>CLOSED<br>RESOLVED |
-| &ensp;&ensp;&#124;─newStatus | string | UNALLOCATED<br>ASSIGNED<br>IN_PROGRESS<br>CLOSED<br>RESOLVED |
-| &ensp;&ensp;&#124;─changedById | long |  |
-| &ensp;&ensp;&#124;─changedByName | string |  |
-| &ensp;&ensp;&#124;─note | string |  |
-| &ensp;&ensp;&#124;─changedAt | string |  |
-
-
-**Response Demo:**
-
-```json
-{
-  "id": 0,
-  "title": "",
-  "description": "",
-  "status": "",
-  "customerId": 0,
-  "slaContractId": 0,
-  "assignedMemberId": 0,
-  "createdAt": "",
-  "updatedAt": "",
-  "messages": [
-    {
-      "id": 0,
-      "senderId": 0,
-      "senderName": "",
-      "message": "",
-      "sentAt": ""
-    }
-  ],
-  "attachments": [
-    {
-      "id": 0,
-      "fileName": "",
-      "contentType": "",
-      "size": 0,
-      "filePath": "",
-      "uploadedById": 0,
-      "uploadedAt": ""
-    }
-  ],
-  "statusHistory": [
-    {
-      "id": 0,
-      "oldStatus": "",
-      "newStatus": "",
-      "changedById": 0,
-      "changedByName": "",
-      "note": "",
-      "changedAt": ""
-    }
-  ]
-}
-```
-
----
-### getAll
-
-> BASIC
-
-**Path:** /api/tickets
-
-**Method:** GET
-
-
-> REQUEST
-
-
-
-> RESPONSE
-
-**Body:**
-
-| name | type | desc |
-| ------------ | ------------ | ------------ |
-| [0].id | long |  |
-| [0].title | string |  |
-| [0].status | string | UNALLOCATED<br>ASSIGNED<br>IN_PROGRESS<br>CLOSED<br>RESOLVED |
-| [0].customerId | long |  |
-| [0].assignedMemberId | long |  |
-| [0].createdAt | string |  |
-
-
-**Response Demo:**
-
-```json
-[
-  {
-    "id": 0,
-    "title": "",
-    "status": "",
-    "customerId": 0,
-    "assignedMemberId": 0,
-    "createdAt": ""
-  }
-]
-```
-
----
-### addMessage
-
-> BASIC
-
-**Path:** /api/tickets/{ticketId}/messages
+**Path:** /api/auth/signout
 
 **Method:** POST
 
 
 > REQUEST
 
-**Path Params:**
 
-| name | value | required | desc |
-| ------------ | ------------ | ------------ | ------------ |
-| ticketId |  | NO |  |
-
-**Headers:**
-
-| name | value | required | desc |
-| ------------ | ------------ | ------------ | ------------ |
-| Content-Type | application/json | NO |  |
-
-**Request Body:**
-
-| name | type | desc |
-| ------------ | ------------ | ------------ |
-| senderId | long |  |
-| message | string |  |
-
-
-**Request Demo:**
-
-```json
-{
-  "senderId": 0,
-  "message": ""
-}
-```
 
 > RESPONSE
 
@@ -463,22 +78,20 @@
 
 | name | type | desc |
 | ------------ | ------------ | ------------ |
-| id | long |  |
-| senderId | long |  |
-| senderName | string |  |
-| message | string |  |
-| sentAt | string |  |
+| headers | map |  |
+| body | object |  |
+| status | object |  |
 
 
 **Response Demo:**
 
 ```json
 {
-  "id": 0,
-  "senderId": 0,
-  "senderName": "",
-  "message": "",
-  "sentAt": ""
+  "headers": {
+    "": null
+  },
+  "body": {  },
+  "status": {  }
 }
 ```
 
@@ -805,14 +418,14 @@
 }
 ```
 
-## TeamMemberController
+## POST /api/tickets → create ticket
 
 ---
-### createTeamMember
+### create
 
 > BASIC
 
-**Path:** /api/team-members
+**Path:** /api/tickets
 
 **Method:** POST
 
@@ -829,28 +442,22 @@
 
 | name | type | desc |
 | ------------ | ------------ | ------------ |
-| username | string |  |
-| password | string |  |
-| email | string |  |
-| roles | string[] |  |
-| availabilityStatus | string | AVAILABLE<br>BUSY<br>OFF_DUTY<br>UNAVAILABLE |
-| jobTitle | string |  |
-| managerId | long | ID of the TeamManager |
+| title | string |  |
+| description | string |  |
+| customerId | long |  |
+| slaContractId | long |  |
+| assignedMemberId | long |  |
 
 
 **Request Demo:**
 
 ```json
 {
-  "username": "",
-  "password": "",
-  "email": "",
-  "roles": [
-    ""
-  ],
-  "availabilityStatus": "",
-  "jobTitle": "",
-  "managerId": 0
+  "title": "",
+  "description": "",
+  "customerId": 0,
+  "slaContractId": 0,
+  "assignedMemberId": 0
 }
 ```
 
@@ -861,14 +468,36 @@
 | name | type | desc |
 | ------------ | ------------ | ------------ |
 | id | long |  |
-| username | string |  |
-| email | string |  |
-| roles | string[] |  |
+| title | string |  |
+| description | string |  |
+| status | string | UNALLOCATED<br>ASSIGNED<br>IN_PROGRESS<br>CLOSED<br>RESOLVED |
+| customerId | long |  |
+| slaContractId | long |  |
+| assignedMemberId | long |  |
 | createdAt | string |  |
 | updatedAt | string |  |
-| availabilityStatus | string | AVAILABLE<br>BUSY<br>OFF_DUTY<br>UNAVAILABLE |
-| jobTitle | string |  |
-| managerId | long | Reference to manager by ID to avoid recursion |
+| messages | object[] |  |
+| &ensp;&ensp;&#124;─id | long |  |
+| &ensp;&ensp;&#124;─senderId | long |  |
+| &ensp;&ensp;&#124;─senderName | string |  |
+| &ensp;&ensp;&#124;─message | string |  |
+| &ensp;&ensp;&#124;─sentAt | string |  |
+| attachments | object[] |  |
+| &ensp;&ensp;&#124;─id | long |  |
+| &ensp;&ensp;&#124;─fileName | string |  |
+| &ensp;&ensp;&#124;─contentType | string |  |
+| &ensp;&ensp;&#124;─size | long |  |
+| &ensp;&ensp;&#124;─filePath | string |  |
+| &ensp;&ensp;&#124;─uploadedById | long |  |
+| &ensp;&ensp;&#124;─uploadedAt | string |  |
+| statusHistory | object[] |  |
+| &ensp;&ensp;&#124;─id | long |  |
+| &ensp;&ensp;&#124;─oldStatus | string | UNALLOCATED<br>ASSIGNED<br>IN_PROGRESS<br>CLOSED<br>RESOLVED |
+| &ensp;&ensp;&#124;─newStatus | string | UNALLOCATED<br>ASSIGNED<br>IN_PROGRESS<br>CLOSED<br>RESOLVED |
+| &ensp;&ensp;&#124;─changedById | long |  |
+| &ensp;&ensp;&#124;─changedByName | string |  |
+| &ensp;&ensp;&#124;─note | string |  |
+| &ensp;&ensp;&#124;─changedAt | string |  |
 
 
 **Response Demo:**
@@ -876,25 +505,54 @@
 ```json
 {
   "id": 0,
-  "username": "",
-  "email": "",
-  "roles": [
-    ""
-  ],
+  "title": "",
+  "description": "",
+  "status": "",
+  "customerId": 0,
+  "slaContractId": 0,
+  "assignedMemberId": 0,
   "createdAt": "",
   "updatedAt": "",
-  "availabilityStatus": "",
-  "jobTitle": "",
-  "managerId": 0
+  "messages": [
+    {
+      "id": 0,
+      "senderId": 0,
+      "senderName": "",
+      "message": "",
+      "sentAt": ""
+    }
+  ],
+  "attachments": [
+    {
+      "id": 0,
+      "fileName": "",
+      "contentType": "",
+      "size": 0,
+      "filePath": "",
+      "uploadedById": 0,
+      "uploadedAt": ""
+    }
+  ],
+  "statusHistory": [
+    {
+      "id": 0,
+      "oldStatus": "",
+      "newStatus": "",
+      "changedById": 0,
+      "changedByName": "",
+      "note": "",
+      "changedAt": ""
+    }
+  ]
 }
 ```
 
 ---
-### getAllTeamMembers
+### getAll
 
 > BASIC
 
-**Path:** /api/team-members
+**Path:** /api/tickets
 
 **Method:** GET
 
@@ -910,14 +568,11 @@
 | name | type | desc |
 | ------------ | ------------ | ------------ |
 | [0].id | long |  |
-| [0].username | string |  |
-| [0].email | string |  |
-| [0].roles | string[] |  |
+| [0].title | string |  |
+| [0].status | string | UNALLOCATED<br>ASSIGNED<br>IN_PROGRESS<br>CLOSED<br>RESOLVED |
+| [0].customerId | long |  |
+| [0].assignedMemberId | long |  |
 | [0].createdAt | string |  |
-| [0].updatedAt | string |  |
-| [0].availabilityStatus | string | AVAILABLE<br>BUSY<br>OFF_DUTY<br>UNAVAILABLE |
-| [0].jobTitle | string |  |
-| [0].managerId | long | Reference to manager by ID to avoid recursion |
 
 
 **Response Demo:**
@@ -926,80 +581,21 @@
 [
   {
     "id": 0,
-    "username": "",
-    "email": "",
-    "roles": [
-      ""
-    ],
-    "createdAt": "",
-    "updatedAt": "",
-    "availabilityStatus": "",
-    "jobTitle": "",
-    "managerId": 0
+    "title": "",
+    "status": "",
+    "customerId": 0,
+    "assignedMemberId": 0,
+    "createdAt": ""
   }
 ]
 ```
 
 ---
-### getTeamMemberById
+### update
 
 > BASIC
 
-**Path:** /api/team-members/{id}
-
-**Method:** GET
-
-
-> REQUEST
-
-**Path Params:**
-
-| name | value | required | desc |
-| ------------ | ------------ | ------------ | ------------ |
-| id |  | NO |  |
-
-
-> RESPONSE
-
-**Body:**
-
-| name | type | desc |
-| ------------ | ------------ | ------------ |
-| id | long |  |
-| username | string |  |
-| email | string |  |
-| roles | string[] |  |
-| createdAt | string |  |
-| updatedAt | string |  |
-| availabilityStatus | string | AVAILABLE<br>BUSY<br>OFF_DUTY<br>UNAVAILABLE |
-| jobTitle | string |  |
-| managerId | long | Reference to manager by ID to avoid recursion |
-
-
-**Response Demo:**
-
-```json
-{
-  "id": 0,
-  "username": "",
-  "email": "",
-  "roles": [
-    ""
-  ],
-  "createdAt": "",
-  "updatedAt": "",
-  "availabilityStatus": "",
-  "jobTitle": "",
-  "managerId": 0
-}
-```
-
----
-### updateTeamMember
-
-> BASIC
-
-**Path:** /api/team-members/{id}
+**Path:** /api/tickets/{ticketId}
 
 **Method:** PUT
 
@@ -1010,7 +606,13 @@
 
 | name | value | required | desc |
 | ------------ | ------------ | ------------ | ------------ |
-| id |  | NO |  |
+| ticketId |  | NO |  |
+
+**Query:**
+
+| name | value | required | desc |
+| ------------ | ------------ | ------------ | ------------ |
+| actorId |  | NO |  |
 
 **Headers:**
 
@@ -1022,28 +624,24 @@
 
 | name | type | desc |
 | ------------ | ------------ | ------------ |
-| username | string |  |
-| password | string |  |
-| email | string |  |
-| roles | string[] |  |
-| availabilityStatus | string | AVAILABLE<br>BUSY<br>OFF_DUTY<br>UNAVAILABLE |
-| jobTitle | string |  |
-| managerId | long | ID of the TeamManager |
+| title | string |  |
+| description | string |  |
+| slaContractId | long |  |
+| assignedMemberId | long |  |
+| status | string | UNALLOCATED<br>ASSIGNED<br>IN_PROGRESS<br>CLOSED<br>RESOLVED |
+| statusNote | string | Optional human-readable note describing why the status was changed. |
 
 
 **Request Demo:**
 
 ```json
 {
-  "username": "",
-  "password": "",
-  "email": "",
-  "roles": [
-    ""
-  ],
-  "availabilityStatus": "",
-  "jobTitle": "",
-  "managerId": 0
+  "title": "",
+  "description": "",
+  "slaContractId": 0,
+  "assignedMemberId": 0,
+  "status": "",
+  "statusNote": ""
 }
 ```
 
@@ -1054,14 +652,36 @@
 | name | type | desc |
 | ------------ | ------------ | ------------ |
 | id | long |  |
-| username | string |  |
-| email | string |  |
-| roles | string[] |  |
+| title | string |  |
+| description | string |  |
+| status | string | UNALLOCATED<br>ASSIGNED<br>IN_PROGRESS<br>CLOSED<br>RESOLVED |
+| customerId | long |  |
+| slaContractId | long |  |
+| assignedMemberId | long |  |
 | createdAt | string |  |
 | updatedAt | string |  |
-| availabilityStatus | string | AVAILABLE<br>BUSY<br>OFF_DUTY<br>UNAVAILABLE |
-| jobTitle | string |  |
-| managerId | long | Reference to manager by ID to avoid recursion |
+| messages | object[] |  |
+| &ensp;&ensp;&#124;─id | long |  |
+| &ensp;&ensp;&#124;─senderId | long |  |
+| &ensp;&ensp;&#124;─senderName | string |  |
+| &ensp;&ensp;&#124;─message | string |  |
+| &ensp;&ensp;&#124;─sentAt | string |  |
+| attachments | object[] |  |
+| &ensp;&ensp;&#124;─id | long |  |
+| &ensp;&ensp;&#124;─fileName | string |  |
+| &ensp;&ensp;&#124;─contentType | string |  |
+| &ensp;&ensp;&#124;─size | long |  |
+| &ensp;&ensp;&#124;─filePath | string |  |
+| &ensp;&ensp;&#124;─uploadedById | long |  |
+| &ensp;&ensp;&#124;─uploadedAt | string |  |
+| statusHistory | object[] |  |
+| &ensp;&ensp;&#124;─id | long |  |
+| &ensp;&ensp;&#124;─oldStatus | string | UNALLOCATED<br>ASSIGNED<br>IN_PROGRESS<br>CLOSED<br>RESOLVED |
+| &ensp;&ensp;&#124;─newStatus | string | UNALLOCATED<br>ASSIGNED<br>IN_PROGRESS<br>CLOSED<br>RESOLVED |
+| &ensp;&ensp;&#124;─changedById | long |  |
+| &ensp;&ensp;&#124;─changedByName | string |  |
+| &ensp;&ensp;&#124;─note | string |  |
+| &ensp;&ensp;&#124;─changedAt | string |  |
 
 
 **Response Demo:**
@@ -1069,27 +689,56 @@
 ```json
 {
   "id": 0,
-  "username": "",
-  "email": "",
-  "roles": [
-    ""
-  ],
+  "title": "",
+  "description": "",
+  "status": "",
+  "customerId": 0,
+  "slaContractId": 0,
+  "assignedMemberId": 0,
   "createdAt": "",
   "updatedAt": "",
-  "availabilityStatus": "",
-  "jobTitle": "",
-  "managerId": 0
+  "messages": [
+    {
+      "id": 0,
+      "senderId": 0,
+      "senderName": "",
+      "message": "",
+      "sentAt": ""
+    }
+  ],
+  "attachments": [
+    {
+      "id": 0,
+      "fileName": "",
+      "contentType": "",
+      "size": 0,
+      "filePath": "",
+      "uploadedById": 0,
+      "uploadedAt": ""
+    }
+  ],
+  "statusHistory": [
+    {
+      "id": 0,
+      "oldStatus": "",
+      "newStatus": "",
+      "changedById": 0,
+      "changedByName": "",
+      "note": "",
+      "changedAt": ""
+    }
+  ]
 }
 ```
 
 ---
-### deleteTeamMember
+### getById
 
 > BASIC
 
-**Path:** /api/team-members/{id}
+**Path:** /api/tickets/{ticketId}
 
-**Method:** DELETE
+**Method:** GET
 
 
 > REQUEST
@@ -1098,7 +747,7 @@
 
 | name | value | required | desc |
 | ------------ | ------------ | ------------ | ------------ |
-| id |  | NO |  |
+| ticketId |  | NO |  |
 
 
 > RESPONSE
@@ -1107,20 +756,149 @@
 
 | name | type | desc |
 | ------------ | ------------ | ------------ |
-| headers | map |  |
-| body | object |  |
-| status | object |  |
+| id | long |  |
+| title | string |  |
+| description | string |  |
+| status | string | UNALLOCATED<br>ASSIGNED<br>IN_PROGRESS<br>CLOSED<br>RESOLVED |
+| customerId | long |  |
+| slaContractId | long |  |
+| assignedMemberId | long |  |
+| createdAt | string |  |
+| updatedAt | string |  |
+| messages | object[] |  |
+| &ensp;&ensp;&#124;─id | long |  |
+| &ensp;&ensp;&#124;─senderId | long |  |
+| &ensp;&ensp;&#124;─senderName | string |  |
+| &ensp;&ensp;&#124;─message | string |  |
+| &ensp;&ensp;&#124;─sentAt | string |  |
+| attachments | object[] |  |
+| &ensp;&ensp;&#124;─id | long |  |
+| &ensp;&ensp;&#124;─fileName | string |  |
+| &ensp;&ensp;&#124;─contentType | string |  |
+| &ensp;&ensp;&#124;─size | long |  |
+| &ensp;&ensp;&#124;─filePath | string |  |
+| &ensp;&ensp;&#124;─uploadedById | long |  |
+| &ensp;&ensp;&#124;─uploadedAt | string |  |
+| statusHistory | object[] |  |
+| &ensp;&ensp;&#124;─id | long |  |
+| &ensp;&ensp;&#124;─oldStatus | string | UNALLOCATED<br>ASSIGNED<br>IN_PROGRESS<br>CLOSED<br>RESOLVED |
+| &ensp;&ensp;&#124;─newStatus | string | UNALLOCATED<br>ASSIGNED<br>IN_PROGRESS<br>CLOSED<br>RESOLVED |
+| &ensp;&ensp;&#124;─changedById | long |  |
+| &ensp;&ensp;&#124;─changedByName | string |  |
+| &ensp;&ensp;&#124;─note | string |  |
+| &ensp;&ensp;&#124;─changedAt | string |  |
 
 
 **Response Demo:**
 
 ```json
 {
-  "headers": {
-    "": null
-  },
-  "body": {  },
-  "status": {  }
+  "id": 0,
+  "title": "",
+  "description": "",
+  "status": "",
+  "customerId": 0,
+  "slaContractId": 0,
+  "assignedMemberId": 0,
+  "createdAt": "",
+  "updatedAt": "",
+  "messages": [
+    {
+      "id": 0,
+      "senderId": 0,
+      "senderName": "",
+      "message": "",
+      "sentAt": ""
+    }
+  ],
+  "attachments": [
+    {
+      "id": 0,
+      "fileName": "",
+      "contentType": "",
+      "size": 0,
+      "filePath": "",
+      "uploadedById": 0,
+      "uploadedAt": ""
+    }
+  ],
+  "statusHistory": [
+    {
+      "id": 0,
+      "oldStatus": "",
+      "newStatus": "",
+      "changedById": 0,
+      "changedByName": "",
+      "note": "",
+      "changedAt": ""
+    }
+  ]
+}
+```
+
+---
+### addMessage
+
+> BASIC
+
+**Path:** /api/tickets/{ticketId}/messages
+
+**Method:** POST
+
+
+> REQUEST
+
+**Path Params:**
+
+| name | value | required | desc |
+| ------------ | ------------ | ------------ | ------------ |
+| ticketId |  | NO |  |
+
+**Headers:**
+
+| name | value | required | desc |
+| ------------ | ------------ | ------------ | ------------ |
+| Content-Type | application/json | NO |  |
+
+**Request Body:**
+
+| name | type | desc |
+| ------------ | ------------ | ------------ |
+| senderId | long |  |
+| message | string |  |
+
+
+**Request Demo:**
+
+```json
+{
+  "senderId": 0,
+  "message": ""
+}
+```
+
+> RESPONSE
+
+**Body:**
+
+| name | type | desc |
+| ------------ | ------------ | ------------ |
+| id | long |  |
+| senderId | long |  |
+| senderName | string |  |
+| message | string |  |
+| sentAt | string |  |
+
+
+**Response Demo:**
+
+```json
+{
+  "id": 0,
+  "senderId": 0,
+  "senderName": "",
+  "message": "",
+  "sentAt": ""
 }
 ```
 
@@ -1782,6 +1560,325 @@
 > BASIC
 
 **Path:** /api/team-managers/{id}
+
+**Method:** DELETE
+
+
+> REQUEST
+
+**Path Params:**
+
+| name | value | required | desc |
+| ------------ | ------------ | ------------ | ------------ |
+| id |  | NO |  |
+
+
+> RESPONSE
+
+**Body:**
+
+| name | type | desc |
+| ------------ | ------------ | ------------ |
+| headers | map |  |
+| body | object |  |
+| status | object |  |
+
+
+**Response Demo:**
+
+```json
+{
+  "headers": {
+    "": null
+  },
+  "body": {  },
+  "status": {  }
+}
+```
+
+## TeamMemberController
+
+---
+### createTeamMember
+
+> BASIC
+
+**Path:** /api/team-members
+
+**Method:** POST
+
+
+> REQUEST
+
+**Headers:**
+
+| name | value | required | desc |
+| ------------ | ------------ | ------------ | ------------ |
+| Content-Type | application/json | NO |  |
+
+**Request Body:**
+
+| name | type | desc |
+| ------------ | ------------ | ------------ |
+| username | string |  |
+| password | string |  |
+| email | string |  |
+| roles | string[] |  |
+| availabilityStatus | string | AVAILABLE<br>BUSY<br>OFF_DUTY<br>UNAVAILABLE |
+| jobTitle | string |  |
+| managerId | long | ID of the TeamManager |
+
+
+**Request Demo:**
+
+```json
+{
+  "username": "",
+  "password": "",
+  "email": "",
+  "roles": [
+    ""
+  ],
+  "availabilityStatus": "",
+  "jobTitle": "",
+  "managerId": 0
+}
+```
+
+> RESPONSE
+
+**Body:**
+
+| name | type | desc |
+| ------------ | ------------ | ------------ |
+| id | long |  |
+| username | string |  |
+| email | string |  |
+| roles | string[] |  |
+| createdAt | string |  |
+| updatedAt | string |  |
+| availabilityStatus | string | AVAILABLE<br>BUSY<br>OFF_DUTY<br>UNAVAILABLE |
+| jobTitle | string |  |
+| managerId | long | Reference to manager by ID to avoid recursion |
+
+
+**Response Demo:**
+
+```json
+{
+  "id": 0,
+  "username": "",
+  "email": "",
+  "roles": [
+    ""
+  ],
+  "createdAt": "",
+  "updatedAt": "",
+  "availabilityStatus": "",
+  "jobTitle": "",
+  "managerId": 0
+}
+```
+
+---
+### getAllTeamMembers
+
+> BASIC
+
+**Path:** /api/team-members
+
+**Method:** GET
+
+
+> REQUEST
+
+
+
+> RESPONSE
+
+**Body:**
+
+| name | type | desc |
+| ------------ | ------------ | ------------ |
+| [0].id | long |  |
+| [0].username | string |  |
+| [0].email | string |  |
+| [0].roles | string[] |  |
+| [0].createdAt | string |  |
+| [0].updatedAt | string |  |
+| [0].availabilityStatus | string | AVAILABLE<br>BUSY<br>OFF_DUTY<br>UNAVAILABLE |
+| [0].jobTitle | string |  |
+| [0].managerId | long | Reference to manager by ID to avoid recursion |
+
+
+**Response Demo:**
+
+```json
+[
+  {
+    "id": 0,
+    "username": "",
+    "email": "",
+    "roles": [
+      ""
+    ],
+    "createdAt": "",
+    "updatedAt": "",
+    "availabilityStatus": "",
+    "jobTitle": "",
+    "managerId": 0
+  }
+]
+```
+
+---
+### getTeamMemberById
+
+> BASIC
+
+**Path:** /api/team-members/{id}
+
+**Method:** GET
+
+
+> REQUEST
+
+**Path Params:**
+
+| name | value | required | desc |
+| ------------ | ------------ | ------------ | ------------ |
+| id |  | NO |  |
+
+
+> RESPONSE
+
+**Body:**
+
+| name | type | desc |
+| ------------ | ------------ | ------------ |
+| id | long |  |
+| username | string |  |
+| email | string |  |
+| roles | string[] |  |
+| createdAt | string |  |
+| updatedAt | string |  |
+| availabilityStatus | string | AVAILABLE<br>BUSY<br>OFF_DUTY<br>UNAVAILABLE |
+| jobTitle | string |  |
+| managerId | long | Reference to manager by ID to avoid recursion |
+
+
+**Response Demo:**
+
+```json
+{
+  "id": 0,
+  "username": "",
+  "email": "",
+  "roles": [
+    ""
+  ],
+  "createdAt": "",
+  "updatedAt": "",
+  "availabilityStatus": "",
+  "jobTitle": "",
+  "managerId": 0
+}
+```
+
+---
+### updateTeamMember
+
+> BASIC
+
+**Path:** /api/team-members/{id}
+
+**Method:** PUT
+
+
+> REQUEST
+
+**Path Params:**
+
+| name | value | required | desc |
+| ------------ | ------------ | ------------ | ------------ |
+| id |  | NO |  |
+
+**Headers:**
+
+| name | value | required | desc |
+| ------------ | ------------ | ------------ | ------------ |
+| Content-Type | application/json | NO |  |
+
+**Request Body:**
+
+| name | type | desc |
+| ------------ | ------------ | ------------ |
+| username | string |  |
+| password | string |  |
+| email | string |  |
+| roles | string[] |  |
+| availabilityStatus | string | AVAILABLE<br>BUSY<br>OFF_DUTY<br>UNAVAILABLE |
+| jobTitle | string |  |
+| managerId | long | ID of the TeamManager |
+
+
+**Request Demo:**
+
+```json
+{
+  "username": "",
+  "password": "",
+  "email": "",
+  "roles": [
+    ""
+  ],
+  "availabilityStatus": "",
+  "jobTitle": "",
+  "managerId": 0
+}
+```
+
+> RESPONSE
+
+**Body:**
+
+| name | type | desc |
+| ------------ | ------------ | ------------ |
+| id | long |  |
+| username | string |  |
+| email | string |  |
+| roles | string[] |  |
+| createdAt | string |  |
+| updatedAt | string |  |
+| availabilityStatus | string | AVAILABLE<br>BUSY<br>OFF_DUTY<br>UNAVAILABLE |
+| jobTitle | string |  |
+| managerId | long | Reference to manager by ID to avoid recursion |
+
+
+**Response Demo:**
+
+```json
+{
+  "id": 0,
+  "username": "",
+  "email": "",
+  "roles": [
+    ""
+  ],
+  "createdAt": "",
+  "updatedAt": "",
+  "availabilityStatus": "",
+  "jobTitle": "",
+  "managerId": 0
+}
+```
+
+---
+### deleteTeamMember
+
+> BASIC
+
+**Path:** /api/team-members/{id}
 
 **Method:** DELETE
 
