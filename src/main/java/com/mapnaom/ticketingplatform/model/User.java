@@ -12,7 +12,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 @Entity
-@Table(name = "users")
+@Table(name = "access_users")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class User implements UserDetails {
 

@@ -1,191 +1,1292 @@
 {
   "info": {
-    "name": "ticketing-platform-20260529202549",
+    "name": "ticketing-platform",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "exported at 2026-05-29 20:25:49"
+    "description": "exported at 2026-06-02 17:21:51"
   },
   "item": [
     {
-      "name": "create",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json",
-            "type": "text",
+      "name": "CustomerController",
+      "description": "",
+      "item": [
+        {
+          "name": "createCustomer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text",
+                "description": ""
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"\",\n  \"password\": \"\",\n  \"email\": \"\",\n  \"roles\": [\n    \"\"\n  ],\n  \"companyName\": \"\",\n  \"phone\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/customers",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "customers"
+              ],
+              "query": [],
+              "variable": []
+            },
             "description": ""
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"title\": \"\",\n  \"description\": \"\",\n  \"customerId\": 0,\n  \"slaContractId\": 0,\n  \"assignedMemberId\": 0\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
+          },
+          "response": []
         },
-        "url": {
-          "raw": "{{host}}/api/tickets",
-          "host": [
-            "{{host}}"
-          ],
-          "path": [
-            "api",
-            "tickets"
-          ],
-          "query": [],
-          "variable": []
-        },
-        "description": ""
-      },
-      "response": []
-    },
-    {
-      "name": "update",
-      "request": {
-        "method": "PUT",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json",
-            "type": "text",
+        {
+          "name": "getAllCustomers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/customers",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "customers"
+              ],
+              "query": [],
+              "variable": []
+            },
             "description": ""
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"title\": \"\",\n  \"description\": \"\",\n  \"slaContractId\": 0,\n  \"assignedMemberId\": 0,\n  \"status\": \"\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
+          },
+          "response": []
         },
-        "url": {
-          "raw": "{{host}}/api/tickets/:ticketId?actorId\u003d",
-          "host": [
-            "{{host}}"
-          ],
-          "path": [
-            "api",
-            "tickets",
-            ":ticketId"
-          ],
-          "query": [
-            {
-              "key": "actorId",
-              "value": "",
-              "equals": true,
-              "description": ""
-            }
-          ],
-          "variable": [
-            {
-              "key": "ticketId",
-              "value": "",
-              "description": ""
-            }
-          ]
-        },
-        "description": ""
-      },
-      "response": []
-    },
-    {
-      "name": "getById",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{host}}/api/tickets/:ticketId",
-          "host": [
-            "{{host}}"
-          ],
-          "path": [
-            "api",
-            "tickets",
-            ":ticketId"
-          ],
-          "query": [],
-          "variable": [
-            {
-              "key": "ticketId",
-              "value": "",
-              "description": ""
-            }
-          ]
-        },
-        "description": ""
-      },
-      "response": []
-    },
-    {
-      "name": "getAll",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{host}}/api/tickets",
-          "host": [
-            "{{host}}"
-          ],
-          "path": [
-            "api",
-            "tickets"
-          ],
-          "query": [],
-          "variable": []
-        },
-        "description": ""
-      },
-      "response": []
-    },
-    {
-      "name": "addMessage",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json",
-            "type": "text",
+        {
+          "name": "getCustomerById",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/customers/:id",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "customers",
+                ":id"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
             "description": ""
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"senderId\": 0,\n  \"message\": \"\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
+          },
+          "response": []
         },
-        "url": {
-          "raw": "{{host}}/api/tickets/:ticketId/messages",
-          "host": [
-            "{{host}}"
-          ],
-          "path": [
-            "api",
-            "tickets",
-            ":ticketId",
-            "messages"
-          ],
-          "query": [],
-          "variable": [
-            {
-              "key": "ticketId",
-              "value": "",
-              "description": ""
-            }
-          ]
+        {
+          "name": "updateCustomer",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text",
+                "description": ""
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"\",\n  \"password\": \"\",\n  \"email\": \"\",\n  \"roles\": [\n    \"\"\n  ],\n  \"companyName\": \"\",\n  \"phone\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/customers/:id",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "customers",
+                ":id"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
         },
-        "description": ""
-      },
-      "response": []
+        {
+          "name": "deleteCustomer",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/customers/:id",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "customers",
+                ":id"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "TeamMemberController",
+      "description": "",
+      "item": [
+        {
+          "name": "createTeamMember",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text",
+                "description": ""
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"\",\n  \"password\": \"\",\n  \"email\": \"\",\n  \"roles\": [\n    \"\"\n  ],\n  \"availabilityStatus\": \"\",\n  \"jobTitle\": \"\",\n  \"managerId\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/team-members",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "team-members"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "getAllTeamMembers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/team-members",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "team-members"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "getTeamMemberById",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/team-members/:id",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "team-members",
+                ":id"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "updateTeamMember",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text",
+                "description": ""
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"\",\n  \"password\": \"\",\n  \"email\": \"\",\n  \"roles\": [\n    \"\"\n  ],\n  \"availabilityStatus\": \"\",\n  \"jobTitle\": \"\",\n  \"managerId\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/team-members/:id",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "team-members",
+                ":id"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "deleteTeamMember",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/team-members/:id",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "team-members",
+                ":id"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "SlaContractController",
+      "description": "",
+      "item": [
+        {
+          "name": "createSlaContract",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text",
+                "description": ""
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contractName\": \"\",\n  \"serviceScope\": \"\",\n  \"responseTimeHours\": 0,\n  \"isActive\": false,\n  \"customerId\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/sla-contracts",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "sla-contracts"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "getAllSlaContracts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/sla-contracts",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "sla-contracts"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "getSlaContractById",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/sla-contracts/:id",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "sla-contracts",
+                ":id"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "updateSlaContract",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text",
+                "description": ""
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contractName\": \"\",\n  \"serviceScope\": \"\",\n  \"responseTimeHours\": 0,\n  \"isActive\": false,\n  \"customerId\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/sla-contracts/:id",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "sla-contracts",
+                ":id"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "deleteSlaContract",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/sla-contracts/:id",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "sla-contracts",
+                ":id"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "TeamManagerController",
+      "description": "",
+      "item": [
+        {
+          "name": "createTeamManager",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text",
+                "description": ""
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"\",\n  \"password\": \"\",\n  \"email\": \"\",\n  \"roles\": [\n    \"\"\n  ],\n  \"department\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/team-managers",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "team-managers"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "getAllTeamManagers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/team-managers",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "team-managers"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "getTeamManagerById",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/team-managers/:id",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "team-managers",
+                ":id"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "updateTeamManager",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text",
+                "description": ""
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"\",\n  \"password\": \"\",\n  \"email\": \"\",\n  \"roles\": [\n    \"\"\n  ],\n  \"department\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/team-managers/:id",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "team-managers",
+                ":id"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "deleteTeamManager",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/team-managers/:id",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "team-managers",
+                ":id"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "POST /api/tickets → create ticket",
+      "description": "",
+      "item": [
+        {
+          "name": "create",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text",
+                "description": ""
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"\",\n  \"description\": \"\",\n  \"customerId\": 0,\n  \"slaContractId\": 0,\n  \"assignedMemberId\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/tickets",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "tickets"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "update",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text",
+                "description": ""
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"\",\n  \"description\": \"\",\n  \"slaContractId\": 0,\n  \"assignedMemberId\": 0,\n  \"status\": \"\",\n  \"statusNote\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/tickets/:ticketId?actorId\u003d",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "tickets",
+                ":ticketId"
+              ],
+              "query": [
+                {
+                  "key": "actorId",
+                  "value": "",
+                  "equals": true,
+                  "description": ""
+                }
+              ],
+              "variable": [
+                {
+                  "key": "ticketId",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "getById",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/tickets/:ticketId",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "tickets",
+                ":ticketId"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "ticketId",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "getAll",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/tickets",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "tickets"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "addMessage",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text",
+                "description": ""
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"senderId\": 0,\n  \"message\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/tickets/:ticketId/messages",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "tickets",
+                ":ticketId",
+                "messages"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "ticketId",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "AuthController",
+      "description": "",
+      "item": [
+        {
+          "name": "authenticate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text",
+                "description": ""
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"\",\n  \"password\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/auth/authenticate",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "authenticate"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "signout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/auth/signout",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "signout"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Administrative access-control operations.",
+      "description": "",
+      "item": [
+        {
+          "name": "listPermissions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/admin/access/permissions",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "access",
+                "permissions"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "getEffectiveAccess",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/admin/access/users/:userId",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "access",
+                "users",
+                ":userId"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "listGrants",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/admin/access/users/:userId/grants",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "access",
+                "users",
+                ":userId",
+                "grants"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "upsertGrant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text",
+                "description": ""
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permissionCode\": \"\",\n  \"effect\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/admin/access/users/:userId/grants",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "access",
+                "users",
+                ":userId",
+                "grants"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "removeGrant",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/admin/access/users/:userId/grants/:permissionCode",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "access",
+                "users",
+                ":userId",
+                "grants",
+                ":permissionCode"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "",
+                  "description": ""
+                },
+                {
+                  "key": "permissionCode",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "listScopes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/admin/access/users/:userId/scopes",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "access",
+                "users",
+                ":userId",
+                "scopes"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "setScope",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text",
+                "description": ""
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"scope\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/admin/access/users/:userId/scopes/:resourceType",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "access",
+                "users",
+                ":userId",
+                "scopes",
+                ":resourceType"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "",
+                  "description": ""
+                },
+                {
+                  "key": "resourceType",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "clearScope",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/admin/access/users/:userId/scopes/:resourceType",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "access",
+                "users",
+                ":userId",
+                "scopes",
+                ":resourceType"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "",
+                  "description": ""
+                },
+                {
+                  "key": "resourceType",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "listRolePermissions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/admin/access/roles/:roleName/permissions",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "access",
+                "roles",
+                ":roleName",
+                "permissions"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "roleName",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "replaceRolePermissions",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text",
+                "description": ""
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permissionCodes\": [\n    \"\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/admin/access/roles/:roleName/permissions",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "access",
+                "roles",
+                ":roleName",
+                "permissions"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "roleName",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "event": [],
