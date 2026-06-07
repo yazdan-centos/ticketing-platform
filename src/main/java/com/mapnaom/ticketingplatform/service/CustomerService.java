@@ -5,9 +5,13 @@ import com.mapnaom.ticketingplatform.dto.CustomerResponseDto;
 import com.mapnaom.ticketingplatform.mapper.CustomerMapper;
 import com.mapnaom.ticketingplatform.model.Customer;
 import com.mapnaom.ticketingplatform.repository.CustomerRepository;
+import com.mapnaom.ticketingplatform.specification.CustomerSpecification;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -38,7 +42,26 @@ public class CustomerService {
         return customerMapper.toResponseDto(savedCustomer);
     }
 
-    // --- Get All Customers ---
+    // --- Get All Customers (with pagination and filtering) ---
+    public Page<CustomerResponseDto> getAllCustomers(
+            String firstName,
+            String lastName,
+            String username,
+            String email,
+            String companyName,
+            String phone,
+            Boolean deleted,
+            Pageable pageable
+    ) {
+        Specification<Customer> spec = CustomerSpecification.filterBy(
+                firstName, lastName, username, email, companyName, phone, deleted
+        );
+        
+        return customerRepository.findAll(spec, pageable)
+                .map(customerMapper::toResponseDto);
+    }
+
+    // --- Get All Customers (non-paginated, for backward compatibility) ---
     public List<CustomerResponseDto> getAllCustomers() {
         // AppUser has @Where(clause = "deleted = false"), so findAll automatically filters deleted users
         return customerRepository.findAll().stream()
