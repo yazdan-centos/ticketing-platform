@@ -6,6 +6,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * Entity class representing the granting of permissions to users.
+ * This class maps to the "user_permission_grants" table in the database.
+ * It contains information about which user has been granted which permission and the effect of that grant.
+ */
 @Entity
 @Table(name = "user_permission_grants")
 @Getter

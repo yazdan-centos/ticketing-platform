@@ -2,17 +2,20 @@ package com.mapnaom.ticketingplatform.service;
 
 import com.mapnaom.ticketingplatform.dto.TeamMemberRequestDto;
 import com.mapnaom.ticketingplatform.dto.TeamMemberResponseDto;
+import com.mapnaom.ticketingplatform.dto.TeamMemberSearchCriteriaDto;
 import com.mapnaom.ticketingplatform.mapper.TeamMemberMapper;
 import com.mapnaom.ticketingplatform.model.TeamMember;
 import com.mapnaom.ticketingplatform.model.TeamManager;
 import com.mapnaom.ticketingplatform.repository.TeamMemberRepository;
 import com.mapnaom.ticketingplatform.repository.TeamManagerRepository;
+import com.mapnaom.ticketingplatform.specification.TeamMemberSpecification;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -60,6 +63,14 @@ public class TeamMemberService {
         TeamMember member = teamMemberRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Team Member not found with id: " + id));
         return teamMemberMapper.toResponseDto(member);
+    }
+
+    // --- Search Team Members ---
+    public List<TeamMemberResponseDto> searchTeamMembers(TeamMemberSearchCriteriaDto criteria) {
+        List<TeamMember> teamMembers = teamMemberRepository.findAll(TeamMemberSpecification.filterTeamMembers(criteria));
+        return teamMembers.stream()
+                .map(teamMemberMapper::toResponseDto)
+                .collect(Collectors.toList());
     }
 
     // --- Update Team Member ---

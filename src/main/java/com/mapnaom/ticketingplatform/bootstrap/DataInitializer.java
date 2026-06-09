@@ -119,10 +119,11 @@ public class DataInitializer implements CommandLineRunner {
 
     private void seedAppUsersIfEmpty() {
         if (customerRepository.count() == 0) {
-            customerRepository.saveAll(List.of(
-                    customer("alice", "Alice", "Adams", "alice@example.com", "Acme Co"),
-                    customer("bob", "Bob", "Baker", "bob@example.com", "Beta LLC"),
-                    customer("charlie", "Charlie", "Clark", "charlie@example.com", "Charlie Corp")));
+            List<Customer> customers = new java.util.ArrayList<>();
+            for (int i = 1; i <= 20; i++) {
+                customers.add(customer("customer" + i, "First" + i, "Last" + i, "customer" + i + "@example.com", "Company " + i));
+            }
+            customerRepository.saveAll(customers);
         }
 
         if (teamManagerRepository.count() == 0 && teamMemberRepository.count() == 0) {
@@ -171,13 +172,21 @@ public class DataInitializer implements CommandLineRunner {
             return;
         }
 
-        ticketRepository.saveAll(List.of(
-                ticket("Production server unavailable", "Main production server is not responding.",
-                        TicketStatus.ASSIGNED, Priority.CRITICAL, customers.get(0), members.get(0), contracts.get(0)),
-                ticket("Unable to reset password", "Customer cannot reset password from the login page.",
-                        TicketStatus.IN_PROGRESS, Priority.MEDIUM, customers.get(1 % customers.size()), members.get(1 % members.size()), contracts.get(1 % contracts.size())),
-                ticket("Dashboard layout issue", "Charts overlap on smaller screens.",
-                        TicketStatus.UNALLOCATED, Priority.LOW, customers.get(2 % customers.size()), null, contracts.get(2 % contracts.size()))));
+        List<Ticket> tickets = new java.util.ArrayList<>();
+        for (int i = 1; i <= 20; i++) {
+            TicketStatus status = (i % 2 == 0) ? TicketStatus.ASSIGNED : TicketStatus.IN_PROGRESS;
+            Priority priority;
+            if (i % 3 == 0) priority = Priority.CRITICAL;
+            else if (i % 3 == 1) priority = Priority.MEDIUM;
+            else priority = Priority.LOW;
+
+            tickets.add(ticket("Ticket Issue " + i, "Description for ticket issue " + i,
+                    status, priority,
+                    customers.get((i - 1) % customers.size()),
+                    members.get((i - 1) % members.size()),
+                    contracts.get((i - 1) % contracts.size())));
+        }
+        ticketRepository.saveAll(tickets);
     }
 
     private Permission permission(String code, String description) {

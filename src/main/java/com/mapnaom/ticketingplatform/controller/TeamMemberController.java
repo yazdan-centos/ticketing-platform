@@ -2,6 +2,7 @@ package com.mapnaom.ticketingplatform.controller;
 
 import com.mapnaom.ticketingplatform.dto.TeamMemberRequestDto;
 import com.mapnaom.ticketingplatform.dto.TeamMemberResponseDto;
+import com.mapnaom.ticketingplatform.dto.TeamMemberSearchCriteriaDto;
 import com.mapnaom.ticketingplatform.service.TeamMemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,13 @@ public class TeamMemberController {
     public ResponseEntity<TeamMemberResponseDto> getTeamMemberById(@PathVariable Long id) {
         TeamMemberResponseDto member = teamMemberService.getTeamMemberById(id);
         return ResponseEntity.ok(member);
+    }
+
+    // --- Search Team Members ---
+    @GetMapping("/search")
+    public ResponseEntity<List<TeamMemberResponseDto>> searchTeamMembers(TeamMemberSearchCriteriaDto criteria) {
+        List<TeamMemberResponseDto> members = teamMemberService.searchTeamMembers(criteria);
+        return ResponseEntity.ok(members);
     }
 
     // --- Update Team Member ---

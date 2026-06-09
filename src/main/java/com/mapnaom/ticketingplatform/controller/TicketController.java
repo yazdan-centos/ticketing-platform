@@ -1,63 +1,40 @@
 package com.mapnaom.ticketingplatform.controller;
 
-import com.mapnaom.ticketingplatform.dto.ticket.*;
-import com.mapnaom.ticketingplatform.service.TicketMessageService;
-import com.mapnaom.ticketingplatform.service.TicketService;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PostAuthorize;
-import org.springframework.web.bind.annotation.*;
+import com.mapnaom.ticketingplatform.dto.ticket.TicketDto;
+import com.mapnaom.ticketingplatform.dto.ticket.TicketSearchCriteriaDto;
+import com.mapnaom.ticketingplatform.model.Ticket;
+import com.mapnaom.ticketingplatform.repository.TicketRepository;
+import com.mapnaom.ticketingplatform.specification.TicketSpecification;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-/**
- * POST /api/tickets → create ticket
- * PUT /api/tickets/{id} → update metadata/status/assignment
- * POST /api/tickets/{id}/messages → add message
- * POST /api/tickets/{id}/attachments → upload file
- * GET /api/tickets/{id} → full detail
- * GET /api/tickets → summary list
- * **/
-@CrossOrigin
 @RestController
 @RequestMapping("/api/tickets")
-@RequiredArgsConstructor
 public class TicketController {
 
-    private final TicketService ticketService;
-    private final TicketMessageService ticketMessageService;
+    private final TicketRepository ticketRepository;
 
-    @PostMapping
-    public TicketResponse create(@Valid @RequestBody TicketCreateRequest request) {
-        return ticketService.create(request);
+    public TicketController(TicketRepository ticketRepository) {
+        this.ticketRepository = ticketRepository;
     }
 
-    @PutMapping("/{ticketId}")
-    public TicketResponse update(
-            @PathVariable Long ticketId,
-            @Valid @RequestBody TicketUpdateRequest request,
-            @RequestParam Long actorId
-    ) {
-        return ticketService.update(ticketId, request, actorId);
+    @GetMapping("/search")
+    public List<TicketDto> searchTickets(TicketSearchCriteriaDto criteria) {
+        List<Ticket> tickets = ticketRepository.findAll(TicketSpecification.filterTickets(criteria));
+        
+        return tickets.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
     }
 
-    @GetMapping("/{ticketId}")
-    public TicketResponse getById(@PathVariable Long ticketId) {
-        return ticketService.getById(ticketId);
-    }
-
-    @GetMapping
-    @PostAuthorize("hasRole('TEAM_MANAGER') or returnObject.ownerUsername == authentication.name " +
-            "or returnObject.assigneeUsername == authentication.name")
-    public List<TicketSummaryResponse> getAll() {
-        return ticketService.getAll();
-    }
-
-    @PostMapping("/{ticketId}/messages")
-    public TicketMessageResponse addMessage(
-            @PathVariable Long ticketId,
-            @Valid @RequestBody TicketMessageCreateRequest request
-    ) {
-        return ticketMessageService.addMessage(ticketId, request);
+    private TicketDto convertToDto(Ticket ticket) {
+        TicketDto dto = new TicketDto();
+        dto.setId(ticket.getId());
+        dto.setUsername(ticket.getAssignedMember().getUsername());
+        return dto;
     }
 }
