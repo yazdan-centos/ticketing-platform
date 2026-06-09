@@ -76,10 +76,16 @@ public class DataInitializer implements CommandLineRunner {
                 permission("TICKET_UPDATE", "Update support tickets"),
                 permission("TICKET_DELETE", "Delete support tickets"),
                 permission("CUSTOMER_READ", "Read customer records"),
+                permission("CUSTOMER_CREATE", "Create customer records"),
                 permission("CUSTOMER_UPDATE", "Update customer records"),
+                permission("CUSTOMER_DELETE", "Delete customer records"),
                 permission("TEAM_MEMBER_READ", "Read team member records"),
+                permission("TEAM_MEMBER_UPDATE", "Update team member records"),
+                permission("TEAM_MANAGER_READ", "Read team manager records"),
                 permission("SLA_READ", "Read SLA contracts"),
-                permission("SLA_UPDATE", "Update SLA contracts")));
+                permission("SLA_CREATE", "Create SLA contracts"),
+                permission("SLA_UPDATE", "Update SLA contracts"),
+                permission("SLA_DELETE", "Delete SLA contracts")));
     }
 
     private void seedRolesIfEmpty() {

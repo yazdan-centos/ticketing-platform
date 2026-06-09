@@ -34,6 +34,10 @@ public class AdminController {
 
     // --- Permission catalog (read-only; codes are defined in code) -----------
 
+
+    /**
+     * @return
+     */
     @GetMapping("/permissions")
     public List<PermissionDto> listPermissions() {
         return accessAdminService.listPermissions();
