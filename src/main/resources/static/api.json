@@ -1,0 +1,9 @@
+{
+  "accessAdminService": {
+    "userRepository": {},
+    "roleRepository": {},
+    "permissionRepository": {},
+    "grantRepository": {},
+    "scopeRepository": {}
+  }
+}

@@ -5,16 +5,16 @@ import com.mapnaom.ticketingplatform.dto.access.GrantDto;
 import com.mapnaom.ticketingplatform.dto.access.PermissionDto;
 import com.mapnaom.ticketingplatform.dto.access.ScopeDto;
 import com.mapnaom.ticketingplatform.model.AccessScope;
+import com.mapnaom.ticketingplatform.model.AppUser;
 import com.mapnaom.ticketingplatform.model.Permission;
 import com.mapnaom.ticketingplatform.model.Role;
-import com.mapnaom.ticketingplatform.model.User;
 import com.mapnaom.ticketingplatform.model.UserPermissionGrant;
 import com.mapnaom.ticketingplatform.model.UserResourceScope;
 import com.mapnaom.ticketingplatform.model.enums.GrantEffect;
+import com.mapnaom.ticketingplatform.repository.AppUserRepository;
 import com.mapnaom.ticketingplatform.repository.PermissionRepository;
 import com.mapnaom.ticketingplatform.repository.RoleRepository;
 import com.mapnaom.ticketingplatform.repository.UserPermissionGrantRepository;
-import com.mapnaom.ticketingplatform.repository.UserRepository;
 import com.mapnaom.ticketingplatform.repository.UserResourceScopeRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +34,7 @@ public class AccessAdminService {
 
     private static final String TICKET_RESOURCE = "TICKET";
 
-    private final UserRepository userRepository;
+    private final AppUserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
     private final UserPermissionGrantRepository grantRepository;
@@ -50,7 +50,7 @@ public class AccessAdminService {
 
     @Transactional(readOnly = true)
     public EffectiveAccessDto getEffectiveAccess(Long userId) {
-        User user = getUser(userId);
+        AppUser user = getUser(userId);
         return new EffectiveAccessDto(
                 user.getId(),
                 roleNames(user),
@@ -60,7 +60,7 @@ public class AccessAdminService {
 
     @Transactional(readOnly = true)
     public List<GrantDto> listGrants(Long userId) {
-        User user = getUser(userId);
+        AppUser user = getUser(userId);
         return grantRepository.findByUser(user).stream()
                 .sorted(Comparator.comparing(grant -> grant.getPermission().getCode()))
                 .map(this::toGrantDto)
@@ -69,7 +69,7 @@ public class AccessAdminService {
 
     @Transactional
     public GrantDto upsertGrant(Long userId, String permissionCode, GrantEffect effect) {
-        User user = getUser(userId);
+        AppUser user = getUser(userId);
         Permission permission = getPermission(permissionCode);
         UserPermissionGrant grant = grantRepository
                 .findByUserAndPermissionCode(user, permission.getCode())
@@ -84,13 +84,13 @@ public class AccessAdminService {
 
     @Transactional
     public void removeGrant(Long userId, String permissionCode) {
-        User user = getUser(userId);
+        AppUser user = getUser(userId);
         grantRepository.deleteByUserAndPermissionCode(user, normalize(permissionCode));
     }
 
     @Transactional(readOnly = true)
     public List<ScopeDto> listScopes(Long userId) {
-        User user = getUser(userId);
+        AppUser user = getUser(userId);
         return scopeRepository.findByUser(user).stream()
                 .sorted(Comparator.comparing(UserResourceScope::getResourceType))
                 .map(this::toScopeDto)
@@ -99,7 +99,7 @@ public class AccessAdminService {
 
     @Transactional
     public ScopeDto setScope(Long userId, String resourceType, AccessScope scope) {
-        User user = getUser(userId);
+        AppUser user = getUser(userId);
         String normalizedResourceType = normalize(resourceType);
         UserResourceScope userScope = scopeRepository
                 .findByUserAndResourceType(user, normalizedResourceType)
@@ -114,7 +114,7 @@ public class AccessAdminService {
 
     @Transactional
     public void clearScope(Long userId, String resourceType) {
-        User user = getUser(userId);
+        AppUser user = getUser(userId);
         scopeRepository.deleteByUserAndResourceType(user, normalize(resourceType));
     }
 
@@ -143,14 +143,14 @@ public class AccessAdminService {
 
     @Transactional
     public void grantAccess(Long userId, String roleName) {
-        User user = getUser(userId);
+        AppUser user = getUser(userId);
         user.getRoles().add(getRole(roleName));
         userRepository.save(user);
     }
 
     @Transactional
     public void revokeAccess(Long userId, String roleName) {
-        User user = getUser(userId);
+        AppUser user = getUser(userId);
         String normalizedRoleName = normalize(roleName);
         user.getRoles().removeIf(role -> normalizedRoleName.equals(role.getName()));
         userRepository.save(user);
@@ -169,7 +169,7 @@ public class AccessAdminService {
         return effectivePermissionCodes(getUser(userId)).contains(normalize(permission));
     }
 
-    private Set<String> effectivePermissionCodes(User user) {
+    private Set<String> effectivePermissionCodes(AppUser user) {
         Set<String> codes = user.getRoles().stream()
                 .flatMap(role -> role.getPermissions().stream())
                 .map(Permission::getCode)
@@ -187,7 +187,7 @@ public class AccessAdminService {
         return codes.stream().sorted().collect(Collectors.toCollection(java.util.LinkedHashSet::new));
     }
 
-    private Map<String, AccessScope> effectiveScopes(User user) {
+    private Map<String, AccessScope> effectiveScopes(AppUser user) {
         Map<String, AccessScope> scopes = new LinkedHashMap<>();
         scopes.put(TICKET_RESOURCE, defaultTicketScope(user));
         scopeRepository.findByUser(user).forEach(scope ->
@@ -195,7 +195,7 @@ public class AccessAdminService {
         return scopes;
     }
 
-    private AccessScope defaultTicketScope(User user) {
+    private AccessScope defaultTicketScope(AppUser user) {
         Set<String> names = roleNames(user);
         if (names.contains("TEAM_MANAGER") || names.contains("ADMIN")) {
             return AccessScope.ALL;
@@ -209,13 +209,13 @@ public class AccessAdminService {
         return AccessScope.NONE;
     }
 
-    private Set<String> roleNames(User user) {
+    private Set<String> roleNames(AppUser user) {
         return user.getRoles().stream()
                 .map(Role::getName)
                 .collect(Collectors.toCollection(java.util.LinkedHashSet::new));
     }
 
-    private User getUser(Long userId) {
+    private AppUser getUser(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found: " + userId));
     }

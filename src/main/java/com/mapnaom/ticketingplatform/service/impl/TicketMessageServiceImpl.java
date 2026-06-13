@@ -31,11 +31,11 @@ public class TicketMessageServiceImpl implements TicketMessageService {
     private final EmailNotificationService emailNotificationService;
 
     @Override
-    public TicketMessageResponse addMessage(Long ticketId, TicketMessageCreateRequest request) {
+    public TicketMessageResponse addMessage(Long ticketId, TicketMessageCreateRequest request, Long senderId) {
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new EntityNotFoundException("Ticket not found"));
 
-        AppUser sender = appUserRepository.findById(request.getSenderId())
+        AppUser sender = appUserRepository.findById(senderId)
                 .orElseThrow(() -> new EntityNotFoundException("Sender not found"));
 
         TicketMessage message = new TicketMessage();

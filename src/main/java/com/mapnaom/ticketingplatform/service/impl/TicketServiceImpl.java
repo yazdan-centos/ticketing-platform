@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
 import java.util.List;
 
 @Slf4j
@@ -139,7 +140,18 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
+    public TicketAttachmentResponse attach(File file) {
+        return null;
+    }
+
+    @Override
+    public void detach(Long attachmentId) {
+
+
+    }
+
     @Transactional(readOnly = true)
+    @Override
     public List<TicketSummaryResponse> getAll() {
         return ticketRepository.findAll().stream()
                 .map(ticketMapper::toSummaryResponse)
@@ -178,11 +190,11 @@ public class TicketServiceImpl implements TicketService {
      */
     private void validateStatusTransition(TicketStatus from, TicketStatus to) {
         boolean allowed = switch (from) {
-            case UNALLOCATED  -> to == TicketStatus.ASSIGNED   || to == TicketStatus.CLOSED;
-            case ASSIGNED     -> to == TicketStatus.IN_PROGRESS || to == TicketStatus.UNALLOCATED || to == TicketStatus.CLOSED;
-            case IN_PROGRESS  -> to == TicketStatus.RESOLVED   || to == TicketStatus.CLOSED       || to == TicketStatus.ASSIGNED;
-            case RESOLVED     -> to == TicketStatus.CLOSED     || to == TicketStatus.IN_PROGRESS;
-            case CLOSED       -> false; // terminal state
+            case UNALLOCATED  -> to == TicketStatus.ASSIGNED   || to == TicketStatus.CLOSED; // تخصیص نیافته
+            case ASSIGNED     -> to == TicketStatus.IN_PROGRESS || to == TicketStatus.UNALLOCATED || to == TicketStatus.CLOSED; // اختصاص یافته
+            case IN_PROGRESS  -> to == TicketStatus.RESOLVED   || to == TicketStatus.CLOSED       || to == TicketStatus.ASSIGNED; // در حال انجام
+            case RESOLVED     -> to == TicketStatus.CLOSED     || to == TicketStatus.IN_PROGRESS; // حل شده
+            case CLOSED       -> false; // terminal state - بسته شده
         };
         if (!allowed) {
             throw new IllegalArgumentException(

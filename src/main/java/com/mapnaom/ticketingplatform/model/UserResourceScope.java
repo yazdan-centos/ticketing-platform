@@ -10,7 +10,7 @@ import lombok.Setter;
 public class UserResourceScope {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne(optional = false) private User user;
+    @ManyToOne(optional = false) private AppUser user;
     private String resourceType;                     // "TICKET"
     @Enumerated(EnumType.STRING) private AccessScope scope;
 }

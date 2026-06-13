@@ -18,6 +18,7 @@ public interface TeamManagerMapper {
 
     // --- Request to Entity ---
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "roles", ignore = true) // Roles are assigned via the admin access endpoints, never from a client payload
     @Mapping(target = "teamMembers", ignore = true) // Service handles relationships
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
@@ -25,18 +26,31 @@ public interface TeamManagerMapper {
     TeamManager toEntity(TeamManagerRequestDto dto);
 
     // --- Entity to Response ---
+    @Mapping(target = "roles", source = "roles", qualifiedByName = "mapRoleNames")
     @Mapping(target = "teamMemberIds", source = "teamMembers", qualifiedByName = "mapMemberIds")
     TeamManagerResponseDto toResponseDto(TeamManager entity);
 
     // --- Update ---
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "roles", ignore = true)
     @Mapping(target = "teamMembers", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "password", ignore = true) // Password updates usually handled separately
     void updateManagerFromDto(TeamManagerRequestDto dto, @MappingTarget TeamManager entity);
+
+    // Maps the entity's role entities to their names for the response DTO.
+    @Named("mapRoleNames")
+    default Set<String> mapRoleNames(Set<com.mapnaom.ticketingplatform.model.Role> roles) {
+        if (roles == null) {
+            return null;
+        }
+        return roles.stream()
+                .map(com.mapnaom.ticketingplatform.model.Role::getName)
+                .collect(Collectors.toSet());
+    }
 
     // --- Helper Methods ---
 

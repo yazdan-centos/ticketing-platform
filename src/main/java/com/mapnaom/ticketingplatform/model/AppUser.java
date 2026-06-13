@@ -37,11 +37,15 @@ public abstract class AppUser {
 
     private String email;
 
-    // Stores roles for JJWT generation, e.g., "ROLE_MANAGER", "ROLE_CUSTOMER"
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
-    @Column(name = "role")
-    private Set<String> roles = new HashSet<>();
+    // Security roles backing authentication/authorization. Each role carries
+    // its default permission set (see {@link Role}); per-user overrides live in
+    // {@link UserPermissionGrant} / {@link UserResourceScope}.
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "app_user_roles",
+            joinColumns = @JoinColumn(name = "app_user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> roles = new HashSet<>();
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -57,6 +61,7 @@ public abstract class AppUser {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
         if (roles == null) roles = new HashSet<>();
+        if (deleted == null) deleted = false;
     }
     protected String getFullName(){
         return firstName + " " + lastName;

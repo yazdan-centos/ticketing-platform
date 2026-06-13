@@ -10,11 +10,15 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @Mapper(componentModel = "spring")
 public interface TeamMemberMapper {
 
     // --- Request to Entity ---
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "roles", ignore = true) // Roles are assigned via the admin access endpoints, never from a client payload
     @Mapping(target = "manager", ignore = true) // Service sets this
     @Mapping(target = "assignedTickets", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
@@ -23,12 +27,14 @@ public interface TeamMemberMapper {
     TeamMember toEntity(TeamMemberRequestDto dto);
 
     // --- Entity to Response ---
+    @Mapping(target = "roles", source = "roles", qualifiedByName = "mapRoleNames")
     @Mapping(target = "managerId", source = "manager", qualifiedByName = "mapManagerId")
     TeamMemberResponseDto toResponseDto(TeamMember entity);
 
     // --- Update ---
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "roles", ignore = true)
     @Mapping(target = "manager", ignore = true)
     @Mapping(target = "assignedTickets", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
@@ -40,5 +46,16 @@ public interface TeamMemberMapper {
     @Named("mapManagerId")
     default Long mapManagerId(com.mapnaom.ticketingplatform.model.TeamManager manager) {
         return manager != null ? manager.getId() : null;
+    }
+
+    // Maps the entity's role entities to their names for the response DTO.
+    @Named("mapRoleNames")
+    default Set<String> mapRoleNames(Set<com.mapnaom.ticketingplatform.model.Role> roles) {
+        if (roles == null) {
+            return null;
+        }
+        return roles.stream()
+                .map(com.mapnaom.ticketingplatform.model.Role::getName)
+                .collect(Collectors.toSet());
     }
 }

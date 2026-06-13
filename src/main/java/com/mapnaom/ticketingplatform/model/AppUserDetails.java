@@ -10,13 +10,22 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Spring Security principal backed by the domain {@link AppUser}.
+ *
+ * <p>The authenticated principal <em>is</em> the application user, so business
+ * code can resolve the acting user directly from the security context (no
+ * separate auth/domain user bridge required). Effective permission codes and
+ * resource scopes are pre-computed at load time (role defaults + per-user
+ * grants/scope overrides) and exposed here.
+ */
 public class AppUserDetails implements UserDetails {
 
-    private final User user;
+    private final AppUser user;
     private final Set<String> permissionCodes;
     private final Map<String, AccessScope> scopes;
 
-    public AppUserDetails(User user, Set<String> permissionCodes, Map<String, AccessScope> scopes) {
+    public AppUserDetails(AppUser user, Set<String> permissionCodes, Map<String, AccessScope> scopes) {
         this.user = user;
         this.permissionCodes = permissionCodes;
         this.scopes = scopes;
@@ -39,11 +48,21 @@ public class AppUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return user.getEmail();
+        return user.getUsername();
     }
 
+    /** Domain user id (an {@code app_users} row). */
     public Long getId() {
         return user.getId();
+    }
+
+    /** The underlying domain user, for callers that need the entity. */
+    public AppUser getAppUser() {
+        return user;
+    }
+
+    public Set<String> getPermissionCodes() {
+        return permissionCodes;
     }
 
     public Map<String, AccessScope> getScopes() {
@@ -67,6 +86,7 @@ public class AppUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        // Soft-deleted users cannot authenticate.
+        return !Boolean.TRUE.equals(user.getDeleted());
     }
 }

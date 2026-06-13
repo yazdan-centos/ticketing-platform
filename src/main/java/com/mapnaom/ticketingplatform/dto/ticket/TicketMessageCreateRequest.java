@@ -1,15 +1,12 @@
 package com.mapnaom.ticketingplatform.dto.ticket;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
 public class TicketMessageCreateRequest {
 
-    @NotNull
-    private Long senderId;
-
+    // The sender is resolved from the authenticated principal, not the request body.
     @NotBlank
     private String message;
 }
