@@ -9,4 +9,16 @@ DELETE /api/admin/access/users/{userId}/scopes/{resourceType}
 GET /api/admin/access/roles/{roleName}/permissions
 POST /api/admin/access/roles/{roleName}/permissions
 
+TicketController - com.mapnaom.ticketingplat
+POST /api/tickets/
+GET /api/tickets/
+GET /api/tickets/{id}
+PUT /api/tickets/{id}
+POST /api/tickets/{id}/messages
+GET /api/tickets/{id}/messages
+GET /api/tickets/search
+
+
+
+
 
