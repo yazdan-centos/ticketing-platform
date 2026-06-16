@@ -2,6 +2,7 @@ package com.mapnaom.ticketingplatform.service;
 
 import com.mapnaom.ticketingplatform.dto.ticket.*;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.util.List;
@@ -11,6 +12,9 @@ public interface TicketService {
     TicketResponse update(Long ticketId, TicketUpdateRequest request, Long actorId);
     TicketResponse getById(Long ticketId);
     TicketAttachmentResponse attach(File file);
+
+    TicketAttachmentResponse attach(Long ticketId, MultipartFile file);
+
     void detach (Long attachmentId);
 
 

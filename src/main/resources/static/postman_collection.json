@@ -1,8 +1,8 @@
 {
   "info": {
-    "name": "ticketing-platform-20260609140224",
+    "name": "ticketing-platform-20260613160042",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "exported at 2026-06-09 14:02:24"
+    "description": "exported at 2026-06-13 16:00:42"
   },
   "item": [
     {
@@ -31,9 +31,9 @@
               }
             },
             "url": {
-              "raw": "{{host}}/api/auth/authenticate",
+              "raw": "http://localhost:8041/api/auth/authenticate",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -53,9 +53,9 @@
             "method": "POST",
             "header": [],
             "url": {
-              "raw": "{{host}}/api/auth/signout",
+              "raw": "http://localhost:8041/api/auth/signout",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -81,9 +81,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{host}}/api/admin/access/permissions",
+              "raw": "http://localhost:8041/api/admin/access/permissions",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -104,9 +104,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{host}}/api/admin/access/users/:userId",
+              "raw": "http://localhost:8041/api/admin/access/users/:userId",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -134,9 +134,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{host}}/api/admin/access/users/:userId/grants",
+              "raw": "http://localhost:8041/api/admin/access/users/:userId/grants",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -181,9 +181,9 @@
               }
             },
             "url": {
-              "raw": "{{host}}/api/admin/access/users/:userId/grants",
+              "raw": "http://localhost:8041/api/admin/access/users/:userId/grants",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -212,9 +212,9 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{host}}/api/admin/access/users/:userId/grants/:permissionCode",
+              "raw": "http://localhost:8041/api/admin/access/users/:userId/grants/:permissionCode",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -249,9 +249,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{host}}/api/admin/access/users/:userId/scopes",
+              "raw": "http://localhost:8041/api/admin/access/users/:userId/scopes",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -296,9 +296,9 @@
               }
             },
             "url": {
-              "raw": "{{host}}/api/admin/access/users/:userId/scopes/:resourceType",
+              "raw": "http://localhost:8041/api/admin/access/users/:userId/scopes/:resourceType",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -333,9 +333,9 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{host}}/api/admin/access/users/:userId/scopes/:resourceType",
+              "raw": "http://localhost:8041/api/admin/access/users/:userId/scopes/:resourceType",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -370,9 +370,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{host}}/api/admin/access/roles/:roleName/permissions",
+              "raw": "http://localhost:8041/api/admin/access/roles/:roleName/permissions",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -417,9 +417,9 @@
               }
             },
             "url": {
-              "raw": "{{host}}/api/admin/access/roles/:roleName/permissions",
+              "raw": "http://localhost:8041/api/admin/access/roles/:roleName/permissions",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -449,14 +449,364 @@
       "description": "",
       "item": [
         {
+          "name": "createTicket",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text",
+                "description": ""
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"\",\n  \"description\": \"\",\n  \"customerId\": 0,\n  \"slaContractId\": 0,\n  \"assignedMemberId\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8041/api/tickets",
+              "host": [
+                "http://localhost:8041"
+              ],
+              "path": [
+                "api",
+                "tickets"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "getAllTickets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8041/api/tickets",
+              "host": [
+                "http://localhost:8041"
+              ],
+              "path": [
+                "api",
+                "tickets"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "getTicketById",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8041/api/tickets/:id",
+              "host": [
+                "http://localhost:8041"
+              ],
+              "path": [
+                "api",
+                "tickets",
+                ":id"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "updateTicket",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text",
+                "description": ""
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"\",\n  \"description\": \"\",\n  \"slaContractId\": 0,\n  \"assignedMemberId\": 0,\n  \"status\": \"\",\n  \"statusNote\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8041/api/tickets/:id?user.id=&user.firstName=&user.lastName=&user.username=&user.password=&user.email=&user.roles[0].id=&user.roles[0].name=&user.createdAt=&user.updatedAt=&user.deleted=&user.fullName=&permissionCodes[0]=&scopes=",
+              "host": [
+                "http://localhost:8041"
+              ],
+              "path": [
+                "api",
+                "tickets",
+                ":id"
+              ],
+              "query": [
+                {
+                  "key": "user.id",
+                  "value": "",
+                  "equals": true
+                },
+                {
+                  "key": "user.firstName",
+                  "value": "",
+                  "equals": true
+                },
+                {
+                  "key": "user.lastName",
+                  "value": "",
+                  "equals": true
+                },
+                {
+                  "key": "user.username",
+                  "value": "",
+                  "equals": true
+                },
+                {
+                  "key": "user.password",
+                  "value": "",
+                  "equals": true,
+                  "description": "Encoded password (Bcrypt)"
+                },
+                {
+                  "key": "user.email",
+                  "value": "",
+                  "equals": true
+                },
+                {
+                  "key": "user.roles[0].id",
+                  "value": "",
+                  "equals": true
+                },
+                {
+                  "key": "user.roles[0].name",
+                  "value": "",
+                  "equals": true,
+                  "description": "CUSTOMER, TEAM_MEMBER, TEAM_MANAGER"
+                },
+                {
+                  "key": "user.createdAt",
+                  "value": "",
+                  "equals": true
+                },
+                {
+                  "key": "user.updatedAt",
+                  "value": "",
+                  "equals": true
+                },
+                {
+                  "key": "user.deleted",
+                  "value": "",
+                  "equals": true
+                },
+                {
+                  "key": "user.fullName",
+                  "value": "",
+                  "equals": true
+                },
+                {
+                  "key": "permissionCodes[0]",
+                  "value": "",
+                  "equals": true
+                },
+                {
+                  "key": "scopes",
+                  "value": "",
+                  "equals": true
+                }
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "addMessage",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text",
+                "description": ""
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8041/api/tickets/:id/messages?user.id=&user.firstName=&user.lastName=&user.username=&user.password=&user.email=&user.roles[0].id=&user.roles[0].name=&user.createdAt=&user.updatedAt=&user.deleted=&user.fullName=&permissionCodes[0]=&scopes=",
+              "host": [
+                "http://localhost:8041"
+              ],
+              "path": [
+                "api",
+                "tickets",
+                ":id",
+                "messages"
+              ],
+              "query": [
+                {
+                  "key": "user.id",
+                  "value": "",
+                  "equals": true
+                },
+                {
+                  "key": "user.firstName",
+                  "value": "",
+                  "equals": true
+                },
+                {
+                  "key": "user.lastName",
+                  "value": "",
+                  "equals": true
+                },
+                {
+                  "key": "user.username",
+                  "value": "",
+                  "equals": true
+                },
+                {
+                  "key": "user.password",
+                  "value": "",
+                  "equals": true,
+                  "description": "Encoded password (Bcrypt)"
+                },
+                {
+                  "key": "user.email",
+                  "value": "",
+                  "equals": true
+                },
+                {
+                  "key": "user.roles[0].id",
+                  "value": "",
+                  "equals": true
+                },
+                {
+                  "key": "user.roles[0].name",
+                  "value": "",
+                  "equals": true,
+                  "description": "CUSTOMER, TEAM_MEMBER, TEAM_MANAGER"
+                },
+                {
+                  "key": "user.createdAt",
+                  "value": "",
+                  "equals": true
+                },
+                {
+                  "key": "user.updatedAt",
+                  "value": "",
+                  "equals": true
+                },
+                {
+                  "key": "user.deleted",
+                  "value": "",
+                  "equals": true
+                },
+                {
+                  "key": "user.fullName",
+                  "value": "",
+                  "equals": true
+                },
+                {
+                  "key": "permissionCodes[0]",
+                  "value": "",
+                  "equals": true
+                },
+                {
+                  "key": "scopes",
+                  "value": "",
+                  "equals": true
+                }
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "getMessages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8041/api/tickets/:id/messages",
+              "host": [
+                "http://localhost:8041"
+              ],
+              "path": [
+                "api",
+                "tickets",
+                ":id",
+                "messages"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
           "name": "searchTickets",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{host}}/api/tickets/search?username\u003d",
+              "raw": "http://localhost:8041/api/tickets/search?username=",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -504,9 +854,9 @@
               }
             },
             "url": {
-              "raw": "{{host}}/api/customers",
+              "raw": "http://localhost:8041/api/customers",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -525,9 +875,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{host}}/api/customers/search?firstName\u003d\u0026lastName\u003d\u0026username\u003d\u0026email\u003d\u0026companyName\u003d\u0026phone\u003d\u0026deleted\u003d\u0026pageable\u003d",
+              "raw": "http://localhost:8041/api/customers/search?firstName=&lastName=&username=&email=&companyName=&phone=&deleted=&pageable=",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -596,9 +946,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{host}}/api/customers",
+              "raw": "http://localhost:8041/api/customers",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -617,9 +967,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{host}}/api/customers/:id",
+              "raw": "http://localhost:8041/api/customers/:id",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -661,9 +1011,9 @@
               }
             },
             "url": {
-              "raw": "{{host}}/api/customers/:id",
+              "raw": "http://localhost:8041/api/customers/:id",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -689,9 +1039,9 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{host}}/api/customers/:id",
+              "raw": "http://localhost:8041/api/customers/:id",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -739,9 +1089,9 @@
               }
             },
             "url": {
-              "raw": "{{host}}/api/team-members",
+              "raw": "http://localhost:8041/api/team-members",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -760,9 +1110,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{host}}/api/team-members",
+              "raw": "http://localhost:8041/api/team-members",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -781,9 +1131,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{host}}/api/team-members/:id",
+              "raw": "http://localhost:8041/api/team-members/:id",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -809,9 +1159,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{host}}/api/team-members/search?username\u003d\u0026email\u003d\u0026firstName\u003d\u0026lastName\u003d\u0026role\u003d",
+              "raw": "http://localhost:8041/api/team-members/search?username=&email=&firstName=&lastName=&role=",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -874,9 +1224,9 @@
               }
             },
             "url": {
-              "raw": "{{host}}/api/team-members/:id",
+              "raw": "http://localhost:8041/api/team-members/:id",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -902,9 +1252,9 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{host}}/api/team-members/:id",
+              "raw": "http://localhost:8041/api/team-members/:id",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -952,9 +1302,9 @@
               }
             },
             "url": {
-              "raw": "{{host}}/api/sla-contracts",
+              "raw": "http://localhost:8041/api/sla-contracts",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -973,9 +1323,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{host}}/api/sla-contracts",
+              "raw": "http://localhost:8041/api/sla-contracts",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -994,9 +1344,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{host}}/api/sla-contracts/:id",
+              "raw": "http://localhost:8041/api/sla-contracts/:id",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -1038,9 +1388,9 @@
               }
             },
             "url": {
-              "raw": "{{host}}/api/sla-contracts/:id",
+              "raw": "http://localhost:8041/api/sla-contracts/:id",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -1066,9 +1416,9 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{host}}/api/sla-contracts/:id",
+              "raw": "http://localhost:8041/api/sla-contracts/:id",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -1116,9 +1466,9 @@
               }
             },
             "url": {
-              "raw": "{{host}}/api/team-managers",
+              "raw": "http://localhost:8041/api/team-managers",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -1137,9 +1487,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{host}}/api/team-managers",
+              "raw": "http://localhost:8041/api/team-managers",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -1158,9 +1508,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{host}}/api/team-managers/:id",
+              "raw": "http://localhost:8041/api/team-managers/:id",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -1202,9 +1552,9 @@
               }
             },
             "url": {
-              "raw": "{{host}}/api/team-managers/:id",
+              "raw": "http://localhost:8041/api/team-managers/:id",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",
@@ -1230,9 +1580,9 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{host}}/api/team-managers/:id",
+              "raw": "http://localhost:8041/api/team-managers/:id",
               "host": [
-                "{{host}}"
+                "http://localhost:8041"
               ],
               "path": [
                 "api",

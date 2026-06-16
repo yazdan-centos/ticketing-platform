@@ -1,5 +1,6 @@
 package com.mapnaom.ticketingplatform.dto;
 
+import com.mapnaom.ticketingplatform.dto.access.PermissionDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

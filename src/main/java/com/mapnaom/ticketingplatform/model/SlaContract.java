@@ -93,6 +93,12 @@ public class SlaContract {
     @ToString.Exclude
     private Customer customer;
 
+    // Many contracts belong to one Category. Owner side.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    @ToString.Exclude
+    private Category category;
+
     // One contract covers many Tickets. Inverse side.
     @OneToMany(mappedBy = "slaContract")
     @ToString.Exclude

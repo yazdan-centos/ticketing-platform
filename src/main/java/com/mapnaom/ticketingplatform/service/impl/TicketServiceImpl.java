@@ -8,13 +8,27 @@ import com.mapnaom.ticketingplatform.model.enums.TicketStatus;
 import com.mapnaom.ticketingplatform.repository.*;
 import com.mapnaom.ticketingplatform.service.TicketService;
 import jakarta.persistence.EntityNotFoundException;
+
 import lombok.RequiredArgsConstructor;
+
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+
 
 import java.io.File;
+import java.nio.file.Files;
+import java.io.IOException;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -29,6 +43,10 @@ public class TicketServiceImpl implements TicketService {
     private final AppUserRepository appUserRepository;
     private final TicketStatusHistoryRepository ticketStatusHistoryRepository;
     private final TicketMapper ticketMapper;
+    // Add these dependencies to TicketServiceImpl
+    private final TicketAttachmentRepository ticketAttachmentRepository;
+    @Value("${file.upload-dir:/tmp/ticket-uploads}") // Define in application.properties
+    private String uploadDir;
 
     /**
      * Creates a new ticket.
@@ -144,11 +162,9 @@ public class TicketServiceImpl implements TicketService {
         return null;
     }
 
-    @Override
-    public void detach(Long attachmentId) {
-
-
-    }
+    // -------------------------------------------------------------------------
+    // Private helpers
+    // -------------------------------------------------------------------------
 
     @Transactional(readOnly = true)
     @Override
@@ -157,10 +173,6 @@ public class TicketServiceImpl implements TicketService {
                 .map(ticketMapper::toSummaryResponse)
                 .toList();
     }
-
-    // -------------------------------------------------------------------------
-    // Private helpers
-    // -------------------------------------------------------------------------
 
     /**
      * Validates that a status transition is permitted and records it in history.
@@ -190,11 +202,13 @@ public class TicketServiceImpl implements TicketService {
      */
     private void validateStatusTransition(TicketStatus from, TicketStatus to) {
         boolean allowed = switch (from) {
-            case UNALLOCATED  -> to == TicketStatus.ASSIGNED   || to == TicketStatus.CLOSED; // تخصیص نیافته
-            case ASSIGNED     -> to == TicketStatus.IN_PROGRESS || to == TicketStatus.UNALLOCATED || to == TicketStatus.CLOSED; // اختصاص یافته
-            case IN_PROGRESS  -> to == TicketStatus.RESOLVED   || to == TicketStatus.CLOSED       || to == TicketStatus.ASSIGNED; // در حال انجام
-            case RESOLVED     -> to == TicketStatus.CLOSED     || to == TicketStatus.IN_PROGRESS; // حل شده
-            case CLOSED       -> false; // terminal state - بسته شده
+            case UNALLOCATED -> to == TicketStatus.ASSIGNED || to == TicketStatus.CLOSED; // تخصیص نیافته
+            case ASSIGNED ->
+                    to == TicketStatus.IN_PROGRESS || to == TicketStatus.UNALLOCATED || to == TicketStatus.CLOSED; // اختصاص یافته
+            case IN_PROGRESS ->
+                    to == TicketStatus.RESOLVED || to == TicketStatus.CLOSED || to == TicketStatus.ASSIGNED; // در حال انجام
+            case RESOLVED -> to == TicketStatus.CLOSED || to == TicketStatus.IN_PROGRESS; // حل شده
+            case CLOSED -> false; // terminal state - بسته شده
         };
         if (!allowed) {
             throw new IllegalArgumentException(
@@ -247,4 +261,58 @@ public class TicketServiceImpl implements TicketService {
         }
         return sla;
     }
+
+    @Override
+    public TicketAttachmentResponse attach(Long ticketId, MultipartFile file) {
+        // 1. Validate ticket existence
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new EntityNotFoundException("Ticket not found with id: " + ticketId));
+
+        try {
+            // 2. Ensure directory exists
+            Path dirPath = Paths.get(uploadDir);
+            if (!Files.exists(dirPath)) Files.createDirectories(dirPath);
+
+            // 3. Generate unique file name and save to disk
+            String fileName = UUID.randomUUID() + "_" + StringUtils.cleanPath(file.getOriginalFilename());
+            Path filePath = dirPath.resolve(fileName);
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            // 4. Persist metadata to database
+            TicketAttachment attachment = new TicketAttachment();
+            attachment.setTicket(ticket);
+            attachment.setFileName(file.getOriginalFilename());
+            attachment.setContentType(file.getContentType());
+            attachment.setSize(file.getSize());
+            attachment.setFileName(filePath.toString());
+            attachment.setUploadedAt(LocalDateTime.now());
+            // attachment.setUploadedBy(currentUser); // Set current user if security context is available
+
+            TicketAttachment savedAttachment = ticketAttachmentRepository.save(attachment);
+            log.info("Attachment added: id={}, ticketId={}", savedAttachment.getId(), ticketId);
+
+            return ticketMapper.toAttachmentResponse(savedAttachment); // Ensure mapper method exists
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to store file", e);
+        }
+    }
+
+    @Override
+    public void detach(Long attachmentId) {
+        TicketAttachment attachment = ticketAttachmentRepository.findById(attachmentId)
+                .orElseThrow(() -> new EntityNotFoundException("Attachment not found with id: " + attachmentId));
+
+        try {
+            // 1. Delete physical file
+            Path filePath = Paths.get(attachment.getFileName());
+            Files.deleteIfExists(filePath);
+
+            // 2. Delete database record
+            ticketAttachmentRepository.delete(attachment);
+            log.info("Attachment removed: id={}", attachmentId);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to delete file", e);
+        }
+    }
+
 }

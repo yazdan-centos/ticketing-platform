@@ -86,6 +86,7 @@ public class DataInitializer implements CommandLineRunner {
         Role customer = role("CUSTOMER", "TICKET_CREATE", "TICKET_READ", "SLA_READ");
         Role teamMember = role("TEAM_MEMBER", "TICKET_READ", "TICKET_UPDATE", "CUSTOMER_READ", "SLA_READ");
         Role teamManager = new Role();
+
         teamManager.setName("TEAM_MANAGER");
         teamManager.setPermissions(allPermissions);
 

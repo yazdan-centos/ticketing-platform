@@ -1,0 +1,12 @@
+GET /api/admin/access/permissions
+GET /api/admin/access/users/{userId}
+GET /api/admin/access/users/{userId}/grants
+POST /api/admin/access/users/{userId}/grants
+DELETE /api/admin/access/users/{userId}/grants/{permissionCode}
+GET /api/admin/access/users/{userId}/scopes
+PUT /api/admin/access/users/{userId}/scopes/{resourceType}
+DELETE /api/admin/access/users/{userId}/scopes/{resourceType}
+GET /api/admin/access/roles/{roleName}/permissions
+POST /api/admin/access/roles/{roleName}/permissions
+
+
