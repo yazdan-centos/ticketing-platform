@@ -1,0 +1,1 @@
+{"entries":[{"timestamp":"2026-06-17T12:00:29.524183100+00:00","input_summary":"","output_summary":"LLM error (401 Unauthorized): \"invalid x-api-key\"","success":false,"failure_category":"authentication_failed","failure_summary":"Authentication failed. LLM error (401 Unauthorized): \"invalid x-api-key\""}]}

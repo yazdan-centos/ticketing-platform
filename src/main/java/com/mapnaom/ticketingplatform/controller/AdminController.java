@@ -18,11 +18,8 @@ import java.util.List;
 
 /**
  * Administrative access-control operations.
- *
- * Every endpoint is gated by the ACCESS_ADMIN authority. That code is part of
- * the fixed permission catalog and is seeded onto the TEAM_MANAGER role, but
- * because authorities are resolved from the database per request, an admin can
- * also grant or revoke it on any individual user without a redeploy.
+    methods:
+        - 
  */
 @RestController
 @RequestMapping("/api/admin/access")
@@ -35,9 +32,7 @@ public class AdminController {
     // --- Permission catalog (read-only; codes are defined in code) -----------
 
 
-    /**
-     * @return
-     */
+
     @GetMapping("/permissions")
     public List<PermissionDto> listPermissions() {
         return accessAdminService.listPermissions();
