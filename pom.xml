@@ -66,6 +66,12 @@
             <artifactId>flyway-database-postgresql</artifactId>
         </dependency>
         
+        <!-- Jackson for JSON processing (already included via spring-boot-starter-web, but explicit for clarity) -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        
         <!-- H2 Database for Testing -->
         <dependency>
             <groupId>com.h2database</groupId>

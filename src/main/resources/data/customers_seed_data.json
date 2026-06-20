@@ -1,0 +1,162 @@
+[
+  {
+    "username": "jsmith",
+    "password": "P@ssw0rd1!",
+    "email": "jsmith@nimbuscorp.com",
+    "roles": ["ROLE_USER"],
+    "companyName": "Nimbus Corp",
+    "phone": "+1-202-555-0101"
+  },
+  {
+    "username": "agarcia",
+    "password": "Secur3Pass2!",
+    "email": "agarcia@bluepeaksolutions.com",
+    "roles": ["ROLE_ADMIN", "ROLE_USER"],
+    "companyName": "BluePeak Solutions",
+    "phone": "+1-202-555-0102"
+  },
+  {
+    "username": "mwong",
+    "password": "Pa55word3$",
+    "email": "mwong@quantumretail.com",
+    "roles": ["ROLE_USER"],
+    "companyName": "Quantum Retail",
+    "phone": "+1-202-555-0103"
+  },
+  {
+    "username": "klee",
+    "password": "Kl33Secure4#",
+    "email": "klee@skylinelogistics.com",
+    "roles": ["ROLE_USER"],
+    "companyName": "Skyline Logistics",
+    "phone": "+1-202-555-0104"
+  },
+  {
+    "username": "rpatel",
+    "password": "RPat3l@2025",
+    "email": "rpatel@vertexhealth.com",
+    "roles": ["ROLE_USER"],
+    "companyName": "Vertex Health",
+    "phone": "+1-202-555-0105"
+  },
+  {
+    "username": "tnguyen",
+    "password": "Tngu7en!Pass",
+    "email": "tnguyen@granitefinancial.com",
+    "roles": ["ROLE_ADMIN", "ROLE_USER"],
+    "companyName": "Granite Financial",
+    "phone": "+1-202-555-0106"
+  },
+  {
+    "username": "sbrown",
+    "password": "Sbr0wnSecur3",
+    "email": "sbrown@solarisenergy.com",
+    "roles": ["ROLE_USER"],
+    "companyName": "Solaris Energy",
+    "phone": "+1-202-555-0107"
+  },
+  {
+    "username": "dkim",
+    "password": "Dk1mP@ss88",
+    "email": "dkim@cobaltmfg.com",
+    "roles": ["ROLE_USER"],
+    "companyName": "Cobalt Manufacturing",
+    "phone": "+1-202-555-0108"
+  },
+  {
+    "username": "lmartin",
+    "password": "Lm@rtin99Pw",
+    "email": "lmartin@lighthousemedia.com",
+    "roles": ["ROLE_USER"],
+    "companyName": "Lighthouse Media",
+    "phone": "+1-202-555-0109"
+  },
+  {
+    "username": "fortiz",
+    "password": "F0rtizSecure!",
+    "email": "fortiz@pinnacleinsurance.com",
+    "roles": ["ROLE_ADMIN", "ROLE_USER"],
+    "companyName": "Pinnacle Insurance",
+    "phone": "+1-202-555-0110"
+  },
+  {
+    "username": "hcohen",
+    "password": "Hcoh3n#2025",
+    "email": "hcohen@orchardeducation.com",
+    "roles": ["ROLE_USER"],
+    "companyName": "Orchard Education",
+    "phone": "+1-202-555-0111"
+  },
+  {
+    "username": "bsingh",
+    "password": "Bs1nghP@ss",
+    "email": "bsingh@falconaerospace.com",
+    "roles": ["ROLE_USER"],
+    "companyName": "Falcon Aerospace",
+    "phone": "+1-202-555-0112"
+  },
+  {
+    "username": "nwalsh",
+    "password": "Nw@lsh77Sec",
+    "email": "nwalsh@meridiantelecom.com",
+    "roles": ["ROLE_USER"],
+    "companyName": "Meridian Telecom",
+    "phone": "+1-202-555-0113"
+  },
+  {
+    "username": "ydiaz",
+    "password": "Yd1azSecur3!",
+    "email": "ydiaz@cedarhospitality.com",
+    "roles": ["ROLE_ADMIN", "ROLE_USER"],
+    "companyName": "Cedar Hospitality",
+    "phone": "+1-202-555-0114"
+  },
+  {
+    "username": "ckhan",
+    "password": "Ckh@n2025Pw",
+    "email": "ckhan@atlasconstruction.com",
+    "roles": ["ROLE_USER"],
+    "companyName": "Atlas Construction",
+    "phone": "+1-202-555-0115"
+  },
+  {
+    "username": "pmurphy",
+    "password": "Pmurphy#88",
+    "email": "pmurphy@hollowrobotics.com",
+    "roles": ["ROLE_USER"],
+    "companyName": "Hollow Robotics",
+    "phone": "+1-202-555-0116"
+  },
+  {
+    "username": "ezhang",
+    "password": "Ezh@ngSecur3",
+    "email": "ezhang@crimsonanalytics.com",
+    "roles": ["ROLE_USER"],
+    "companyName": "Crimson Analytics",
+    "phone": "+1-202-555-0117"
+  },
+  {
+    "username": "grossi",
+    "password": "Gr0ssiP@ss9",
+    "email": "grossi@driftwoodapparel.com",
+    "roles": ["ROLE_USER"],
+    "companyName": "Driftwood Apparel",
+    "phone": "+1-202-555-0118"
+  },
+  {
+    "username": "wokafor",
+    "password": "Wok@for2025!",
+    "email": "wokafor@ironcladsecurity.com",
+    "roles": ["ROLE_ADMIN", "ROLE_USER"],
+    "companyName": "Ironclad Security",
+    "phone": "+1-202-555-0119"
+  },
+  {
+    "username": "jtanaka",
+    "password": "Jt@naka#Pw7",
+    "email": "jtanaka@wavelengthstudios.com",
+    "roles": ["ROLE_USER"],
+    "companyName": "Wavelength Studios",
+    "phone": "+1-202-555-0120"
+  }
+]

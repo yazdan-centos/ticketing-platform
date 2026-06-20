@@ -1,0 +1,387 @@
+[
+  {
+    "id": 1,
+    "contractName": "پشتیبانی عملیات حساس سازمانی",
+    "serviceScope": "پوشش ۲۴/۷ برای کلیه حوادث تولید با مهندس ارتقاء اختصاصی.",
+    "responseTimeHours": 1,
+    "isActive": true,
+    "createdAt": "2024-01-10T09:00:00",
+    "updatedAt": "2025-12-01T09:00:00",
+    "customer": {
+      "id": 1,
+      "username": "jsmith",
+      "email": "jsmith@nimbuscorp.com",
+      "roles": [
+        "ROLE_USER"
+      ],
+      "companyName": "نیمباس کورپ",
+      "phone": "+1-202-555-0101"
+    }
+  },
+  {
+    "id": 2,
+    "contractName": "پشتیبانی پریمیوم ۲۴/۷",
+    "serviceScope": "پشتیبانی شبانه‌روزی شامل محیط‌های تولید و راه‌اندازی.",
+    "responseTimeHours": 2,
+    "isActive": true,
+    "createdAt": "2024-02-14T10:30:00",
+    "updatedAt": "2025-11-20T10:30:00",
+    "customer": {
+      "id": 2,
+      "username": "agarcia",
+      "email": "agarcia@bluepeaksolutions.com",
+      "roles": [
+        "ROLE_ADMIN",
+        "ROLE_USER"
+      ],
+      "companyName": "بلوپیک ساولوشنز",
+      "phone": "+1-202-555-0102"
+    }
+  },
+  {
+    "id": 3,
+    "contractName": "پشتیبانی ساعات اداری",
+    "serviceScope": "پشتیبانی در روزهای شنبه تا پنجشنبه، ساعت ۹ صبح تا ۶ عصر به وقت محلی.",
+    "responseTimeHours": 8,
+    "isActive": true,
+    "createdAt": "2024-03-05T08:15:00",
+    "updatedAt": "2025-09-15T08:15:00",
+    "customer": {
+      "id": 3,
+      "username": "mwong",
+      "email": "mwong@quantumretail.com",
+      "roles": [
+        "ROLE_USER"
+      ],
+      "companyName": "کوانتام ریتیل",
+      "phone": "+1-202-555-0103"
+    }
+  },
+  {
+    "id": 4,
+    "contractName": "پشتیبانی پایه ایمیلی",
+    "serviceScope": "پشتیبانی فقط ایمیلی برای استعلامات غیربحرانی و گزارش اشکالات.",
+    "responseTimeHours": 48,
+    "isActive": true,
+    "createdAt": "2024-04-18T11:00:00",
+    "updatedAt": "2025-04-18T11:00:00",
+    "customer": {
+      "id": 4,
+      "username": "klee",
+      "email": "klee@skylinelogistics.com",
+      "roles": [
+        "ROLE_USER"
+      ],
+      "companyName": "اسکای‌لاین لاجستیک",
+      "phone": "+1-202-555-0104"
+    }
+  },
+  {
+    "id": 5,
+    "contractName": "پشتیبانی عملیات حساس سازمانی",
+    "serviceScope": "پوشش ۲۴/۷ با تیم پاسخ‌دهی حوادث اختصاصی تضمین‌شده.",
+    "responseTimeHours": 1,
+    "isActive": true,
+    "createdAt": "2024-05-22T07:45:00",
+    "updatedAt": "2025-12-10T07:45:00",
+    "customer": {
+      "id": 5,
+      "username": "rpatel",
+      "email": "rpatel@vertexhealth.com",
+      "roles": [
+        "ROLE_USER"
+      ],
+      "companyName": "ورتکس هلث",
+      "phone": "+1-202-555-0105"
+    }
+  },
+  {
+    "id": 6,
+    "contractName": "پشتیبانی پریمیوم ۲۴/۷",
+    "serviceScope": "پشتیبانی شبانه‌روزی شامل آخر هفته‌ها و تعطیلات رسمی.",
+    "responseTimeHours": 2,
+    "isActive": false,
+    "createdAt": "2023-06-30T13:20:00",
+    "updatedAt": "2024-06-30T13:20:00",
+    "customer": {
+      "id": 6,
+      "username": "tnguyen",
+      "email": "tnguyen@granitefinancial.com",
+      "roles": [
+        "ROLE_ADMIN",
+        "ROLE_USER"
+      ],
+      "companyName": "گرانایت فایننشال",
+      "phone": "+1-202-555-0106"
+    }
+  },
+  {
+    "id": 7,
+    "contractName": "پشتیبانی ساعات اداری",
+    "serviceScope": "پشتیبانی در روزهای شنبه تا پنجشنبه در ساعات اداری استاندارد.",
+    "responseTimeHours": 8,
+    "isActive": true,
+    "createdAt": "2024-07-09T09:30:00",
+    "updatedAt": "2025-10-05T09:30:00",
+    "customer": {
+      "id": 7,
+      "username": "sbrown",
+      "email": "sbrown@solarisenergy.com",
+      "roles": [
+        "ROLE_USER"
+      ],
+      "companyName": "سولاریس انرجی",
+      "phone": "+1-202-555-0107"
+    }
+  },
+  {
+    "id": 8,
+    "contractName": "پشتیبانی توسعه‌یافته - سطح تولید",
+    "serviceScope": "پشتیبانی اولویت‌دار برای یکپارچه‌سازی خطوط تولید با پوشش نوبتی.",
+    "responseTimeHours": 4,
+    "isActive": true,
+    "createdAt": "2024-08-12T06:00:00",
+    "updatedAt": "2025-08-12T06:00:00",
+    "customer": {
+      "id": 8,
+      "username": "dkim",
+      "email": "dkim@cobaltmfg.com",
+      "roles": [
+        "ROLE_USER"
+      ],
+      "companyName": "کوبالت منوفکتچرینگ",
+      "phone": "+1-202-555-0108"
+    }
+  },
+  {
+    "id": 9,
+    "contractName": "پشتیبانی پایه ایمیلی",
+    "serviceScope": "پشتیبانی فقط ایمیلی با پردازش استاندارد برای پرسش‌های عمومی.",
+    "responseTimeHours": 24,
+    "isActive": true,
+    "createdAt": "2024-09-01T12:00:00",
+    "updatedAt": "2025-09-01T12:00:00",
+    "customer": {
+      "id": 9,
+      "username": "lmartin",
+      "email": "lmartin@lighthousemedia.com",
+      "roles": [
+        "ROLE_USER"
+      ],
+      "companyName": "لایتهاوس مدیا",
+      "phone": "+1-202-555-0109"
+    }
+  },
+  {
+    "id": 10,
+    "contractName": "پشتیبانی عملیات حساس سازمانی",
+    "serviceScope": "پوشش ۲۴/۷ با بررسی‌های فصلی خدمات و مدیر حساب مشخص.",
+    "responseTimeHours": 1,
+    "isActive": true,
+    "createdAt": "2024-10-15T15:45:00",
+    "updatedAt": "2025-12-15T15:45:00",
+    "customer": {
+      "id": 10,
+      "username": "fortiz",
+      "email": "fortiz@pinnacleinsurance.com",
+      "roles": [
+        "ROLE_ADMIN",
+        "ROLE_USER"
+      ],
+      "companyName": "Pinnacle Insurance",
+      "phone": "+1-202-555-0110"
+    }
+  },
+  {
+    "id": 11,
+    "contractName": "پشتیبانی ساعات اداری",
+    "serviceScope": "Business-hours support covering platform and reporting modules.",
+    "responseTimeHours": 8,
+    "isActive": true,
+    "createdAt": "2024-11-03T10:00:00",
+    "updatedAt": "2025-11-03T10:00:00",
+    "customer": {
+      "id": 11,
+      "username": "hcohen",
+      "email": "hcohen@orchardeducation.com",
+      "roles": [
+        "ROLE_USER"
+      ],
+      "companyName": "ارچرد اِدجوکیشن",
+      "phone": "+1-202-555-0111"
+    }
+  },
+  {
+    "id": 12,
+    "contractName": "پشتیبانی پریمیوم ۲۴/۷",
+    "serviceScope": "پشتیبانی شبانه‌روزی با تضمین ۹۹.۹٪ زمان فعالیت برای سیستم‌های عملیات پرواز.",
+    "responseTimeHours": 2,
+    "isActive": true,
+    "createdAt": "2024-12-20T05:30:00",
+    "updatedAt": "2025-12-20T05:30:00",
+    "customer": {
+      "id": 12,
+      "username": "bsingh",
+      "email": "bsingh@falconaerospace.com",
+      "roles": [
+        "ROLE_USER"
+      ],
+      "companyName": "فالکون ایروسپیس",
+      "phone": "+1-202-555-0112"
+    }
+  },
+  {
+    "id": 13,
+    "contractName": "پشتیبانی توسعه‌یافته - سطح مخابرات",
+    "serviceScope": "پشتیبانی اولویت‌دار برای یکپارچه‌سازی نظارت و هشدار شبکه.",
+    "responseTimeHours": 4,
+    "isActive": true,
+    "createdAt": "2025-01-08T14:00:00",
+    "updatedAt": "2025-12-08T14:00:00",
+    "customer": {
+      "id": 13,
+      "username": "nwalsh",
+      "email": "nwalsh@meridiantelecom.com",
+      "roles": [
+        "ROLE_USER"
+      ],
+      "companyName": "مریدیان مخابرات",
+      "phone": "+1-202-555-0113"
+    }
+  },
+  {
+    "id": 14,
+    "contractName": "پشتیبانی ساعات اداری",
+    "serviceScope": "پشتیبانی ساعات اداری برای سیستم‌های رزرو و نوبت‌دهی.",
+    "responseTimeHours": 8,
+    "isActive": true,
+    "createdAt": "2025-02-17T09:15:00",
+    "updatedAt": "2025-11-17T09:15:00",
+    "customer": {
+      "id": 14,
+      "username": "ydiaz",
+      "email": "ydiaz@cedarhospitality.com",
+      "roles": [
+        "ROLE_ADMIN",
+        "ROLE_USER"
+      ],
+      "companyName": "سیدر هُسپیتالیته",
+      "phone": "+1-202-555-0114"
+    }
+  },
+  {
+    "id": 15,
+    "contractName": "پشتیبانی پایه ایمیلی",
+    "serviceScope": "پشتیبانی فقط ایمیلی برای مستندات پروژه و ابزارهای زمان‌بندی.",
+    "responseTimeHours": 48,
+    "isActive": false,
+    "createdAt": "2023-03-25T11:30:00",
+    "updatedAt": "2024-03-25T11:30:00",
+    "customer": {
+      "id": 15,
+      "username": "ckhan",
+      "email": "ckhan@atlasconstruction.com",
+      "roles": [
+        "ROLE_USER"
+      ],
+      "companyName": "اطلس کانستراکشن",
+      "phone": "+1-202-555-0115"
+    }
+  },
+  {
+    "id": 16,
+    "contractName": "پشتیبانی توسعه‌یافته - سطح رباتیک",
+    "serviceScope": "پشتیبانی اولویت‌دار برای سیستم‌های مدیریت ناوگان و به‌روزرسانی firmware.",
+    "responseTimeHours": 4,
+    "isActive": true,
+    "createdAt": "2025-03-30T07:00:00",
+    "updatedAt": "2025-12-30T07:00:00",
+    "customer": {
+      "id": 16,
+      "username": "pmurphy",
+      "email": "pmurphy@hollowrobotics.com",
+      "roles": [
+        "ROLE_USER"
+      ],
+      "companyName": "هولو رباتیکس",
+      "phone": "+1-202-555-0116"
+    }
+  },
+  {
+    "id": 17,
+    "contractName": "پشتیبانی ساعات اداری",
+    "serviceScope": "پشتیبانی ساعات اداری برای داشبوردها و پایپ‌لاین‌های تحلیل.",
+    "responseTimeHours": 8,
+    "isActive": true,
+    "createdAt": "2025-04-11T13:00:00",
+    "updatedAt": "2025-12-11T13:00:00",
+    "customer": {
+      "id": 17,
+      "username": "ezhang",
+      "email": "ezhang@crimsonanalytics.com",
+      "roles": [
+        "ROLE_USER"
+      ],
+      "companyName": "کریمرسن آنالیتیکس",
+      "phone": "+1-202-555-0117"
+    }
+  },
+  {
+    "id": 18,
+    "contractName": "پشتیبانی پایه ایمیلی",
+    "serviceScope": "پشتیبانی فقط ایمیلی برای استعلامات ویترین و مدیریت سفارشات.",
+    "responseTimeHours": 24,
+    "isActive": true,
+    "createdAt": "2025-05-19T16:00:00",
+    "updatedAt": "2025-11-19T16:00:00",
+    "customer": {
+      "id": 18,
+      "username": "grossi",
+      "email": "grossi@driftwoodapparel.com",
+      "roles": [
+        "ROLE_USER"
+      ],
+      "companyName": "دری‌وود اپارِل",
+      "phone": "+1-202-555-0118"
+    }
+  },
+  {
+    "id": 19,
+    "contractName": "پشتیبانی عملیات حساس سازمانی",
+    "serviceScope": "پوشش ۲۴/۷ با پاسخ‌دهی حوادث امنیتی اختصاصی برای سیستم‌های کنترل دسترسی.",
+    "responseTimeHours": 1,
+    "isActive": true,
+    "createdAt": "2025-06-02T08:00:00",
+    "updatedAt": "2025-12-02T08:00:00",
+    "customer": {
+      "id": 19,
+      "username": "wokafor",
+      "email": "wokafor@ironcladsecurity.com",
+      "roles": [
+        "ROLE_ADMIN",
+        "ROLE_USER"
+      ],
+      "companyName": "آیرونکلید سکوریتی",
+      "phone": "+1-202-555-0119"
+    }
+  },
+  {
+    "id": 20,
+    "contractName": "پشتیبانی پریمیوم ۲۴/۷",
+    "serviceScope": "پشتیبانی شبانه‌روزی برای زیرساخت تحویل محتوا و پخش استریم.",
+    "responseTimeHours": 2,
+    "isActive": true,
+    "createdAt": "2025-07-14T10:45:00",
+    "updatedAt": "2025-12-14T10:45:00",
+    "customer": {
+      "id": 20,
+      "username": "jtanaka",
+      "email": "jtanaka@wavelengthstudios.com",
+      "roles": [
+        "ROLE_USER"
+      ],
+      "companyName": "ویل‌نِگ استودیوز",
+      "phone": "+1-202-555-0120"
+    }
+  }
+]
