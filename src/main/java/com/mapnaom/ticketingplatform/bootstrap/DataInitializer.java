@@ -150,7 +150,7 @@ public class DataInitializer implements CommandLineRunner {
      * every seeded customer simply gets the CUSTOMER role.
      */
     private void seedCustomersFromJson(Role customerRole) throws IOException {
-        List<CustomerSeedDto> seeds = readJsonArray("data/customers_seed_data.json", CustomerSeedDto.class);
+        List<CustomerSeedDto> seeds = readJsonArray("/data/customers_seed_data.json", CustomerSeedDto.class);
 
         List<Customer> customers = new ArrayList<>();
         for (CustomerSeedDto seed : seeds) {
@@ -167,7 +167,7 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     /**
-     * Loads {@code data/sla_contracts_seed_data.json}. Each entry's nested
+     * Loads {@code data/sla_contracts_seed_data_persian.json}. Each entry's nested
      * {@code customer.id} is a 1-based position into the customers fixture
      * (not a database id), so it's resolved positionally against the freshly
      * saved customer list. {@code createdAt}/{@code updatedAt} from the JSON
@@ -178,7 +178,7 @@ public class DataInitializer implements CommandLineRunner {
             return;
         }
 
-        List<SlaContractSeedDto> seeds = readJsonArray("data/sla_contracts_seed_data.json", SlaContractSeedDto.class);
+        List<SlaContractSeedDto> seeds = readJsonArray("/data/sla_contracts_seed_data_persian.json", SlaContractSeedDto.class);
         List<Customer> customers = customerRepository.findAll();
 
         List<SlaContract> contracts = new ArrayList<>();
@@ -209,7 +209,7 @@ public class DataInitializer implements CommandLineRunner {
             return;
         }
 
-        List<TicketSeedDto> seeds = readJsonArray("data/ticket_seed_data.json", TicketSeedDto.class);
+        List<TicketSeedDto> seeds = readJsonArray("/data/ticket_seed_data.json", TicketSeedDto.class);
         List<Customer> customers = customerRepository.findAll();
         List<SlaContract> contracts = slaContractRepository.findAll();
         List<TeamMember> members = teamMemberRepository.findAll();

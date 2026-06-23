@@ -56,7 +56,7 @@ public class Ticket {
 
     // Many tickets assigned to one Team Member.
     // targetEntity ensures we link to the TeamMember subclass.
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY,targetEntity = TeamMember.class)
     @JoinColumn(name = "assigned_member_id")
     private TeamMember assignedMember;
 

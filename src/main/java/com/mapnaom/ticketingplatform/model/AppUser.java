@@ -63,7 +63,7 @@ public abstract class AppUser {
         if (roles == null) roles = new HashSet<>();
         if (deleted == null) deleted = false;
     }
-    protected String getFullName(){
+    public String getFullName() {
         return firstName + " " + lastName;
     }
 

@@ -8,7 +8,6 @@ import com.mapnaom.ticketingplatform.model.TicketStatusHistory;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
@@ -68,6 +67,7 @@ public class TicketMapper {
         dto.setFileName(attachment.getFileName());
         dto.setContentType(attachment.getContentType());
         dto.setSize(attachment.getSize());
+        dto.setFilePath(attachment.getStorageKey());
         dto.setUploadedById(attachment.getUploadedBy() != null ? attachment.getUploadedBy().getId() : null);
         dto.setUploadedAt(attachment.getUploadedAt());
         return dto;

@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 @Data
 public class TicketAttachmentResponse {
     private Long id;
+    private Long ticketId;
     private String fileName;
     private String contentType;
     private Long size;

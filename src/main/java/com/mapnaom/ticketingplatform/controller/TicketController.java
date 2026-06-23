@@ -1,28 +1,21 @@
 package com.mapnaom.ticketingplatform.controller;
 
-import com.mapnaom.ticketingplatform.dto.ticket.TicketCreateRequest;
-import com.mapnaom.ticketingplatform.dto.ticket.TicketDto;
-import com.mapnaom.ticketingplatform.dto.ticket.TicketMessageCreateRequest;
-import com.mapnaom.ticketingplatform.dto.ticket.TicketMessageResponse;
-import com.mapnaom.ticketingplatform.dto.ticket.TicketResponse;
-import com.mapnaom.ticketingplatform.dto.ticket.TicketSearchCriteriaDto;
-import com.mapnaom.ticketingplatform.dto.ticket.TicketSummaryResponse;
-import com.mapnaom.ticketingplatform.dto.ticket.TicketUpdateRequest;
+import com.mapnaom.ticketingplatform.dto.TicketSearchRequestDto;
+import com.mapnaom.ticketingplatform.dto.ticket.*;
 import com.mapnaom.ticketingplatform.model.AppUserDetails;
-import com.mapnaom.ticketingplatform.model.Ticket;
-import com.mapnaom.ticketingplatform.repository.TicketRepository;
 import com.mapnaom.ticketingplatform.service.TicketMessageService;
 import com.mapnaom.ticketingplatform.service.TicketService;
-import com.mapnaom.ticketingplatform.specification.TicketSpecification;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @CrossOrigin
 @RestController
@@ -30,7 +23,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TicketController {
 
-    private final TicketRepository ticketRepository;
     private final TicketService ticketService;
     private final TicketMessageService ticketMessageService;
 
@@ -87,20 +79,32 @@ public class TicketController {
         return ResponseEntity.ok(ticketService.getById(id).getMessages());
     }
 
-    // --- Search Tickets (existing endpoint, repository-backed) ---
-    @GetMapping("/search")
-    public List<TicketDto> searchTickets(TicketSearchCriteriaDto criteria) {
-        List<Ticket> tickets = ticketRepository.findAll(TicketSpecification.filterTickets(criteria));
 
-        return tickets.stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+    @PostMapping("/search")
+    public Page<?> searchTickets(
+            @AuthenticationPrincipal AppUserDetails principal,
+            @RequestBody TicketSearchRequestDto request,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String order
+    ) {
+        return ticketService.search(request, sortBy, order, page, size, principal.getId());
     }
 
-    private TicketDto convertToDto(Ticket ticket) {
-        TicketDto dto = new TicketDto();
-        dto.setId(ticket.getId());
-        dto.setUsername(ticket.getAssignedMember() != null ? ticket.getAssignedMember().getUsername() : null);
-        return dto;
+    @PostMapping(value = "/{id}/attachments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<TicketAttachmentResponse> attachFile(
+            @PathVariable Long id,
+            @AuthenticationPrincipal AppUserDetails principal,
+            @RequestPart("file") MultipartFile file) {
+        TicketAttachmentResponse created = ticketService.attach(id, file, principal.getId());
+        return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
+
+    @DeleteMapping("/attachments/{attachmentId}")
+    public ResponseEntity<Void> detachFile(@PathVariable Long attachmentId) {
+        ticketService.detach(attachmentId);
+        return ResponseEntity.noContent().build();
+    }
+
 }

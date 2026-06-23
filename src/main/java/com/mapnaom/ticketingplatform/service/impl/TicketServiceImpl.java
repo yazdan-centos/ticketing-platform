@@ -1,34 +1,41 @@
 package com.mapnaom.ticketingplatform.service.impl;
 
+import com.mapnaom.ticketingplatform.dto.TicketSearchRequestDto;
 import com.mapnaom.ticketingplatform.dto.ticket.*;
+import com.mapnaom.ticketingplatform.mapper.TicketCustomerMapper;
 import com.mapnaom.ticketingplatform.mapper.TicketMapper;
 import com.mapnaom.ticketingplatform.model.*;
 import com.mapnaom.ticketingplatform.model.enums.AvailabilityStatus;
 import com.mapnaom.ticketingplatform.model.enums.TicketStatus;
+import com.mapnaom.ticketingplatform.model.enums.UserType;
 import com.mapnaom.ticketingplatform.repository.*;
 import com.mapnaom.ticketingplatform.service.TicketService;
+import com.mapnaom.ticketingplatform.specification.TicketSpecification;
 import jakarta.persistence.EntityNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-
-import java.io.File;
-import java.nio.file.Files;
 import java.io.IOException;
-
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+
 
 @Slf4j
 @Service
@@ -43,6 +50,7 @@ public class TicketServiceImpl implements TicketService {
     private final AppUserRepository appUserRepository;
     private final TicketStatusHistoryRepository ticketStatusHistoryRepository;
     private final TicketMapper ticketMapper;
+    private final TicketCustomerMapper ticketCustomerMapper;
     // Add these dependencies to TicketServiceImpl
     private final TicketAttachmentRepository ticketAttachmentRepository;
     @Value("${file.upload-dir:/tmp/ticket-uploads}") // Define in application.properties
@@ -158,8 +166,65 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
-    public TicketAttachmentResponse attach(File file) {
-        return null;
+    public TicketAttachmentResponse attach(Long ticketId, MultipartFile file, Long uploaderId) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("Attachment file must not be empty");
+        }
+
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new EntityNotFoundException("Ticket not found with id: " + ticketId));
+
+        AppUser uploader = appUserRepository.findById(uploaderId)
+                .orElseThrow(() -> new EntityNotFoundException("Uploader not found with id: " + uploaderId));
+
+        try {
+            Path dirPath = Paths.get(uploadDir);
+            if (!Files.exists(dirPath)) {
+                Files.createDirectories(dirPath);
+            }
+
+            String originalFilename = file.getOriginalFilename();
+            if (originalFilename == null || originalFilename.isBlank()) {
+                throw new IllegalArgumentException("Attachment file must have a name");
+            }
+
+            String storedFileName = UUID.randomUUID() + "_" + StringUtils.cleanPath(originalFilename);
+            Path filePath = dirPath.resolve(storedFileName);
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            TicketAttachment attachment = new TicketAttachment();
+            attachment.setTicket(ticket);
+            attachment.setFileName(originalFilename);
+            attachment.setContentType(file.getContentType());
+            attachment.setSize(file.getSize());
+            attachment.setStorageKey(filePath.toString());
+            attachment.setUploadedBy(uploader);
+
+            TicketAttachment savedAttachment = ticketAttachmentRepository.save(attachment);
+            log.info("Attachment added: id={}, ticketId={}", savedAttachment.getId(), ticketId);
+
+            return ticketMapper.toAttachmentResponse(savedAttachment);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to store file", e);
+        }
+    }
+
+    @Override
+    public void detach(Long attachmentId) {
+        TicketAttachment attachment = ticketAttachmentRepository.findById(attachmentId)
+                .orElseThrow(() -> new EntityNotFoundException("Attachment not found with id: " + attachmentId));
+
+        try {
+            if (attachment.getStorageKey() != null && !attachment.getStorageKey().isBlank()) {
+                Path filePath = Paths.get(attachment.getStorageKey());
+                Files.deleteIfExists(filePath);
+            }
+
+            ticketAttachmentRepository.delete(attachment);
+            log.info("Attachment removed: id={}", attachmentId);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to delete file", e);
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -172,6 +237,105 @@ public class TicketServiceImpl implements TicketService {
         return ticketRepository.findAll().stream()
                 .map(ticketMapper::toSummaryResponse)
                 .toList();
+    }
+
+
+    @Override
+    public Page<CustomerTicketDto> searchForCustomer(TicketSearchRequestDto request, String sortBy, String order, String pageNumber, String pageSize) {
+        Sort sort = order.equalsIgnoreCase("DESC")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        PageRequest pageRequest = PageRequest.of(Integer.parseInt(pageNumber), Integer.parseInt(pageSize), sort);
+
+        // Execute the query using the specification + pageable
+        Page<Ticket> ticketPage = ticketRepository.findAll(
+                TicketSpecification.bySearchRequest(request),
+                pageRequest
+        );
+
+        // Convert entities -> DTOs
+        return ticketPage.map(ticketCustomerMapper::toCustomerDto);
+    }
+
+    @Override
+    public Page<TeamTicketDto> searchForTeam(TicketSearchRequestDto request, String sortBy, String order, int pageNumber, int pageSize) {
+        Sort sort = order.equalsIgnoreCase("DESC")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize, sort);
+
+        Specification<Ticket> spec = TicketSpecification.bySearchRequest(request);
+        Page<Ticket> ticketPage = ticketRepository.findAll(spec, pageRequest);
+        return ticketPage.map(ticketCustomerMapper::toTeamDto);
+    }
+
+    @Override
+    public Page<?> search(TicketSearchRequestDto request, String sortBy, String order, int pageNumber, int pageSize, Long actorId) {
+        if (request == null) {
+            throw new IllegalArgumentException("search request must not be null");
+        }
+
+        if (actorId == null) {
+            throw new IllegalArgumentException("actorId is required for ticket search");
+        }
+
+        AppUser actor = appUserRepository.findById(actorId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + actorId));
+        UserType userType = resolveUserType(actor);
+
+        request.setUserId(actorId);
+        request.setUserType(userType);
+
+        return switch (userType) {
+            case CUSTOMER -> {
+                request.setCustomerId(actorId);
+                request.setAssignedToId(null);
+                request.setTeamId(null);
+                yield searchForCustomer(request, sortBy, order, pageNumber, pageSize);
+            }
+            case TEAM_MEMBER -> {
+                request.setAssignedToId(actorId);
+                request.setCustomerId(null);
+                yield searchForTeam(request, sortBy, order, pageNumber, pageSize);
+            }
+            case TEAM_MANAGER -> {
+                request.setTeamId(actorId);
+                request.setCustomerId(null);
+                request.setAssignedToId(null);
+                yield searchForTeam(request, sortBy, order, pageNumber, pageSize);
+            }
+        };
+    }
+
+    private UserType resolveUserType(AppUser user) {
+        if (user instanceof Customer) {
+            return UserType.CUSTOMER;
+        }
+        if (user instanceof TeamManager) {
+            return UserType.TEAM_MANAGER;
+        }
+        if (user instanceof TeamMember) {
+            return UserType.TEAM_MEMBER;
+        }
+        throw new IllegalArgumentException("Unsupported user type for ticket search: " + user.getClass().getSimpleName());
+    }
+
+    @Override
+    public Page<CustomerTicketDto> searchForCustomer(TicketSearchRequestDto request, String sortBy, String order, int pageNumber, int pageSize) {
+        Sort sort = order.equalsIgnoreCase("DESC")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize, sort);
+
+        Page<Ticket> ticketPage = ticketRepository.findAll(
+                TicketSpecification.bySearchRequest(request),
+                pageRequest
+        );
+
+        return ticketPage.map(ticketCustomerMapper::toCustomerDto);
     }
 
     /**
@@ -262,57 +426,5 @@ public class TicketServiceImpl implements TicketService {
         return sla;
     }
 
-    @Override
-    public TicketAttachmentResponse attach(Long ticketId, MultipartFile file) {
-        // 1. Validate ticket existence
-        Ticket ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new EntityNotFoundException("Ticket not found with id: " + ticketId));
-
-        try {
-            // 2. Ensure directory exists
-            Path dirPath = Paths.get(uploadDir);
-            if (!Files.exists(dirPath)) Files.createDirectories(dirPath);
-
-            // 3. Generate unique file name and save to disk
-            String fileName = UUID.randomUUID() + "_" + StringUtils.cleanPath(file.getOriginalFilename());
-            Path filePath = dirPath.resolve(fileName);
-            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-            // 4. Persist metadata to database
-            TicketAttachment attachment = new TicketAttachment();
-            attachment.setTicket(ticket);
-            attachment.setFileName(file.getOriginalFilename());
-            attachment.setContentType(file.getContentType());
-            attachment.setSize(file.getSize());
-            attachment.setFileName(filePath.toString());
-            attachment.setUploadedAt(LocalDateTime.now());
-            // attachment.setUploadedBy(currentUser); // Set current user if security context is available
-
-            TicketAttachment savedAttachment = ticketAttachmentRepository.save(attachment);
-            log.info("Attachment added: id={}, ticketId={}", savedAttachment.getId(), ticketId);
-
-            return ticketMapper.toAttachmentResponse(savedAttachment); // Ensure mapper method exists
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to store file", e);
-        }
-    }
-
-    @Override
-    public void detach(Long attachmentId) {
-        TicketAttachment attachment = ticketAttachmentRepository.findById(attachmentId)
-                .orElseThrow(() -> new EntityNotFoundException("Attachment not found with id: " + attachmentId));
-
-        try {
-            // 1. Delete physical file
-            Path filePath = Paths.get(attachment.getFileName());
-            Files.deleteIfExists(filePath);
-
-            // 2. Delete database record
-            ticketAttachmentRepository.delete(attachment);
-            log.info("Attachment removed: id={}", attachmentId);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to delete file", e);
-        }
-    }
 
 }
