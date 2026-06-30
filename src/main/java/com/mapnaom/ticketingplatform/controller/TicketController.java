@@ -92,6 +92,7 @@ public class TicketController {
         return ticketService.search(request, sortBy, order, page, size, principal.getId());
     }
 
+
     @PostMapping(value = "/{id}/attachments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<TicketAttachmentResponse> attachFile(
             @PathVariable Long id,

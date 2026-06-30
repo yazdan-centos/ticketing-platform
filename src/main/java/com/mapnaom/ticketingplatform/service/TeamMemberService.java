@@ -91,9 +91,9 @@ public class TeamMemberService {
                 existingMember.setManager(manager);
             }
         } else {
-            // If managerId is null in DTO, should we unassign?
-            // Depending on business logic. Here we keep existing if null, or uncomment below to clear:
-            // existingMember.setManager(null);
+            // If managerId is null in DTO, unassign the manager
+            // Depending on business logic. Here we clear the existing manager:
+            existingMember.setManager(null);
         }
 
         TeamMember updatedMember = teamMemberRepository.save(existingMember);
