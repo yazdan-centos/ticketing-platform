@@ -3,11 +3,16 @@ package com.mapnaom.ticketingplatform.controller;
 import com.mapnaom.ticketingplatform.dto.TeamMemberRequestDto;
 import com.mapnaom.ticketingplatform.dto.TeamMemberResponseDto;
 import com.mapnaom.ticketingplatform.dto.TeamMemberSearchCriteriaDto;
+import com.mapnaom.ticketingplatform.dto.ticket.TicketMessageCreateRequest;
+import com.mapnaom.ticketingplatform.dto.ticket.TicketMessageResponse;
+import com.mapnaom.ticketingplatform.model.AppUserDetails;
+import com.mapnaom.ticketingplatform.service.TicketMessageService;
 import com.mapnaom.ticketingplatform.service.TeamMemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +25,7 @@ import java.util.List;
 public class TeamMemberController {
 
     private final TeamMemberService teamMemberService;
+    private final TicketMessageService ticketMessageService;
 
     // --- Create Team Member ---
     @PostMapping
@@ -63,5 +69,18 @@ public class TeamMemberController {
     public ResponseEntity<Void> deleteTeamMember(@PathVariable Long id) {
         teamMemberService.deleteTeamMember(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // --- Create Ticket Message as Team Member ---
+    @PostMapping("/tickets/{ticketId}/messages")
+    public ResponseEntity<TicketMessageResponse> createTicketMessage(
+            @PathVariable Long ticketId,
+            @AuthenticationPrincipal AppUserDetails principal,
+            @Valid @RequestBody TicketMessageCreateRequest request) {
+        TicketMessageResponse createdMessage = ticketMessageService.addMessageByTeamMember(
+                ticketId,
+                request,
+                principal.getId());
+        return new ResponseEntity<>(createdMessage, HttpStatus.CREATED);
     }
 }

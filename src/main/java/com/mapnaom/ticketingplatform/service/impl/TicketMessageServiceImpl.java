@@ -14,6 +14,7 @@ import com.mapnaom.ticketingplatform.service.EmailNotificationService;
 import com.mapnaom.ticketingplatform.service.TicketMessageService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +39,25 @@ public class TicketMessageServiceImpl implements TicketMessageService {
         AppUser sender = appUserRepository.findById(senderId)
                 .orElseThrow(() -> new EntityNotFoundException("Sender not found"));
 
+        return createMessage(ticket, sender, request);
+    }
+
+    @Override
+    public TicketMessageResponse addMessageByTeamMember(Long ticketId, TicketMessageCreateRequest request, Long senderId) {
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new EntityNotFoundException("Ticket not found"));
+
+        AppUser sender = appUserRepository.findById(senderId)
+                .orElseThrow(() -> new EntityNotFoundException("Sender not found"));
+
+        if (!(sender instanceof TeamMember)) {
+            throw new AccessDeniedException("Only team members can create messages using this API");
+        }
+
+        return createMessage(ticket, sender, request);
+    }
+
+    private TicketMessageResponse createMessage(Ticket ticket, AppUser sender, TicketMessageCreateRequest request) {
         TicketMessage message = new TicketMessage();
         message.setTicket(ticket);
         message.setSender(sender);

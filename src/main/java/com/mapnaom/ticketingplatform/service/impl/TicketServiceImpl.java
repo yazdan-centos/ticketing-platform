@@ -21,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -177,6 +178,33 @@ public class TicketServiceImpl implements TicketService {
         AppUser uploader = appUserRepository.findById(uploaderId)
                 .orElseThrow(() -> new EntityNotFoundException("Uploader not found with id: " + uploaderId));
 
+        return storeAttachment(ticket, file, uploader);
+    }
+
+    @Override
+    public TicketAttachmentResponse attachByCustomer(Long ticketId, MultipartFile file, Long customerId) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("Attachment file must not be empty");
+        }
+
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new EntityNotFoundException("Ticket not found with id: " + ticketId));
+
+        AppUser uploader = appUserRepository.findById(customerId)
+                .orElseThrow(() -> new EntityNotFoundException("Uploader not found with id: " + customerId));
+
+        if (!(uploader instanceof Customer)) {
+            throw new AccessDeniedException("Only customers can upload files using this API");
+        }
+
+        if (ticket.getCustomer() == null || !customerId.equals(ticket.getCustomer().getId())) {
+            throw new AccessDeniedException("Customers can upload files only to their own tickets");
+        }
+
+        return storeAttachment(ticket, file, uploader);
+    }
+
+    private TicketAttachmentResponse storeAttachment(Ticket ticket, MultipartFile file, AppUser uploader) {
         try {
             Path dirPath = Paths.get(uploadDir);
             if (!Files.exists(dirPath)) {
@@ -201,7 +229,7 @@ public class TicketServiceImpl implements TicketService {
             attachment.setUploadedBy(uploader);
 
             TicketAttachment savedAttachment = ticketAttachmentRepository.save(attachment);
-            log.info("Attachment added: id={}, ticketId={}", savedAttachment.getId(), ticketId);
+            log.info("Attachment added: id={}, ticketId={}", savedAttachment.getId(), ticket.getId());
 
             return ticketMapper.toAttachmentResponse(savedAttachment);
         } catch (IOException e) {

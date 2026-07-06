@@ -35,3 +35,10 @@ build/
 # Refact IDE files
 .refact/
 .cursorj/
+
+# Local tool and generated working files
+.RestfulApiTool/
+.github/agents/
+DATABASE_SEEDER_SUMMARY.md
+FRONTEND_AGENT_API_GUIDE.md
+src/main/java/com/mapnaom/ticketingplatform/model/enums/UserType.java

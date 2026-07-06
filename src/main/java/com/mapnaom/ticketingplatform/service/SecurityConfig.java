@@ -60,6 +60,10 @@ public class SecurityConfig {
                         .hasAnyRole(CUSTOMER, TEAM_MEMBER, TEAM_MANAGER)
                         .requestMatchers(HttpMethod.DELETE, "/api/tickets/attachments/*")
                         .hasAnyRole(CUSTOMER, TEAM_MEMBER, TEAM_MANAGER)
+                        .requestMatchers(HttpMethod.POST, "/api/team-members/tickets/*/messages")
+                        .hasRole(TEAM_MEMBER)
+                        .requestMatchers(HttpMethod.POST, "/api/customers/tickets/*/attachments")
+                        .hasRole(CUSTOMER)
 
                         // ---- Tickets ----
                         .requestMatchers(HttpMethod.POST, "/api/tickets")

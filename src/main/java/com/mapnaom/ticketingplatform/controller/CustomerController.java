@@ -2,7 +2,10 @@ package com.mapnaom.ticketingplatform.controller;
 
 import com.mapnaom.ticketingplatform.dto.CustomerRequestDto;
 import com.mapnaom.ticketingplatform.dto.CustomerResponseDto;
+import com.mapnaom.ticketingplatform.dto.ticket.TicketAttachmentResponse;
+import com.mapnaom.ticketingplatform.model.AppUserDetails;
 import com.mapnaom.ticketingplatform.service.CustomerService;
+import com.mapnaom.ticketingplatform.service.TicketService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -10,8 +13,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -22,6 +28,7 @@ import java.util.List;
 public class CustomerController {
 
     private final CustomerService customerService;
+    private final TicketService ticketService;
 
     // --- Create Customer ---
     @PostMapping
@@ -76,5 +83,18 @@ public class CustomerController {
     public ResponseEntity<Void> deleteCustomer(@PathVariable Long id) {
         customerService.deleteCustomer(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // --- Upload Ticket Attachment as Customer ---
+    @PostMapping(value = "/tickets/{ticketId}/attachments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<TicketAttachmentResponse> uploadTicketAttachment(
+            @PathVariable Long ticketId,
+            @AuthenticationPrincipal AppUserDetails principal,
+            @RequestPart("file") MultipartFile file) {
+        TicketAttachmentResponse createdAttachment = ticketService.attachByCustomer(
+                ticketId,
+                file,
+                principal.getId());
+        return new ResponseEntity<>(createdAttachment, HttpStatus.CREATED);
     }
 }

@@ -15,6 +15,8 @@ public interface TicketService {
 
     TicketAttachmentResponse attach(Long ticketId, MultipartFile file, Long uploaderId);
 
+    TicketAttachmentResponse attachByCustomer(Long ticketId, MultipartFile file, Long customerId);
+
     void detach(Long attachmentId);
 
     @Transactional(readOnly = true)

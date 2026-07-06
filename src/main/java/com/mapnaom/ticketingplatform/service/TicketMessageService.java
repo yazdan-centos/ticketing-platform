@@ -5,4 +5,6 @@ import com.mapnaom.ticketingplatform.dto.ticket.TicketMessageResponse;
 
 public interface TicketMessageService {
     TicketMessageResponse addMessage(Long ticketId, TicketMessageCreateRequest request, Long senderId);
+
+    TicketMessageResponse addMessageByTeamMember(Long ticketId, TicketMessageCreateRequest request, Long senderId);
 }
