@@ -8,13 +8,17 @@ import com.mapnaom.ticketingplatform.dto.ticket.TicketMessageResponse;
 import com.mapnaom.ticketingplatform.model.AppUserDetails;
 import com.mapnaom.ticketingplatform.service.TicketMessageService;
 import com.mapnaom.ticketingplatform.service.TeamMemberService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @CrossOrigin
@@ -71,16 +75,60 @@ public class TeamMemberController {
         return ResponseEntity.noContent().build();
     }
 
+    // --- Upload Team Member Avatar ---
+    @PostMapping(value = "/{id}/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<TeamMemberResponseDto> uploadTeamMemberAvatar(
+            @PathVariable Long id,
+            @RequestPart("file") MultipartFile file) {
+        try {
+            if (id == null || id <= 0) {
+                throw new IllegalArgumentException("Invalid member ID provided. Please provide a valid positive ID.");
+            }
+            if (file == null || file.isEmpty()) {
+                throw new IllegalArgumentException("Avatar file cannot be empty. Please select a valid file to upload.");
+            }
+            TeamMemberResponseDto updatedMember = teamMemberService.updateTeamMemberAvatar(id, file);
+            return ResponseEntity.ok(updatedMember);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(413).build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // --- Delete Team Member Avatar ---
+    @DeleteMapping("/{id}/avatar")
+    public ResponseEntity<Void> deleteTeamMemberAvatar(@PathVariable Long id) {
+        teamMemberService.deleteTeamMemberAvatar(id);
+        return ResponseEntity.noContent().build();
+    }
+
     // --- Create Ticket Message as Team Member ---
     @PostMapping("/tickets/{ticketId}/messages")
-    public ResponseEntity<TicketMessageResponse> createTicketMessage(
+    public ResponseEntity<?> createTicketMessage(
             @PathVariable Long ticketId,
             @AuthenticationPrincipal AppUserDetails principal,
             @Valid @RequestBody TicketMessageCreateRequest request) {
-        TicketMessageResponse createdMessage = ticketMessageService.addMessageByTeamMember(
-                ticketId,
-                request,
-                principal.getId());
-        return new ResponseEntity<>(createdMessage, HttpStatus.CREATED);
+        try {
+            if (ticketId == null || ticketId <= 0) {
+                return ResponseEntity.badRequest().body("Invalid ticket ID provided. Please use a valid positive number.");
+            }
+            if (principal == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication is required to post a message.");
+            }
+            TicketMessageResponse createdMessage = ticketMessageService.addMessageByTeamMember(
+                    ticketId,
+                    request,
+                    principal.getId());
+            return new ResponseEntity<>(createdMessage, HttpStatus.CREATED);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("The ticket or user you are trying to access does not exist. Ticket ID: " + ticketId);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Invalid message content provided for Ticket ID: " + ticketId + ". Details: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred while adding your message. Please try again later. Ticket ID: " + ticketId);
+        }
     }
 }

@@ -6,8 +6,10 @@ import com.mapnaom.ticketingplatform.service.TeamManagerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -55,5 +57,14 @@ public class TeamManagerController {
     public ResponseEntity<Void> deleteTeamManager(@PathVariable Long id) {
         teamManagerService.deleteTeamManager(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // --- Upload Team Manager Avatar ---
+    @PostMapping(value = "/{id}/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<TeamManagerResponseDto> uploadTeamManagerAvatar(
+            @PathVariable Long id,
+            @RequestPart("file") MultipartFile file) {
+        TeamManagerResponseDto updatedManager = teamManagerService.updateTeamManagerAvatar(id, file);
+        return ResponseEntity.ok(updatedManager);
     }
 }

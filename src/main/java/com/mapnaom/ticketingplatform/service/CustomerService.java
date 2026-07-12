@@ -22,6 +22,7 @@ public class CustomerService {
 
     private final CustomerRepository customerRepository;
     private final CustomerMapper customerMapper;
+    private final AvatarStorageService avatarStorageService;
 
     // --- Create Customer ---
     @Transactional
@@ -74,6 +75,18 @@ public class CustomerService {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Customer not found with id: " + id));
         return customerMapper.toResponseDto(customer);
+    }
+
+    @Transactional
+    public CustomerResponseDto updateCustomerAvatar(Long id, org.springframework.web.multipart.MultipartFile file) {
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Customer not found with id: " + id));
+
+        String avatarUrl = avatarStorageService.storeAvatar("customers", customer.getId(), file);
+        customer.setAvatarUrl(avatarUrl);
+
+        Customer savedCustomer = customerRepository.save(customer);
+        return customerMapper.toResponseDto(savedCustomer);
     }
 
     // --- Update Customer ---

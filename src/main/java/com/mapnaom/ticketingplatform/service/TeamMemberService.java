@@ -9,10 +9,12 @@ import com.mapnaom.ticketingplatform.model.TeamManager;
 import com.mapnaom.ticketingplatform.repository.TeamMemberRepository;
 import com.mapnaom.ticketingplatform.repository.TeamManagerRepository;
 import com.mapnaom.ticketingplatform.specification.TeamMemberSpecification;
+import io.jsonwebtoken.io.IOException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,33 +26,79 @@ public class TeamMemberService {
     private final TeamMemberRepository teamMemberRepository;
     private final TeamManagerRepository teamManagerRepository;
     private final TeamMemberMapper teamMemberMapper;
+    private final AvatarStorageService avatarStorageService;
 
     // --- Create Team Member ---
     @Transactional
     public TeamMemberResponseDto createTeamMember(TeamMemberRequestDto dto) {
-        // Check uniqueness
-        if (teamMemberRepository.existsByUsername(dto.getUsername())) {
-            throw new EntityNotFoundException("Username already exists: " + dto.getUsername());
+        try {
+            if (dto == null) {
+                throw new IllegalArgumentException("Team member request data cannot be null.");
+            }
+
+            // Check uniqueness
+            if (dto.getUsername() != null && teamMemberRepository.existsByUsername(dto.getUsername())) {
+                throw new IllegalStateException("The username is already taken. Please choose a different one. [Username: " + dto.getUsername() + "]");
+            }
+            if (dto.getEmail() != null && teamMemberRepository.existsByEmail(dto.getEmail())) {
+                throw new IllegalStateException("The email address is already registered. Please use a different one. [Email: " + dto.getEmail() + "]");
+            }
+
+            TeamMember member = teamMemberMapper.toEntity(dto);
+
+            // Encode password
+
+            // Resolve Manager
+            if (dto.getManagerId() != null) {
+                TeamManager manager = teamManagerRepository.findById(dto.getManagerId())
+                        .orElseThrow(() -> new EntityNotFoundException("The specified manager could not be found. Please verify the manager ID. [Manager ID: " + dto.getManagerId() + "]"));
+                member.setManager(manager);
+            }
+
+            TeamMember savedMember = teamMemberRepository.save(member);
+            return teamMemberMapper.toResponseDto(savedMember);
+        } catch (IllegalArgumentException | IllegalStateException | EntityNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("An unexpected error occurred while creating the team member. Please try again later. [Context: createTeamMember, Username: " + (dto != null ? dto.getUsername() : "null") + "]", e);
         }
-        if (teamMemberRepository.existsByEmail(dto.getEmail())) {
-            throw new EntityNotFoundException("Email already exists: " + dto.getEmail());
+    }
+/*******************    💫 Codegeex Suggestion    *******************/
+    @Transactional
+    public TeamMemberResponseDto updateTeamMemberAvatar(Long id, MultipartFile file) {
+        if (id == null) {
+            throw new IllegalArgumentException("Invalid request: Member ID cannot be null.");
+        }
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("Invalid request: Avatar file cannot be empty.");
         }
 
-        TeamMember member = teamMemberMapper.toEntity(dto);
-
-        // Encode password
-
-        // Resolve Manager
-        if (dto.getManagerId() != null) {
-            TeamManager manager = teamManagerRepository.findById(dto.getManagerId())
-                    .orElseThrow(() -> new EntityNotFoundException("Team Manager not found with id: " + dto.getManagerId()));
-            member.setManager(manager);
+        TeamMember member = teamMemberRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Team Member not found with id: " + id));
+        String avatarUrl;
+        try {
+            avatarUrl = avatarStorageService.storeAvatar("team-members", member.getId(), file);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to store avatar for Team Member with id: " + id + ". Please try again later.", e);
+        } catch (IllegalStateException e) {
+            throw new RuntimeException("Invalid file format or size for Team Member with id: " + id + ". Please ensure the file is a valid image within the size limit.", e);
         }
+
+        member.setAvatarUrl(avatarUrl);
 
         TeamMember savedMember = teamMemberRepository.save(member);
         return teamMemberMapper.toResponseDto(savedMember);
     }
 
+    @Transactional
+    public void deleteTeamMemberAvatar(Long id) {
+        TeamMember member = teamMemberRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Team Member not found with id: " + id));
+
+        avatarStorageService.deleteAvatar("team-members", member.getId(), member.getAvatarUrl());
+        member.setAvatarUrl(null);
+        teamMemberRepository.save(member);
+    }
     // --- Get All Team Members ---
     public List<TeamMemberResponseDto> getAllTeamMembers() {
         return teamMemberRepository.findAll().stream()

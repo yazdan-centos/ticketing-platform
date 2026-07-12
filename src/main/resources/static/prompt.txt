@@ -1,0 +1,30 @@
+const permissions = {
+  ACCESS: {
+    ADMIN: { get: false }, // مدیریت دسترسی‌ها و محدوده‌ها
+  },
+  TICKET: {
+    CREATE: false, // ایجاد تیکت پشتیبانی
+    READ: false ,   // مشاهده تیکت‌های پشتیبانی
+    UPDATE: false , // به‌روزرسانی تیکت‌های پشتیبانی
+    DELETE: false , // حذف تیکت‌های پشتیبانی
+  },
+  CUSTOMER: {
+    READ: false,   // مشاهده سوابق مشتریان
+    CREATE: false, // ایجاد سوابق مشتریان
+    UPDATE: false, // به‌روزرسانی سوابق مشتریان
+    DELETE: false, // حذف سوابق مشتریان
+  },
+  TEAM_MEMBER: {
+    READ: false,   // مشاهده سوابق اعضای تیم
+    UPDATE: false, // به‌روزرسانی سوابق اعضای تیم
+  },
+  TEAM_MANAGER: {
+    READ: false,   // مشاهده سوابق مدیران تیم
+  },
+  SLA: {
+    READ: false,   // مشاهده قراردادهای SLA
+    CREATE: false, // ایجاد قراردادهای SLA
+    UPDATE: false, // به‌روزرسانی قراردادهای SLA
+    DELETE: false, // حذف قراردادهای SLA
+  }
+};

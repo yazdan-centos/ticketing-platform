@@ -4,6 +4,7 @@ package com.mapnaom.ticketingplatform.controller;
 import com.mapnaom.ticketingplatform.dto.access.EffectiveAccessDto;
 import com.mapnaom.ticketingplatform.dto.access.GrantDto;
 import com.mapnaom.ticketingplatform.dto.access.PermissionDto;
+import com.mapnaom.ticketingplatform.dto.access.PermissionStatusDto;
 import com.mapnaom.ticketingplatform.dto.access.RolePermissionsUpdateDto;
 import com.mapnaom.ticketingplatform.dto.access.ScopeDto;
 import com.mapnaom.ticketingplatform.dto.access.ScopeUpdateDto;
@@ -43,6 +44,11 @@ public class AdminController {
     @GetMapping("/users/{userId}")
     public EffectiveAccessDto getEffectiveAccess(@PathVariable Long userId) {
         return accessAdminService.getEffectiveAccess(userId);
+    }
+
+    @GetMapping("/")
+    public PermissionStatusDto getTeamMemberPermissionStatus(@PathVariable Long teamMemberId) {
+        return accessAdminService.getTeamMemberPermissionStatus(teamMemberId);
     }
 
     // --- Per-user permission grants (ALLOW adds, DENY strips) -----------------

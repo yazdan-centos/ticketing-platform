@@ -135,9 +135,18 @@ public class DataInitializer implements CommandLineRunner {
             manager.setDepartment("پشتیبانی");
             manager.setRoles(Set.of(teamManagerRole));
 
-            manager.addTeamMember(teamMember("john", "جان", "جونز", "john@example.com", "مهندس بک‌اند", teamMemberRole));
-            manager.addTeamMember(teamMember("jane", "جین", "جیمز", "jane@example.com", "مهندس تضمین کیفیت", teamMemberRole));
-            manager.addTeamMember(teamMember("sara", "سارا", "اسمیت", "sara@example.com", "مهندس دواپس", teamMemberRole));
+
+
+            manager.addTeamMember(teamMember("john", "جان", "جونز", "john@mps.mapnagroup.com", "مهندس بک‌اند", teamMemberRole));
+            manager.addTeamMember(teamMember("jane", "جین", "جیمز", "jane@mps.mapnagroup.com", "مهندس تضمین کیفیت", teamMemberRole));
+            manager.addTeamMember(teamMember("yazdanparast_m", "مهدی", "یزدان پرست", "sara@mps.mapnagroup.com", "برنامه نویس", teamMemberRole));
+            manager.addTeamMember(teamMember("aghelifar", "مهرنوش", "عاقلی فر", "aghelifar_m@mps.mapnagroup.com", "برنامه نویس", teamMemberRole));
+            manager.addTeamMember(teamMember("Nematollahian_m", "محمد", "نعمت الهیان", "Nematollahian_m@mps.mapnagroup.com", "برنامه نویس", teamMemberRole));
+            manager.addTeamMember(teamMember("Rahmani_mh", "فرشاد رحمانی", "محمد حسین", "sara@mps.mapnagroup.com", "برنامه نویس", teamMemberRole));
+            manager.addTeamMember(teamMember("naji_smh", "سید محمد حسن", "ناجی", "sara@mps.mapnagroup.com", "برنامه نویس", teamMemberRole));
+            manager.addTeamMember(teamMember("Motaghian_m", "ملیگا", "اسمیت", "motaghian_m@mps.mapnagroup.com", "برنامه نویس", teamMemberRole));
+            manager.addTeamMember(teamMember("Gordani_ma", "محمد امین", "گردانی","Gordani_ma@mps.mapnagroup.com", "برنامه نویس", teamMemberRole));
+            manager.addTeamMember(teamMember("Bagherpour_a", "امیر", "باقرپور", "sara@mps.mapnagroup.com", "برنامه نویس", teamMemberRole));
 
             teamManagerRepository.save(manager);
         }

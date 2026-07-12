@@ -36,6 +36,8 @@ public abstract class AppUser {
 
 
     private String email;
+    @Column(length = 512)
+    private String avatarUrl;
 
     // Security roles backing authentication/authorization. Each role carries
     // its default permission set (see {@link Role}); per-user overrides live in

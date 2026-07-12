@@ -2,6 +2,9 @@ package com.mapnaom.ticketingplatform.service;
 
 import com.mapnaom.ticketingplatform.dto.AuthenticationRequest;
 import com.mapnaom.ticketingplatform.dto.AuthenticationResponse;
+import com.mapnaom.ticketingplatform.dto.auth.CurrentUserDto;
+import com.mapnaom.ticketingplatform.model.AppUser;
+import com.mapnaom.ticketingplatform.model.AppUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -41,6 +44,20 @@ public class AuthenticationService {
                 .currentUser(userDetails.getUsername())
                 .accessToken(accessToken)
                 .role(role)
+                .avatarUrl(userDetails instanceof AppUserDetails details
+                        ? details.getAppUser().getAvatarUrl()
+                        : null)
                 .build();
+    }
+
+    public CurrentUserDto currentUser(AppUserDetails principal) {
+        AppUser user = principal.getAppUser();
+        return new CurrentUserDto(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getAvatarUrl(),
+                user.getRoles().stream().map(role -> role.getName()).collect(java.util.stream.Collectors.toSet()),
+                principal.getPermissionCodes());
     }
 }

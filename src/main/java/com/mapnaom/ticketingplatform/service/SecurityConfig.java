@@ -45,8 +45,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
 
                         // ---- Public ----
+                        .requestMatchers(HttpMethod.POST, "/api/auth/authenticate").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/signout").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
                         .requestMatchers(
-                                "/api/auth/**",
+                                "/uploads/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html").permitAll()
@@ -80,6 +83,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/customers").hasRole(TEAM_MANAGER)
                         .requestMatchers(HttpMethod.GET, "/api/customers/*")
                         .hasAnyRole(CUSTOMER, TEAM_MANAGER)
+                        .requestMatchers(HttpMethod.POST, "/api/customers/*/avatar")
+                        .hasAnyRole(CUSTOMER, TEAM_MANAGER)
                         .requestMatchers(HttpMethod.PUT, "/api/customers/*")
                         .hasAnyRole(CUSTOMER, TEAM_MANAGER)
                         .requestMatchers(HttpMethod.DELETE, "/api/customers/*").hasRole(TEAM_MANAGER)
@@ -89,11 +94,16 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/team-members").hasRole(TEAM_MANAGER)
                         .requestMatchers(HttpMethod.GET, "/api/team-members/*")
                         .hasAnyRole(TEAM_MEMBER, TEAM_MANAGER)
+                        .requestMatchers(HttpMethod.POST, "/api/team-members/*/avatar")
+                        .hasAnyRole(TEAM_MEMBER, TEAM_MANAGER)
+                        .requestMatchers(HttpMethod.DELETE, "/api/team-members/*/avatar")
+                        .hasAnyRole(TEAM_MEMBER, TEAM_MANAGER)
                         .requestMatchers(HttpMethod.PUT, "/api/team-members/*")
                         .hasAnyRole(TEAM_MEMBER, TEAM_MANAGER)
                         .requestMatchers(HttpMethod.DELETE, "/api/team-members/*").hasRole(TEAM_MANAGER)
 
                         // ---- Team Managers (manager-only across the board) ----
+                        .requestMatchers(HttpMethod.POST, "/api/team-managers/*/avatar").hasRole(TEAM_MANAGER)
                         .requestMatchers("/api/team-managers/**").hasRole(TEAM_MANAGER)
 
                         // ---- SLA Contracts ----

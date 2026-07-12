@@ -9,6 +9,7 @@ import com.mapnaom.ticketingplatform.model.AppUser;
 import com.mapnaom.ticketingplatform.model.Customer;
 import com.mapnaom.ticketingplatform.model.Permission;
 import com.mapnaom.ticketingplatform.model.Role;
+import com.mapnaom.ticketingplatform.model.TeamMember;
 import com.mapnaom.ticketingplatform.model.enums.GrantEffect;
 import com.mapnaom.ticketingplatform.repository.*;
 import com.mapnaom.ticketingplatform.service.AccessAdminService;
@@ -66,6 +67,7 @@ class AdminControllerIntegrationTest {
     private AccessAdminService accessAdminService;
 
     private AppUser testUser;
+    private TeamMember testTeamMember;
     private Role testRole;
     private Permission testPermission;
 
@@ -113,6 +115,12 @@ class AdminControllerIntegrationTest {
         customer.setPassword("password123");
         customer.setRoles(new HashSet<>(Arrays.asList(testRole)));
         testUser = userRepository.save(customer);
+
+        TeamMember teamMember = new TeamMember();
+        teamMember.setEmail("member@example.com");
+        teamMember.setPassword("password123");
+        teamMember.setRoles(new HashSet<>(Arrays.asList(testRole)));
+        testTeamMember = userRepository.save(teamMember);
     }
 
     // ==================== Permission Catalog Tests ====================
@@ -154,6 +162,42 @@ class AdminControllerIntegrationTest {
     @Test
     @Order(4)
     @WithMockUser(authorities = {"ACCESS_ADMIN"})
+    void testGetTeamMemberPermissionStatus_Success() throws Exception {
+        mockMvc.perform(get("/api/admin/access/team-members/{teamMemberId}/permissions/status", testTeamMember.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.TICKET.READ").value(true))
+                .andExpect(jsonPath("$.TICKET.CREATE").value(false))
+                .andExpect(jsonPath("$.TICKET.UPDATE").value(false))
+                .andExpect(jsonPath("$.TICKET.DELETE").value(false))
+                .andExpect(jsonPath("$.ACCESS.ADMIN.get").value(false))
+                .andExpect(jsonPath("$.CUSTOMER.READ").value(false))
+                .andExpect(jsonPath("$.TEAM_MEMBER.UPDATE").value(false))
+                .andExpect(jsonPath("$.TEAM_MANAGER.READ").value(false))
+                .andExpect(jsonPath("$.SLA.READ").value(false));
+    }
+
+    @Test
+    @Order(5)
+    @WithMockUser(authorities = {"ACCESS_ADMIN"})
+    void testGetTeamMemberPermissionStatus_AppliesDenyGrant() throws Exception {
+        accessAdminService.upsertGrant(testTeamMember.getId(), "TICKET_READ", GrantEffect.DENY);
+
+        mockMvc.perform(get("/api/admin/access/team-members/{teamMemberId}/permissions/status", testTeamMember.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.TICKET.READ").value(false));
+    }
+
+    @Test
+    @Order(6)
+    @WithMockUser(authorities = {"ACCESS_ADMIN"})
+    void testGetTeamMemberPermissionStatus_CustomerIdNotFound() throws Exception {
+        mockMvc.perform(get("/api/admin/access/team-members/{teamMemberId}/permissions/status", testUser.getId()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @Order(7)
+    @WithMockUser(authorities = {"ACCESS_ADMIN"})
     void testGetEffectiveAccess_UserNotFound() throws Exception {
         mockMvc.perform(get("/api/admin/access/users/{userId}", 99999L))
                 .andExpect(status().isNotFound());
@@ -163,7 +207,7 @@ class AdminControllerIntegrationTest {
 
 /*******************    💫 Codegeex Suggestion    *******************/
     @Test
-    @Order(5)
+    @Order(8)
     @WithMockUser(authorities = {"ACCESS_ADMIN"})
     void testListGrants_EmptyInitially() throws Exception {
         mockMvc.perform(get("/api/admin/access/users/{userId}/grants", testUser.getId()))
@@ -173,7 +217,7 @@ class AdminControllerIntegrationTest {
 /****************  fb3be9ffd73b4215ad371eb391d7540d  ****************/
 
     @Test
-    @Order(6)
+    @Order(9)
     @WithMockUser(authorities = {"ACCESS_ADMIN"})
     void testUpsertGrant_CreateNew() throws Exception {
         GrantDto grantDto = new GrantDto("TICKET_WRITE", GrantEffect.ALLOW);
@@ -187,7 +231,7 @@ class AdminControllerIntegrationTest {
     }
 
     @Test
-    @Order(7)
+    @Order(10)
     @WithMockUser(authorities = {"ACCESS_ADMIN"})
     void testUpsertGrant_UpdateExisting() throws Exception {
         // First create a grant
@@ -208,7 +252,7 @@ class AdminControllerIntegrationTest {
     }
 
     @Test
-    @Order(8)
+    @Order(11)
     @WithMockUser(authorities = {"ACCESS_ADMIN"})
     void testUpsertGrant_InvalidPermission() throws Exception {
         GrantDto grantDto = new GrantDto("INVALID_PERMISSION", GrantEffect.ALLOW);
@@ -220,7 +264,7 @@ class AdminControllerIntegrationTest {
     }
 
     @Test
-    @Order(9)
+    @Order(12)
     @WithMockUser(authorities = {"ACCESS_ADMIN"})
     void testRemoveGrant_Success() throws Exception {
         // First create a grant
@@ -244,7 +288,7 @@ class AdminControllerIntegrationTest {
     // ==================== User Scope Tests ====================
 
     @Test
-    @Order(10)
+    @Order(13)
     @WithMockUser(authorities = {"ACCESS_ADMIN"})
     void testListScopes_EmptyInitially() throws Exception {
         mockMvc.perform(get("/api/admin/access/users/{userId}/scopes", testUser.getId()))
@@ -253,7 +297,7 @@ class AdminControllerIntegrationTest {
     }
 
     @Test
-    @Order(11)
+    @Order(14)
     @WithMockUser(authorities = {"ACCESS_ADMIN"})
     void testSetScope_CreateNew() throws Exception {
         ScopeUpdateDto scopeDto = new ScopeUpdateDto(AccessScope.ALL);
@@ -268,7 +312,7 @@ class AdminControllerIntegrationTest {
     }
 
     @Test
-    @Order(12)
+    @Order(15)
     @WithMockUser(authorities = {"ACCESS_ADMIN"})
     void testSetScope_UpdateExisting() throws Exception {
         // First set to ALL
@@ -291,7 +335,7 @@ class AdminControllerIntegrationTest {
     }
 
     @Test
-    @Order(13)
+    @Order(16)
     @WithMockUser(authorities = {"ACCESS_ADMIN"})
     void testClearScope_Success() throws Exception {
         // First set a scope
@@ -316,7 +360,7 @@ class AdminControllerIntegrationTest {
     // ==================== Role Permissions Tests ====================
 
     @Test
-    @Order(14)
+    @Order(17)
     @WithMockUser(authorities = {"ACCESS_ADMIN"})
     void testListRolePermissions_Success() throws Exception {
         mockMvc.perform(get("/api/admin/access/roles/{roleName}/permissions", "CUSTOMER"))
@@ -326,7 +370,7 @@ class AdminControllerIntegrationTest {
     }
 
     @Test
-    @Order(15)
+    @Order(18)
     @WithMockUser(authorities = {"ACCESS_ADMIN"})
     void testListRolePermissions_RoleNotFound() throws Exception {
         mockMvc.perform(get("/api/admin/access/roles/{roleName}/permissions", "INVALID_ROLE"))
@@ -334,7 +378,7 @@ class AdminControllerIntegrationTest {
     }
 
     @Test
-    @Order(16)
+    @Order(19)
     @WithMockUser(authorities = {"ACCESS_ADMIN"})
     void testReplaceRolePermissions_Success() throws Exception {
         RolePermissionsUpdateDto updateDto = new RolePermissionsUpdateDto(
@@ -350,7 +394,7 @@ class AdminControllerIntegrationTest {
     }
 
     @Test
-    @Order(17)
+    @Order(20)
     @WithMockUser(authorities = {"ACCESS_ADMIN"})
     void testReplaceRolePermissions_WithInvalidPermission() throws Exception {
         RolePermissionsUpdateDto updateDto = new RolePermissionsUpdateDto(
@@ -364,7 +408,7 @@ class AdminControllerIntegrationTest {
     }
 
     @Test
-    @Order(18)
+    @Order(21)
     @WithMockUser(authorities = {"ACCESS_ADMIN"})
     void testReplaceRolePermissions_EmptyList() throws Exception {
         RolePermissionsUpdateDto updateDto = new RolePermissionsUpdateDto(List.of());
@@ -379,7 +423,7 @@ class AdminControllerIntegrationTest {
     // ==================== Validation Tests ====================
 
     @Test
-    @Order(19)
+    @Order(22)
     @WithMockUser(authorities = {"ACCESS_ADMIN"})
     void testUpsertGrant_NullPermissionCode() throws Exception {
         String invalidJson = "{\"permissionCode\": null, \"effect\": \"ALLOW\"}";
@@ -391,7 +435,7 @@ class AdminControllerIntegrationTest {
     }
 
     @Test
-    @Order(20)
+    @Order(23)
     @WithMockUser(authorities = {"ACCESS_ADMIN"})
     void testUpsertGrant_NullEffect() throws Exception {
         String invalidJson = "{\"permissionCode\": \"TICKET_READ\", \"effect\": null}";
@@ -403,7 +447,7 @@ class AdminControllerIntegrationTest {
     }
 
     @Test
-    @Order(21)
+    @Order(24)
     @WithMockUser(authorities = {"ACCESS_ADMIN"})
     void testSetScope_NullScope() throws Exception {
         String invalidJson = "{\"scope\": null}";
@@ -418,7 +462,7 @@ class AdminControllerIntegrationTest {
     // ==================== Complex Scenario Tests ====================
 
     @Test
-    @Order(22)
+    @Order(25)
     @WithMockUser(authorities = {"ACCESS_ADMIN"})
     @Transactional
     void testCompleteAccessManagementWorkflow() throws Exception {

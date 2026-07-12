@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, useParams } from 'react-router-dom';
 
 // ==================== Auth Context ====================
 const AuthContext = createContext(null);
@@ -24,12 +24,39 @@ const AuthProvider = ({ children }) => {
     const storedPermissions = sessionStorage.getItem('permissions');
 
     if (storedUser && storedToken) {
-      setUser({
-        ...JSON.parse(storedUser),
-        token: storedToken,
-        roles: storedRoles ? JSON.parse(storedRoles) : [],
-        permissions: storedPermissions ? JSON.parse(storedPermissions) : []
-      });
+      try {
+        const parsedUser = {
+          ...JSON.parse(storedUser),
+          token: storedToken,
+          roles: storedRoles ? JSON.parse(storedRoles) : [],
+          permissions: storedPermissions ? JSON.parse(storedPermissions) : []
+        };
+        setUser(parsedUser);
+        authorizedFetch('/api/auth/me')
+          .then((response) => response.ok ? response.json() : null)
+          .then((profile) => {
+            if (!profile) {
+              return;
+            }
+            const normalizedProfile = {
+              ...parsedUser,
+              ...profile,
+              token: storedToken,
+              roles: profile.roles || parsedUser.roles,
+              permissions: profile.permissions || parsedUser.permissions
+            };
+            sessionStorage.setItem('user', JSON.stringify(normalizedProfile));
+            sessionStorage.setItem('roles', JSON.stringify(normalizedProfile.roles || []));
+            sessionStorage.setItem('permissions', JSON.stringify(normalizedProfile.permissions || []));
+            setUser(normalizedProfile);
+          })
+          .catch(() => {});
+      } catch {
+        sessionStorage.removeItem('user');
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('roles');
+        sessionStorage.removeItem('permissions');
+      }
     }
     setLoading(false);
   }, []);
@@ -46,18 +73,47 @@ const AuthProvider = ({ children }) => {
 
       const data = await response.json();
       
-      // Store in sessionStorage
-      sessionStorage.setItem('user', JSON.stringify(data.user));
-      sessionStorage.setItem('token', data.token);
-      sessionStorage.setItem('roles', JSON.stringify(data.roles || []));
-      sessionStorage.setItem('permissions', JSON.stringify(data.permissions || []));
+      const token = data.token || data.accessToken;
+      const roles = data.roles || (data.role ? [String(data.role).replace(/^ROLE_/, '')] : []);
+      const permissions = data.permissions || [];
+      const user = data.user || {
+        username: data.currentUser || username,
+        email: '',
+        avatarUrl: null,
+        roles
+      };
+
+      sessionStorage.setItem('user', JSON.stringify(user));
+      sessionStorage.setItem('token', token);
+      sessionStorage.setItem('roles', JSON.stringify(roles));
+      sessionStorage.setItem('permissions', JSON.stringify(permissions));
 
       setUser({
-        ...data.user,
-        token: data.token,
-        roles: data.roles || [],
-        permissions: data.permissions || []
+        ...user,
+        token,
+        roles,
+        permissions
       });
+
+      authorizedFetch('/api/auth/me')
+        .then((response) => response.ok ? response.json() : null)
+        .then((profile) => {
+          if (!profile) {
+            return;
+          }
+          const normalizedProfile = {
+            ...user,
+            ...profile,
+            token,
+            roles: profile.roles || roles,
+            permissions: profile.permissions || permissions
+          };
+          sessionStorage.setItem('user', JSON.stringify(normalizedProfile));
+          sessionStorage.setItem('roles', JSON.stringify(normalizedProfile.roles || []));
+          sessionStorage.setItem('permissions', JSON.stringify(normalizedProfile.permissions || []));
+          setUser(normalizedProfile);
+        })
+        .catch(() => {});
 
       return { success: true };
     } catch (error) {
@@ -153,6 +209,116 @@ const PublicRoute = ({ children }) => {
   return children;
 };
 
+const API_BASE = 'http://localhost:8080';
+
+const apiUrl = (path) => `${API_BASE}${path}`;
+
+const authorizedFetch = (path, options = {}) => {
+  const token = sessionStorage.getItem('token');
+  const headers = {
+    ...(options.headers || {})
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  return fetch(apiUrl(path), {
+    ...options,
+    headers
+  });
+};
+
+const resolveAvatarUrl = (avatarUrl) => {
+  if (!avatarUrl) {
+    return null;
+  }
+  if (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://')) {
+    return avatarUrl;
+  }
+  return apiUrl(avatarUrl);
+};
+
+const getAvatarLabel = (entity) => {
+  const candidate = [entity?.firstName, entity?.lastName].filter(Boolean).join(' ').trim() || entity?.username || '?';
+  const parts = candidate.split(/\s+/).filter(Boolean);
+  const initials = parts.slice(0, 2).map((part) => part[0]).join('').toUpperCase();
+  return initials || '?';
+};
+
+const Avatar = ({ entity, size = 56 }) => {
+  const avatarUrl = resolveAvatarUrl(entity?.avatarUrl);
+  const label = getAvatarLabel(entity);
+
+  const style = {
+    width: size,
+    height: size,
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    background: 'linear-gradient(135deg, #334155, #0f172a)',
+    color: '#fff',
+    flexShrink: 0,
+    fontWeight: 700,
+    letterSpacing: '0.04em'
+  };
+
+  if (avatarUrl) {
+    return <img src={avatarUrl} alt={entity?.username || 'avatar'} style={{ ...style, objectFit: 'cover' }} />;
+  }
+
+  return <div style={style}>{label}</div>;
+};
+
+const EntityCard = ({ entity, subtitle, onClick }) => {
+  return (
+    <div style={{
+      display: 'flex',
+      gap: '16px',
+      alignItems: 'center',
+      padding: '16px',
+      border: '1px solid #e2e8f0',
+      borderRadius: '16px',
+      background: '#fff',
+      boxShadow: '0 10px 24px rgba(15, 23, 42, 0.06)'
+    }}>
+      <Avatar entity={entity} />
+      <div style={{ flex: 1 }}>
+        <div style={{ fontWeight: 700 }}>{entity?.username}</div>
+        <div style={{ color: '#475569', fontSize: '14px' }}>{subtitle}</div>
+        <div style={{ color: '#64748b', fontSize: '13px', marginTop: '4px' }}>{entity?.email}</div>
+      </div>
+      <button onClick={onClick} style={{ padding: '10px 14px' }}>
+        View
+      </button>
+    </div>
+  );
+};
+
+const AvatarUpload = ({ onUpload, busy, label = 'Update Avatar' }) => {
+  const [file, setFile] = useState(null);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (!file) {
+      return;
+    }
+    await onUpload(file);
+    setFile(null);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+      <input type="file" accept="image/*" onChange={(event) => setFile(event.target.files?.[0] || null)} />
+      <button type="submit" disabled={busy || !file} style={{ padding: '10px 14px' }}>
+        {busy ? 'Uploading...' : label}
+      </button>
+    </form>
+  );
+};
+
 // ==================== Page Components ====================
 const LoginPage = () => {
   const [username, setUsername] = useState('');
@@ -211,18 +377,76 @@ const LoginPage = () => {
 const DashboardPage = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleLogout = async () => {
     await logout();
     navigate('/login');
   };
 
+  const handleAvatarUpload = async (file) => {
+    if (!user?.id) {
+      setError('Profile is not loaded yet');
+      return;
+    }
+
+    const role = user?.roles?.[0]?.replace(/^ROLE_/, '') || '';
+    const endpointByRole = {
+      TEAM_MANAGER: `/api/team-managers/${user.id}/avatar`,
+      TEAM_MEMBER: `/api/team-members/${user.id}/avatar`,
+      CUSTOMER: `/api/customers/${user.id}/avatar`
+    };
+
+    const endpoint = endpointByRole[role];
+    if (!endpoint) {
+      setError('Your role cannot update avatars here');
+      return;
+    }
+
+    setUploading(true);
+    setError('');
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await authorizedFetch(endpoint, {
+        method: 'POST',
+        body: formData
+      });
+      if (!response.ok) {
+        throw new Error('Avatar upload failed');
+      }
+      const updated = await response.json();
+      const normalizedUser = {
+        ...user,
+        ...updated,
+        token: user.token,
+        roles: user.roles,
+        permissions: user.permissions
+      };
+      sessionStorage.setItem('user', JSON.stringify(normalizedUser));
+      setUser(normalizedUser);
+    } catch (uploadError) {
+      setError(uploadError.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div style={{ padding: '20px' }}>
       <h1>Dashboard</h1>
-      <p>Welcome, {user?.username}!</p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+        <Avatar entity={user} />
+        <div>
+          <p style={{ margin: 0 }}>Welcome, {user?.username}!</p>
+          <p style={{ margin: 0 }}>Roles: {user?.roles?.join(', ') || 'None'}</p>
+        </div>
+      </div>
       <p>Roles: {user?.roles?.join(', ') || 'None'}</p>
       <p>Permissions: {user?.permissions?.join(', ') || 'None'}</p>
+      <AvatarUpload onUpload={handleAvatarUpload} busy={uploading} label="Update My Avatar" />
+      {error && <p style={{ color: 'crimson' }}>{error}</p>}
       <button onClick={handleLogout} style={{ padding: '10px 20px', marginTop: '20px' }}>
         Logout
       </button>
@@ -321,56 +545,392 @@ const CreateCustomerPage = () => {
 
 // ==================== Team Member Pages ====================
 const TeamMembersListPage = () => {
+  const navigate = useNavigate();
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const loadMembers = async () => {
+      try {
+        const response = await authorizedFetch('/api/team-members');
+        if (!response.ok) {
+          throw new Error('Failed to load team members');
+        }
+        setMembers(await response.json());
+      } catch (loadError) {
+        setError(loadError.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadMembers();
+  }, []);
+
   return (
     <div style={{ padding: '20px' }}>
-      <h1>Team Members</h1>
-      <p>View and manage team members.</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h1>Team Members</h1>
+        <button onClick={() => navigate('/team-members/create')} style={{ padding: '10px 14px' }}>
+          New Member
+        </button>
+      </div>
+      {loading && <p>Loading...</p>}
+      {error && <p style={{ color: 'crimson' }}>{error}</p>}
+      <div style={{ display: 'grid', gap: '12px' }}>
+        {members.map((member) => (
+          <EntityCard
+            key={member.id}
+            entity={member}
+            subtitle={`${member.availabilityStatus || 'UNKNOWN'}${member.jobTitle ? ` • ${member.jobTitle}` : ''}`}
+            onClick={() => navigate(`/team-members/${member.id}`)}
+          />
+        ))}
+      </div>
     </div>
   );
 };
 
 const TeamMemberDetailPage = () => {
+  const { id } = useParams();
+  const [member, setMember] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    const loadMember = async () => {
+      try {
+        const response = await authorizedFetch(`/api/team-members/${id}`);
+        if (!response.ok) {
+          throw new Error('Failed to load team member');
+        }
+        setMember(await response.json());
+      } catch (loadError) {
+        setError(loadError.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadMember();
+  }, [id]);
+
+  const handleAvatarUpload = async (file) => {
+    setUploading(true);
+    setError('');
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await authorizedFetch(`/api/team-members/${id}/avatar`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Avatar upload failed');
+      }
+
+      setMember(await response.json());
+    } catch (uploadError) {
+      setError(uploadError.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div style={{ padding: '20px' }}>
       <h1>Team Member Details</h1>
-      <p>View and edit team member information.</p>
+      {loading && <p>Loading...</p>}
+      {error && <p style={{ color: 'crimson' }}>{error}</p>}
+      {member && (
+        <div style={{ display: 'grid', gap: '16px', maxWidth: '640px' }}>
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+            <Avatar entity={member} size={88} />
+            <div>
+              <h2 style={{ margin: 0 }}>{member.username}</h2>
+              <p style={{ margin: 0 }}>{member.email}</p>
+              <p style={{ margin: 0 }}>{member.jobTitle || 'No job title'}</p>
+            </div>
+          </div>
+          <div>
+            <AvatarUpload onUpload={handleAvatarUpload} busy={uploading} />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 const CreateTeamMemberPage = () => {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({
+    username: '',
+    password: '',
+    email: '',
+    availabilityStatus: 'AVAILABLE',
+    jobTitle: '',
+    managerId: ''
+  });
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const updateField = (field, value) => {
+    setForm((current) => ({ ...current, [field]: value }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setSaving(true);
+    setError('');
+    try {
+      const payload = {
+        ...form,
+        managerId: form.managerId ? Number(form.managerId) : null
+      };
+
+      const response = await authorizedFetch('/api/team-members', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create team member');
+      }
+
+      const createdMember = await response.json();
+
+      if (avatarFile) {
+        const formData = new FormData();
+        formData.append('file', avatarFile);
+        const avatarResponse = await authorizedFetch(`/api/team-members/${createdMember.id}/avatar`, {
+          method: 'POST',
+          body: formData
+        });
+        if (avatarResponse.ok) {
+          await avatarResponse.json();
+        }
+      }
+
+      navigate(`/team-members/${createdMember.id}`);
+    } catch (submitError) {
+      setError(submitError.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div style={{ padding: '20px' }}>
       <h1>Create Team Member</h1>
-      <p>Create a new team member account.</p>
+      {error && <p style={{ color: 'crimson' }}>{error}</p>}
+      <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '12px', maxWidth: '480px' }}>
+        <input placeholder="Username" value={form.username} onChange={(event) => updateField('username', event.target.value)} />
+        <input placeholder="Password" type="password" value={form.password} onChange={(event) => updateField('password', event.target.value)} />
+        <input placeholder="Email" type="email" value={form.email} onChange={(event) => updateField('email', event.target.value)} />
+        <input placeholder="Job title" value={form.jobTitle} onChange={(event) => updateField('jobTitle', event.target.value)} />
+        <select value={form.availabilityStatus} onChange={(event) => updateField('availabilityStatus', event.target.value)}>
+          <option value="AVAILABLE">AVAILABLE</option>
+          <option value="BUSY">BUSY</option>
+          <option value="OFF_DUTY">OFF_DUTY</option>
+          <option value="UNAVAILABLE">UNAVAILABLE</option>
+        </select>
+        <input placeholder="Manager ID" value={form.managerId} onChange={(event) => updateField('managerId', event.target.value)} />
+        <input type="file" accept="image/*" onChange={(event) => setAvatarFile(event.target.files?.[0] || null)} />
+        <button type="submit" disabled={saving}>{saving ? 'Saving...' : 'Create Member'}</button>
+      </form>
     </div>
   );
 };
 
 // ==================== Team Manager Pages ====================
 const TeamManagersListPage = () => {
+  const navigate = useNavigate();
+  const [managers, setManagers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const loadManagers = async () => {
+      try {
+        const response = await authorizedFetch('/api/team-managers');
+        if (!response.ok) {
+          throw new Error('Failed to load team managers');
+        }
+        setManagers(await response.json());
+      } catch (loadError) {
+        setError(loadError.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadManagers();
+  }, []);
+
   return (
     <div style={{ padding: '20px' }}>
-      <h1>Team Managers</h1>
-      <p>View and manage team managers.</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h1>Team Managers</h1>
+        <button onClick={() => navigate('/team-managers/create')} style={{ padding: '10px 14px' }}>
+          New Manager
+        </button>
+      </div>
+      {loading && <p>Loading...</p>}
+      {error && <p style={{ color: 'crimson' }}>{error}</p>}
+      <div style={{ display: 'grid', gap: '12px' }}>
+        {managers.map((manager) => (
+          <EntityCard
+            key={manager.id}
+            entity={manager}
+            subtitle={manager.department || 'No department'}
+            onClick={() => navigate(`/team-managers/${manager.id}`)}
+          />
+        ))}
+      </div>
     </div>
   );
 };
 
 const TeamManagerDetailPage = () => {
+  const { id } = useParams();
+  const [manager, setManager] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    const loadManager = async () => {
+      try {
+        const response = await authorizedFetch(`/api/team-managers/${id}`);
+        if (!response.ok) {
+          throw new Error('Failed to load team manager');
+        }
+        setManager(await response.json());
+      } catch (loadError) {
+        setError(loadError.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadManager();
+  }, [id]);
+
+  const handleAvatarUpload = async (file) => {
+    setUploading(true);
+    setError('');
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await authorizedFetch(`/api/team-managers/${id}/avatar`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Avatar upload failed');
+      }
+
+      setManager(await response.json());
+    } catch (uploadError) {
+      setError(uploadError.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div style={{ padding: '20px' }}>
       <h1>Team Manager Details</h1>
-      <p>View and edit team manager information.</p>
+      {loading && <p>Loading...</p>}
+      {error && <p style={{ color: 'crimson' }}>{error}</p>}
+      {manager && (
+        <div style={{ display: 'grid', gap: '16px', maxWidth: '640px' }}>
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+            <Avatar entity={manager} size={88} />
+            <div>
+              <h2 style={{ margin: 0 }}>{manager.username}</h2>
+              <p style={{ margin: 0 }}>{manager.email}</p>
+              <p style={{ margin: 0 }}>{manager.department || 'No department'}</p>
+            </div>
+          </div>
+          <AvatarUpload onUpload={handleAvatarUpload} busy={uploading} />
+        </div>
+      )}
     </div>
   );
 };
 
 const CreateTeamManagerPage = () => {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({
+    username: '',
+    password: '',
+    email: '',
+    department: ''
+  });
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const updateField = (field, value) => {
+    setForm((current) => ({ ...current, [field]: value }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setSaving(true);
+    setError('');
+    try {
+      const response = await authorizedFetch('/api/team-managers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create team manager');
+      }
+
+      const createdManager = await response.json();
+
+      if (avatarFile) {
+        const formData = new FormData();
+        formData.append('file', avatarFile);
+        const avatarResponse = await authorizedFetch(`/api/team-managers/${createdManager.id}/avatar`, {
+          method: 'POST',
+          body: formData
+        });
+        if (avatarResponse.ok) {
+          await avatarResponse.json();
+        }
+      }
+
+      navigate(`/team-managers/${createdManager.id}`);
+    } catch (submitError) {
+      setError(submitError.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div style={{ padding: '20px' }}>
       <h1>Create Team Manager</h1>
-      <p>Create a new team manager account.</p>
+      {error && <p style={{ color: 'crimson' }}>{error}</p>}
+      <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '12px', maxWidth: '480px' }}>
+        <input placeholder="Username" value={form.username} onChange={(event) => updateField('username', event.target.value)} />
+        <input placeholder="Password" type="password" value={form.password} onChange={(event) => updateField('password', event.target.value)} />
+        <input placeholder="Email" type="email" value={form.email} onChange={(event) => updateField('email', event.target.value)} />
+        <input placeholder="Department" value={form.department} onChange={(event) => updateField('department', event.target.value)} />
+        <input type="file" accept="image/*" onChange={(event) => setAvatarFile(event.target.files?.[0] || null)} />
+        <button type="submit" disabled={saving}>{saving ? 'Saving...' : 'Create Manager'}</button>
+      </form>
     </div>
   );
 };

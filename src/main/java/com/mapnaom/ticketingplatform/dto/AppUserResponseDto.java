@@ -14,6 +14,7 @@ public abstract class AppUserResponseDto {
     private Long id;
     private String username;
     private String email;
+    private String avatarUrl;
     private Set<String> roles;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

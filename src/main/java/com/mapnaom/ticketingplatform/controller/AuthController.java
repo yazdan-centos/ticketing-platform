@@ -2,6 +2,8 @@ package com.mapnaom.ticketingplatform.controller;
 
 import com.mapnaom.ticketingplatform.dto.AuthenticationRequest;
 import com.mapnaom.ticketingplatform.dto.AuthenticationResponse;
+import com.mapnaom.ticketingplatform.dto.auth.CurrentUserDto;
+import com.mapnaom.ticketingplatform.model.AppUserDetails;
 import com.mapnaom.ticketingplatform.service.AuthenticationService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -9,8 +11,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +31,11 @@ public class AuthController {
     public ResponseEntity<AuthenticationResponse> authenticate(
             @Valid @RequestBody AuthenticationRequest request) {
         return ResponseEntity.ok(authenticationService.authenticate(request));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<CurrentUserDto> currentUser(@AuthenticationPrincipal AppUserDetails principal) {
+        return ResponseEntity.ok(authenticationService.currentUser(principal));
     }
 
     @PostMapping("/signout")

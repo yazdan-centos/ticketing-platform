@@ -85,6 +85,25 @@ public class CustomerController {
         return ResponseEntity.noContent().build();
     }
 
+    // --- Upload Customer Avatar ---
+    @PostMapping(value = "/{id}/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<CustomerResponseDto> uploadCustomerAvatar(
+            @PathVariable Long id,
+            @AuthenticationPrincipal AppUserDetails principal,
+            @RequestPart("file") MultipartFile file) {
+        boolean isManager = principal.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_TEAM_MANAGER".equals(authority.getAuthority()));
+        boolean isOwnProfile = principal.getId().equals(id);
+        boolean isAllowed = isManager || isOwnProfile;
+
+        if (!isAllowed) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        CustomerResponseDto updatedCustomer = customerService.updateCustomerAvatar(id, file);
+        return ResponseEntity.ok(updatedCustomer);
+    }
+
     // --- Upload Ticket Attachment as Customer ---
     @PostMapping(value = "/tickets/{ticketId}/attachments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<TicketAttachmentResponse> uploadTicketAttachment(

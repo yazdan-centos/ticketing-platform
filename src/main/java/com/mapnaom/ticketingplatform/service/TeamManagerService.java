@@ -9,6 +9,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -58,6 +59,7 @@ public class TeamManagerService {
 
     private final TeamManagerRepository teamManagerRepository;
     private final TeamManagerMapper teamManagerMapper;
+    private final AvatarStorageService avatarStorageService;
 
     // --- Create Team Manager ---
     @Transactional
@@ -73,6 +75,18 @@ public class TeamManagerService {
         TeamManager manager = teamManagerMapper.toEntity(dto);
 
 
+
+        TeamManager savedManager = teamManagerRepository.save(manager);
+        return teamManagerMapper.toResponseDto(savedManager);
+    }
+
+    @Transactional
+    public TeamManagerResponseDto updateTeamManagerAvatar(Long id, MultipartFile file) {
+        TeamManager manager = teamManagerRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Team Manager not found with id: " + id));
+
+        String avatarUrl = avatarStorageService.storeAvatar("team-managers", manager.getId(), file);
+        manager.setAvatarUrl(avatarUrl);
 
         TeamManager savedManager = teamManagerRepository.save(manager);
         return teamManagerMapper.toResponseDto(savedManager);

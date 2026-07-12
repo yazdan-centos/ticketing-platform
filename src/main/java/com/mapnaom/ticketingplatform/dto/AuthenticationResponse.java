@@ -15,4 +15,5 @@ public class AuthenticationResponse {
     private String currentUser;
     private String accessToken;
     private String role;
+    private String avatarUrl;
 }

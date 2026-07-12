@@ -3,6 +3,7 @@ package com.mapnaom.ticketingplatform.service;
 import com.mapnaom.ticketingplatform.dto.access.EffectiveAccessDto;
 import com.mapnaom.ticketingplatform.dto.access.GrantDto;
 import com.mapnaom.ticketingplatform.dto.access.PermissionDto;
+import com.mapnaom.ticketingplatform.dto.access.PermissionStatusDto;
 import com.mapnaom.ticketingplatform.dto.access.ScopeDto;
 import com.mapnaom.ticketingplatform.model.AccessScope;
 import com.mapnaom.ticketingplatform.model.AppUser;
@@ -14,6 +15,7 @@ import com.mapnaom.ticketingplatform.model.enums.GrantEffect;
 import com.mapnaom.ticketingplatform.repository.AppUserRepository;
 import com.mapnaom.ticketingplatform.repository.PermissionRepository;
 import com.mapnaom.ticketingplatform.repository.RoleRepository;
+import com.mapnaom.ticketingplatform.repository.TeamMemberRepository;
 import com.mapnaom.ticketingplatform.repository.UserPermissionGrantRepository;
 import com.mapnaom.ticketingplatform.repository.UserResourceScopeRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -63,6 +65,7 @@ public class AccessAdminService {
 
     private final AppUserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final TeamMemberRepository teamMemberRepository;
     private final PermissionRepository permissionRepository;
     private final UserPermissionGrantRepository grantRepository;
     private final UserResourceScopeRepository scopeRepository;
@@ -106,6 +109,13 @@ public class AccessAdminService {
                 roleNames(user),
                 effectivePermissionCodes(user),
                 effectiveScopes(user));
+    }
+
+    @Transactional(readOnly = true)
+    public PermissionStatusDto getTeamMemberPermissionStatus(Long teamMemberId) {
+        AppUser teamMember = teamMemberRepository.findById(teamMemberId)
+                .orElseThrow(() -> new EntityNotFoundException("Team member not found: " + teamMemberId));
+        return PermissionStatusDto.from(effectivePermissionCodes(teamMember));
     }
 
     /**
