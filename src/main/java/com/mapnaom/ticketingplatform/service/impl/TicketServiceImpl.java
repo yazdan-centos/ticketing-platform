@@ -22,6 +22,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,7 +47,6 @@ import java.util.UUID;
 public class TicketServiceImpl implements TicketService {
 
     private final TicketRepository ticketRepository;
-    private final CustomerRepository customerRepository;
     private final SlaContractRepository slaContractRepository;
     private final TeamMemberRepository teamMemberRepository;
     private final AppUserRepository appUserRepository;
@@ -71,9 +72,10 @@ public class TicketServiceImpl implements TicketService {
      */
     @Override
     public TicketResponse create(TicketCreateRequest request) {
-        Customer customer = customerRepository.findById(request.getCustomerId())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Customer not found with id: " + request.getCustomerId()));
+        AppUser currentUser = findUserByUserName();
+        if (!(currentUser instanceof Customer customer)) {
+            throw new AccessDeniedException("Only customers can create tickets");
+        }
 
         Ticket ticket = new Ticket();
         ticket.setTitle(request.getTitle());
@@ -101,6 +103,17 @@ public class TicketServiceImpl implements TicketService {
         Ticket saved = ticketRepository.save(ticket);
         log.info("Ticket created: id={}, customerId={}, status={}", saved.getId(), saved.getCustomer().getId(), saved.getStatus());
         return ticketMapper.toResponse(saved);
+    }
+
+    private AppUser findUserByUserName() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !StringUtils.hasText(authentication.getName())) {
+            throw new AccessDeniedException("Authenticated user is required to create a ticket");
+        }
+
+        return appUserRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Authenticated user not found: " + authentication.getName()));
     }
 
     /**
@@ -164,6 +177,91 @@ public class TicketServiceImpl implements TicketService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Ticket not found with id: " + ticketId));
         return ticketMapper.toResponse(ticket);
+    }
+
+    /**
+     * Deletes a ticket, enforcing the role-based ownership rules used by the
+     * ticket-list "delete" action:
+     *
+     * <ul>
+     *   <li>Customer   – may delete only tickets they created.</li>
+     *   <li>Team member – may delete only tickets currently assigned to them.</li>
+     *   <li>Team manager – may delete any ticket assigned within their team.</li>
+     * </ul>
+     */
+    @Override
+    public void delete(Long ticketId, Long actorId) {
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Ticket not found with id: " + ticketId));
+
+        AppUser actor = appUserRepository.findById(actorId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Actor not found with id: " + actorId));
+
+        UserType userType = resolveUserType(actor);
+        boolean allowed = switch (userType) {
+            case CUSTOMER -> isTicketOwner(ticket, actorId);
+            case TEAM_MEMBER -> isTicketAssignee(ticket, actorId);
+            case TEAM_MANAGER -> isWithinManagerTeam(ticket, actorId);
+        };
+
+        if (!allowed) {
+            throw new AccessDeniedException(
+                    "You are not permitted to delete ticket " + ticketId);
+        }
+
+        ticketRepository.delete(ticket);
+        log.info("Ticket deleted: id={}, actorId={}, role={}", ticketId, actorId, userType);
+    }
+
+    /**
+     * Re-assigns a ticket to another team member. Only the current assignee
+     * team member or a team manager overseeing the assignee may re-assign; the
+     * transition is recorded in the ticket's status history for auditing.
+     */
+    @Override
+    public TicketResponse reassign(Long ticketId, TicketReassignRequest request, Long actorId) {
+        if (request == null || request.getAssignedMemberId() == null) {
+            throw new IllegalArgumentException("Target team member id is required for re-assignment");
+        }
+
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Ticket not found with id: " + ticketId));
+
+        AppUser actor = appUserRepository.findById(actorId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Actor not found with id: " + actorId));
+
+        UserType userType = resolveUserType(actor);
+        boolean allowed = switch (userType) {
+            case TEAM_MEMBER -> isTicketAssignee(ticket, actorId);
+            case TEAM_MANAGER -> isWithinManagerTeam(ticket, actorId);
+            case CUSTOMER -> false;
+        };
+
+        if (!allowed) {
+            throw new AccessDeniedException(
+                    "You are not permitted to re-assign ticket " + ticketId);
+        }
+
+        TeamMember target = findAvailableTeamMember(request.getAssignedMemberId());
+        ticket.setAssignedMember(target);
+        // Re-assignment (re)activates the ticket into the ASSIGNED state when
+        // it is currently unallocated so the SLA/assignment lifecycle is consistent.
+        if (ticket.getStatus() == TicketStatus.UNALLOCATED) {
+            String note = (request.getNote() != null && !request.getNote().isBlank())
+                    ? request.getNote()
+                    : "Ticket re-assigned to team member " + target.getId();
+            recordStatusChange(ticket, TicketStatus.ASSIGNED, actor, note);
+            ticket.setStatus(TicketStatus.ASSIGNED);
+        }
+
+        Ticket updated = ticketRepository.save(ticket);
+        log.info("Ticket re-assigned: id={}, newMemberId={}, actorId={}, role={}",
+                ticketId, target.getId(), actorId, userType);
+        return ticketMapper.toResponse(updated);
     }
 
     @Override
@@ -269,37 +367,35 @@ public class TicketServiceImpl implements TicketService {
 
 
     @Override
-    public Page<CustomerTicketDto> searchForCustomer(TicketSearchRequestDto request, String sortBy, String order, String pageNumber, String pageSize) {
-        Sort sort = order.equalsIgnoreCase("DESC")
-                ? Sort.by(sortBy).descending()
-                : Sort.by(sortBy).ascending();
+    @Transactional(readOnly = true)
+    public Page<CustomerTicketDto> searchForCustomer(TicketSearchRequestDto request, String sortBy, String order, int pageNumber, int pageSize, Long customerId) {
+        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize, buildSort(sortBy, order));
 
-        PageRequest pageRequest = PageRequest.of(Integer.parseInt(pageNumber), Integer.parseInt(pageSize), sort);
-
-        // Execute the query using the specification + pageable
         Page<Ticket> ticketPage = ticketRepository.findAll(
                 TicketSpecification.bySearchRequest(request),
                 pageRequest
         );
 
-        // Convert entities -> DTOs
-        return ticketPage.map(ticketCustomerMapper::toCustomerDto);
+        // Resolve the row-level "canDelete" capability for the requesting
+        // customer (customers may delete only tickets they created).
+        return ticketPage.map(ticket -> ticketCustomerMapper.toCustomerDto(ticket, customerId));
     }
 
     @Override
-    public Page<TeamTicketDto> searchForTeam(TicketSearchRequestDto request, String sortBy, String order, int pageNumber, int pageSize) {
-        Sort sort = order.equalsIgnoreCase("DESC")
-                ? Sort.by(sortBy).descending()
-                : Sort.by(sortBy).ascending();
-
-        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize, sort);
+    @Transactional(readOnly = true)
+    public Page<TeamTicketDto> searchForTeam(TicketSearchRequestDto request, String sortBy, String order, int pageNumber, int pageSize, Long actorId, boolean isManager) {
+        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize, buildSort(sortBy, order));
 
         Specification<Ticket> spec = TicketSpecification.bySearchRequest(request);
         Page<Ticket> ticketPage = ticketRepository.findAll(spec, pageRequest);
-        return ticketPage.map(ticketCustomerMapper::toTeamDto);
+
+        // Resolve emergency visibility and delete/reassign capability per row
+        // for the acting team member / manager.
+        return ticketPage.map(ticket -> ticketCustomerMapper.toTeamDto(ticket, actorId, isManager));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<?> search(TicketSearchRequestDto request, String sortBy, String order, int pageNumber, int pageSize, Long actorId) {
         if (request == null) {
             throw new IllegalArgumentException("search request must not be null");
@@ -321,18 +417,18 @@ public class TicketServiceImpl implements TicketService {
                 request.setCustomerId(actorId);
                 request.setAssignedToId(null);
                 request.setTeamId(null);
-                yield searchForCustomer(request, sortBy, order, pageNumber, pageSize);
+                yield searchForCustomer(request, sortBy, order, pageNumber, pageSize, actorId);
             }
             case TEAM_MEMBER -> {
                 request.setAssignedToId(actorId);
                 request.setCustomerId(null);
-                yield searchForTeam(request, sortBy, order, pageNumber, pageSize);
+                yield searchForTeam(request, sortBy, order, pageNumber, pageSize, actorId, false);
             }
             case TEAM_MANAGER -> {
                 request.setTeamId(actorId);
                 request.setCustomerId(null);
                 request.setAssignedToId(null);
-                yield searchForTeam(request, sortBy, order, pageNumber, pageSize);
+                yield searchForTeam(request, sortBy, order, pageNumber, pageSize, actorId, true);
             }
         };
     }
@@ -350,20 +446,35 @@ public class TicketServiceImpl implements TicketService {
         throw new IllegalArgumentException("Unsupported user type for ticket search: " + user.getClass().getSimpleName());
     }
 
-    @Override
-    public Page<CustomerTicketDto> searchForCustomer(TicketSearchRequestDto request, String sortBy, String order, int pageNumber, int pageSize) {
-        Sort sort = order.equalsIgnoreCase("DESC")
+    /** True when the ticket was created by the given customer. */
+    private boolean isTicketOwner(Ticket ticket, Long customerId) {
+        return customerId != null
+                && ticket.getCustomer() != null
+                && customerId.equals(ticket.getCustomer().getId());
+    }
+
+    /** True when the ticket is currently assigned to the given team member. */
+    private boolean isTicketAssignee(Ticket ticket, Long memberId) {
+        return memberId != null
+                && ticket.getAssignedMember() != null
+                && memberId.equals(ticket.getAssignedMember().getId());
+    }
+
+    /**
+     * True when the ticket's assignee belongs to the team overseen by the given
+     * manager. Unassigned tickets are not considered part of any team scope.
+     */
+    private boolean isWithinManagerTeam(Ticket ticket, Long managerId) {
+        return managerId != null
+                && ticket.getAssignedMember() != null
+                && ticket.getAssignedMember().getManager() != null
+                && managerId.equals(ticket.getAssignedMember().getManager().getId());
+    }
+
+    private Sort buildSort(String sortBy, String order) {
+        return order != null && order.equalsIgnoreCase("DESC")
                 ? Sort.by(sortBy).descending()
                 : Sort.by(sortBy).ascending();
-
-        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize, sort);
-
-        Page<Ticket> ticketPage = ticketRepository.findAll(
-                TicketSpecification.bySearchRequest(request),
-                pageRequest
-        );
-
-        return ticketPage.map(ticketCustomerMapper::toCustomerDto);
     }
 
     /**

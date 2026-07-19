@@ -14,7 +14,8 @@ import java.util.Set;
 public class CustomerResponseDto extends AppUserResponseDto {
     private String companyName;
     private String phone;
-    // Including IDs of contracts to avoid infinite recursion
+    private String firstName;
+    private String lastName;
     private Set<Long> slaContractIds;
 }
 

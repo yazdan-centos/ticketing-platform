@@ -60,6 +60,31 @@ public class TicketController {
         return ResponseEntity.ok(ticketService.update(id, request, principal.getId()));
     }
 
+    // --- Re-assign Ticket to another team member ---
+    // Allowed roles (SecurityConfig): TEAM_MEMBER, TEAM_MANAGER
+    // Team members may re-assign tickets assigned to them; team managers may
+    // re-assign any ticket within their team. Enforced in the service layer.
+    @PostMapping("/{id}/reassign")
+    public ResponseEntity<TicketResponse> reassignTicket(
+            @PathVariable Long id,
+            @AuthenticationPrincipal AppUserDetails principal,
+            @Valid @RequestBody TicketReassignRequest request) {
+        return ResponseEntity.ok(ticketService.reassign(id, request, principal.getId()));
+    }
+
+    // --- Delete Ticket ---
+    // Allowed roles (SecurityConfig): CUSTOMER, TEAM_MEMBER, TEAM_MANAGER
+    // Ownership is enforced in the service layer: customers may delete only
+    // tickets they created, team members only tickets assigned to them, and
+    // team managers any ticket within their team.
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTicket(
+            @PathVariable Long id,
+            @AuthenticationPrincipal AppUserDetails principal) {
+        ticketService.delete(id, principal.getId());
+        return ResponseEntity.noContent().build();
+    }
+
     // --- Add Message to Ticket ---
     // Allowed roles (SecurityConfig): CUSTOMER, TEAM_MEMBER, TEAM_MANAGER
     // The sender is the authenticated principal.

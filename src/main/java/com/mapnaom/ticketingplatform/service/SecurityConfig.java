@@ -75,8 +75,12 @@ public class SecurityConfig {
                         .hasAnyRole(TEAM_MEMBER, TEAM_MANAGER)
                         .requestMatchers(HttpMethod.GET, "/api/tickets/*")
                         .hasAnyRole(CUSTOMER, TEAM_MEMBER, TEAM_MANAGER)
+                        .requestMatchers(HttpMethod.POST, "/api/tickets/*/reassign")
+                        .hasAnyRole(TEAM_MEMBER, TEAM_MANAGER)
                         .requestMatchers(HttpMethod.PUT, "/api/tickets/*")
                         .hasAnyRole(TEAM_MEMBER, TEAM_MANAGER)
+                        .requestMatchers(HttpMethod.DELETE, "/api/tickets/*")
+                        .hasAnyRole(CUSTOMER, TEAM_MEMBER, TEAM_MANAGER)
 
                         // ---- Customers ----
                         .requestMatchers(HttpMethod.POST, "/api/customers").hasRole(TEAM_MANAGER)
@@ -142,7 +146,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000"));
+        config.setAllowedOrigins(List.of("http://localhost:3000","http://localhost:5173"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

@@ -13,8 +13,6 @@ public class TicketCreateRequest {
     @NotBlank
     private String description;
 
-    @NotNull
-    private Long customerId;
 
     private Long slaContractId;
 

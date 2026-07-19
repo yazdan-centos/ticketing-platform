@@ -5,9 +5,12 @@ import com.mapnaom.ticketingplatform.model.Ticket;
 import com.mapnaom.ticketingplatform.model.TicketAttachment;
 import com.mapnaom.ticketingplatform.model.TicketMessage;
 import com.mapnaom.ticketingplatform.model.TicketStatusHistory;
+import org.hibernate.Hibernate;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
@@ -36,19 +39,28 @@ public class TicketMapper {
         dto.setCreatedAt(ticket.getCreatedAt());
         dto.setUpdatedAt(ticket.getUpdatedAt());
 
-        dto.setMessages(ticket.getTicketMessages() != null
-                ? ticket.getTicketMessages().stream().map(this::toMessageResponse).collect(Collectors.toList())
-                : Collections.emptyList());
+        dto.setMessages(snapshot(ticket.getTicketMessages()).stream()
+                .map(this::toMessageResponse)
+                .collect(Collectors.toList()));
 
-        dto.setAttachments(ticket.getTicketAttachments() != null
-                ? ticket.getTicketAttachments().stream().map(this::toAttachmentResponse).collect(Collectors.toList())
-                : Collections.emptyList());
+        dto.setAttachments(snapshot(ticket.getTicketAttachments()).stream()
+                .map(this::toAttachmentResponse)
+                .collect(Collectors.toList()));
 
-        dto.setStatusHistory(ticket.getTicketStatusHistories() != null
-                ? ticket.getTicketStatusHistories().stream().map(this::toStatusHistoryResponse).collect(Collectors.toList())
-                : Collections.emptyList());
+        dto.setStatusHistory(snapshot(ticket.getTicketStatusHistories()).stream()
+                .map(this::toStatusHistoryResponse)
+                .collect(Collectors.toList()));
 
         return dto;
+    }
+
+    private <T> List<T> snapshot(java.util.Collection<T> collection) {
+        if (collection == null) {
+            return Collections.emptyList();
+        }
+
+        Hibernate.initialize(collection);
+        return new ArrayList<>(collection);
     }
 
     public TicketMessageResponse toMessageResponse(TicketMessage message) {

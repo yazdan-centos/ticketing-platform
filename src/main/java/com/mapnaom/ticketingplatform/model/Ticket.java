@@ -8,8 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "tickets")
@@ -32,6 +32,12 @@ public class Ticket {
 
     @Enumerated(EnumType.STRING)
     private Priority priority = Priority.MEDIUM;
+
+    // Whether this ticket is flagged as an emergency. This is an internal
+    // triage attribute that is visible only to the assignee team member and
+    // team managers – never to the customer who raised the ticket.
+    @Column(name = "emergency", nullable = false)
+    private boolean emergency = false;
 
     @Column(name = "due_date")
     private LocalDateTime dueDate;
@@ -61,13 +67,13 @@ public class Ticket {
     private TeamMember assignedMember;
 
     @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<TicketAttachment> ticketAttachments = new LinkedHashSet<>();
+    private List<TicketAttachment> ticketAttachments = new ArrayList<>();
 
     @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<TicketMessage> ticketMessages = new LinkedHashSet<>();
+    private List<TicketMessage> ticketMessages = new ArrayList<>();
 
     @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<TicketStatusHistory> ticketStatusHistories = new LinkedHashSet<>();
+    private List<TicketStatusHistory> ticketStatusHistories = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {

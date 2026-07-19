@@ -43,6 +43,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
+    private static final String DEFAULT_TEAM_MEMBER_PASSWORD = "password123";
+
     private final PermissionRepository permissionRepository;
     private final RoleRepository roleRepository;
     private final CustomerRepository customerRepository;
@@ -65,6 +67,7 @@ public class DataInitializer implements CommandLineRunner {
         seedTicketsIfEmpty();
     }
 
+/*******************    💫 Codegeex Inline Diff    *******************/
     private void seedPermissionsIfEmpty() {
         if (permissionRepository.count() > 0) {
             return;
@@ -88,6 +91,7 @@ public class DataInitializer implements CommandLineRunner {
                 permission("SLA_UPDATE", "به‌روزرسانی قراردادهای SLA"),
                 permission("SLA_DELETE", "حذف قراردادهای SLA")));
     }
+/****************  5dd8e72be2ce4a34a3e69226bd05e106  ****************/
 
     private void seedRolesIfEmpty() {
         if (roleRepository.count() > 0) {
@@ -114,7 +118,7 @@ public class DataInitializer implements CommandLineRunner {
      *
      * <p>Demo credentials (login by username): customer usernames/passwords as
      * defined in the JSON fixture; {@code manager / manager123} (TEAM_MANAGER →
-     * also has ACCESS_ADMIN); {@code john|jane|sara / <username>123} (TEAM_MEMBER).
+     * also has ACCESS_ADMIN); all team members use {@code password123}.
      */
     private void seedAppUsersIfEmpty() throws IOException {
         Role customerRole = getOrCreateRole("CUSTOMER");
@@ -137,8 +141,6 @@ public class DataInitializer implements CommandLineRunner {
 
 
 
-            manager.addTeamMember(teamMember("john", "جان", "جونز", "john@mps.mapnagroup.com", "مهندس بک‌اند", teamMemberRole));
-            manager.addTeamMember(teamMember("jane", "جین", "جیمز", "jane@mps.mapnagroup.com", "مهندس تضمین کیفیت", teamMemberRole));
             manager.addTeamMember(teamMember("yazdanparast_m", "مهدی", "یزدان پرست", "sara@mps.mapnagroup.com", "برنامه نویس", teamMemberRole));
             manager.addTeamMember(teamMember("aghelifar", "مهرنوش", "عاقلی فر", "aghelifar_m@mps.mapnagroup.com", "برنامه نویس", teamMemberRole));
             manager.addTeamMember(teamMember("Nematollahian_m", "محمد", "نعمت الهیان", "Nematollahian_m@mps.mapnagroup.com", "برنامه نویس", teamMemberRole));
@@ -299,7 +301,7 @@ public class DataInitializer implements CommandLineRunner {
         teamMember.setFirstName(firstName);
         teamMember.setLastName(lastName);
         teamMember.setEmail(email);
-        teamMember.setPassword(passwordEncoder.encode(username + "123"));
+        teamMember.setPassword(passwordEncoder.encode(DEFAULT_TEAM_MEMBER_PASSWORD));
         teamMember.setJobTitle(jobTitle);
         teamMember.setRoles(Set.of(role));
         return teamMember;

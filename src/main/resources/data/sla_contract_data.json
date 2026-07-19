@@ -1,0 +1,95 @@
+{
+  "customers": [
+    {
+      "id": 1,
+      "firstName": "مریم",
+      "lastName": "کاظمی",
+      "username": "maryam.kazemi",
+      "password": "$2a$10$mockhashedpassword000201",
+      "email": "maryam.kazemi@fanavaran-pars.ir",
+      "avatarUrl": "https://example.ir/avatars/customer-1.png",
+      "deleted": false,
+      "createdAt": "2025-02-01T08:30:00",
+      "updatedAt": "2025-02-01T08:30:00",
+      "companyName": "فناوران پارس نوین",
+      "phone": "021-88442211",
+      "slaContractIds": [1, 2]
+    },
+    {
+      "id": 2,
+      "firstName": "رضا",
+      "lastName": "کریمی",
+      "username": "reza.karimi",
+      "password": "$2a$10$mockhashedpassword000202",
+      "email": "reza.karimi@poyeshdata.ir",
+      "avatarUrl": "https://example.ir/avatars/customer-2.png",
+      "deleted": false,
+      "createdAt": "2025-02-01T08:35:00",
+      "updatedAt": "2025-02-01T08:35:00",
+      "companyName": "پویش داده ایرانیان",
+      "phone": "021-66778899",
+      "slaContractIds": [3]
+    },
+    {
+      "id": 3,
+      "firstName": "الهام",
+      "lastName": "جعفری",
+      "username": "elham.jafari",
+      "password": "$2a$10$mockhashedpassword000203",
+      "email": "elham.jafari@atiyeh-gostar.ir",
+      "avatarUrl": "https://example.ir/avatars/customer-3.png",
+      "deleted": false,
+      "createdAt": "2025-02-01T08:40:00",
+      "updatedAt": "2025-02-01T08:40:00",
+      "companyName": "آتیه گستر شرق",
+      "phone": "031-32223344",
+      "slaContractIds": [4]
+    }
+  ],
+  "slaContracts": [
+    {
+      "id": 1,
+      "contractName": "SLA طلایی 24/7",
+      "serviceScope": "پشتیبانی کامل سامانه، مانیتورینگ و پاسخگویی شبانه‌روزی",
+      "responseTimeHours": 2,
+      "isActive": true,
+      "customerId": 1,
+      "categoryId": null,
+      "createdAt": "2025-02-01T09:00:00",
+      "updatedAt": "2025-02-01T09:00:00"
+    },
+    {
+      "id": 2,
+      "contractName": "SLA آرشیوی",
+      "serviceScope": "پشتیبانی محدود برای سرویس‌های قدیمی",
+      "responseTimeHours": 12,
+      "isActive": false,
+      "customerId": 1,
+      "categoryId": null,
+      "createdAt": "2024-11-15T10:00:00",
+      "updatedAt": "2025-01-20T14:30:00"
+    },
+    {
+      "id": 3,
+      "contractName": "SLA نقره‌ای اداری",
+      "serviceScope": "پشتیبانی در ساعات کاری و رسیدگی به خطاهای عملیاتی",
+      "responseTimeHours": 6,
+      "isActive": true,
+      "customerId": 2,
+      "categoryId": null,
+      "createdAt": "2025-02-01T09:10:00",
+      "updatedAt": "2025-02-01T09:10:00"
+    },
+    {
+      "id": 4,
+      "contractName": "SLA برنزی پایه",
+      "serviceScope": "پشتیبانی عمومی و ثبت درخواست‌های غیراضطراری",
+      "responseTimeHours": 24,
+      "isActive": true,
+      "customerId": 3,
+      "categoryId": null,
+      "createdAt": "2025-02-01T09:20:00",
+      "updatedAt": "2025-02-01T09:20:00"
+    }
+  ]
+}

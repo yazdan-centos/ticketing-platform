@@ -1,0 +1,126 @@
+{
+  "teamManagers": [
+    {
+      "id": 1,
+      "firstName": "مهدی",
+      "lastName": "رضایی",
+      "username": "mehdi.rezaei",
+      "password": "$2a$10$mockhashedpassword000001",
+      "email": "mehdi.rezaei@example.ir",
+      "avatarUrl": "https://example.ir/avatars/manager-1.png",
+      "deleted": false,
+      "createdAt": "2025-02-01T09:00:00",
+      "updatedAt": "2025-02-01T09:00:00",
+      "department": "پشتیبانی فنی",
+      "teamMembers": [1, 2]
+    },
+    {
+      "id": 2,
+      "firstName": "سارا",
+      "lastName": "محمدی",
+      "username": "sara.mohammadi",
+      "password": "$2a$10$mockhashedpassword000002",
+      "email": "sara.mohammadi@example.ir",
+      "avatarUrl": "https://example.ir/avatars/manager-2.png",
+      "deleted": false,
+      "createdAt": "2025-02-01T09:10:00",
+      "updatedAt": "2025-02-01T09:10:00",
+      "department": "خدمات مشتریان",
+      "teamMembers": [3]
+    }
+  ],
+  "teamMembers": [
+    {
+      "id": 1,
+      "firstName": "علی",
+      "lastName": "اکبری",
+      "username": "ali.akbari",
+      "password": "$2a$10$mockhashedpassword000101",
+      "email": "ali.akbari@example.ir",
+      "avatarUrl": "https://example.ir/avatars/member-1.png",
+      "deleted": false,
+      "createdAt": "2025-02-01T10:00:00",
+      "updatedAt": "2025-02-01T10:00:00",
+      "availabilityStatus": "AVAILABLE",
+      "jobTitle": "کارشناس پشتیبانی سطح 1",
+      "managerId": 1
+    },
+    {
+      "id": 2,
+      "firstName": "نرگس",
+      "lastName": "حسینی",
+      "username": "narges.hosseini",
+      "password": "$2a$10$mockhashedpassword000102",
+      "email": "narges.hosseini@example.ir",
+      "avatarUrl": "https://example.ir/avatars/member-2.png",
+      "deleted": false,
+      "createdAt": "2025-02-01T10:05:00",
+      "updatedAt": "2025-02-01T10:05:00",
+      "availabilityStatus": "BUSY",
+      "jobTitle": "کارشناس پشتیبانی سطح 2",
+      "managerId": 1
+    },
+    {
+      "id": 3,
+      "firstName": "حسین",
+      "lastName": "مرادی",
+      "username": "hossein.moradi",
+      "password": "$2a$10$mockhashedpassword000103",
+      "email": "hossein.moradi@example.ir",
+      "avatarUrl": "https://example.ir/avatars/member-3.png",
+      "deleted": false,
+      "createdAt": "2025-02-01T10:10:00",
+      "updatedAt": "2025-02-01T10:10:00",
+      "availabilityStatus": "AVAILABLE",
+      "jobTitle": "کارشناس پاسخگویی",
+      "managerId": 2
+    }
+  ],
+  "customers": [
+    {
+      "id": 1,
+      "firstName": "مریم",
+      "lastName": "کاظمی",
+      "username": "maryam.kazemi",
+      "password": "$2a$10$mockhashedpassword000201",
+      "email": "maryam.kazemi@fanavaran-pars.ir",
+      "avatarUrl": "https://example.ir/avatars/customer-1.png",
+      "deleted": false,
+      "createdAt": "2025-02-01T08:30:00",
+      "updatedAt": "2025-02-01T08:30:00",
+      "companyName": "فناوران پارس نوین",
+      "phone": "021-88442211",
+      "slaContractIds": [1]
+    },
+    {
+      "id": 2,
+      "firstName": "رضا",
+      "lastName": "کریمی",
+      "username": "reza.karimi",
+      "password": "$2a$10$mockhashedpassword000202",
+      "email": "reza.karimi@poyeshdata.ir",
+      "avatarUrl": "https://example.ir/avatars/customer-2.png",
+      "deleted": false,
+      "createdAt": "2025-02-01T08:35:00",
+      "updatedAt": "2025-02-01T08:35:00",
+      "companyName": "پویش داده ایرانیان",
+      "phone": "021-66778899",
+      "slaContractIds": [2]
+    },
+    {
+      "id": 3,
+      "firstName": "الهام",
+      "lastName": "جعفری",
+      "username": "elham.jafari",
+      "password": "$2a$10$mockhashedpassword000203",
+      "email": "elham.jafari@atiyeh-gostar.ir",
+      "avatarUrl": "https://example.ir/avatars/customer-3.png",
+      "deleted": false,
+      "createdAt": "2025-02-01T08:40:00",
+      "updatedAt": "2025-02-01T08:40:00",
+      "companyName": "آتیه گستر شرق",
+      "phone": "031-32223344",
+      "slaContractIds": [3]
+    }
+  ]
+}

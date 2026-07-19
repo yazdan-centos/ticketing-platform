@@ -12,10 +12,10 @@
       "username": "jsmith",
       "email": "jsmith@nimbuscorp.com",
       "roles": [
-        "ROLE_USER"
+        "CUSTOMER"
       ],
-      "companyName": "نیمباس کورپ",
-      "phone": "+1-202-555-0101"
+      "companyName": "شرکت راهکارهای ابری نیما",
+      "phone": "+98-21-5550-0101"
     }
   },
   {
@@ -31,11 +31,10 @@
       "username": "agarcia",
       "email": "agarcia@bluepeaksolutions.com",
       "roles": [
-        "ROLE_ADMIN",
-        "ROLE_USER"
+        "CUSTOMER"
       ],
-      "companyName": "بلوپیک ساولوشنز",
-      "phone": "+1-202-555-0102"
+      "companyName": "راهکارهای فناوری آبی",
+      "phone": "+98-21-5550-0102"
     }
   },
   {
@@ -51,10 +50,10 @@
       "username": "mwong",
       "email": "mwong@quantumretail.com",
       "roles": [
-        "ROLE_USER"
+        "CUSTOMER"
       ],
-      "companyName": "کوانتام ریتیل",
-      "phone": "+1-202-555-0103"
+      "companyName": "فروشگاه زنجیره‌ای کوانتوم",
+      "phone": "+98-21-5550-0103"
     }
   },
   {
@@ -70,10 +69,10 @@
       "username": "klee",
       "email": "klee@skylinelogistics.com",
       "roles": [
-        "ROLE_USER"
+        "CUSTOMER"
       ],
-      "companyName": "اسکای‌لاین لاجستیک",
-      "phone": "+1-202-555-0104"
+      "companyName": "حمل‌ونقل آسمان",
+      "phone": "+98-21-5550-0104"
     }
   },
   {
@@ -89,10 +88,10 @@
       "username": "rpatel",
       "email": "rpatel@vertexhealth.com",
       "roles": [
-        "ROLE_USER"
+        "CUSTOMER"
       ],
-      "companyName": "ورتکس هلث",
-      "phone": "+1-202-555-0105"
+      "companyName": "سلامت برتر",
+      "phone": "+98-21-5550-0105"
     }
   },
   {
@@ -108,11 +107,10 @@
       "username": "tnguyen",
       "email": "tnguyen@granitefinancial.com",
       "roles": [
-        "ROLE_ADMIN",
-        "ROLE_USER"
+        "CUSTOMER"
       ],
-      "companyName": "گرانایت فایننشال",
-      "phone": "+1-202-555-0106"
+      "companyName": "سرمایه‌گذاری گرانیت",
+      "phone": "+98-21-5550-0106"
     }
   },
   {
@@ -128,10 +126,10 @@
       "username": "sbrown",
       "email": "sbrown@solarisenergy.com",
       "roles": [
-        "ROLE_USER"
+        "CUSTOMER"
       ],
-      "companyName": "سولاریس انرجی",
-      "phone": "+1-202-555-0107"
+      "companyName": "انرژی خورشیدی پارس",
+      "phone": "+98-21-5550-0107"
     }
   },
   {
@@ -147,10 +145,10 @@
       "username": "dkim",
       "email": "dkim@cobaltmfg.com",
       "roles": [
-        "ROLE_USER"
+        "CUSTOMER"
       ],
-      "companyName": "کوبالت منوفکتچرینگ",
-      "phone": "+1-202-555-0108"
+      "companyName": "صنایع تولیدی کبالت",
+      "phone": "+98-21-5550-0108"
     }
   },
   {
@@ -166,10 +164,10 @@
       "username": "lmartin",
       "email": "lmartin@lighthousemedia.com",
       "roles": [
-        "ROLE_USER"
+        "CUSTOMER"
       ],
-      "companyName": "لایتهاوس مدیا",
-      "phone": "+1-202-555-0109"
+      "companyName": "رسانه فانوس",
+      "phone": "+98-21-5550-0109"
     }
   },
   {
@@ -185,11 +183,10 @@
       "username": "fortiz",
       "email": "fortiz@pinnacleinsurance.com",
       "roles": [
-        "ROLE_ADMIN",
-        "ROLE_USER"
+        "CUSTOMER"
       ],
-      "companyName": "Pinnacle Insurance",
-      "phone": "+1-202-555-0110"
+      "companyName": "بیمه پیشگامان",
+      "phone": "+98-21-5550-0110"
     }
   },
   {
@@ -205,10 +202,10 @@
       "username": "hcohen",
       "email": "hcohen@orchardeducation.com",
       "roles": [
-        "ROLE_USER"
+        "CUSTOMER"
       ],
-      "companyName": "ارچرد اِدجوکیشن",
-      "phone": "+1-202-555-0111"
+      "companyName": "آموزش باغ دانایی",
+      "phone": "+98-21-5550-0111"
     }
   },
   {
@@ -224,10 +221,10 @@
       "username": "bsingh",
       "email": "bsingh@falconaerospace.com",
       "roles": [
-        "ROLE_USER"
+        "CUSTOMER"
       ],
-      "companyName": "فالکون ایروسپیس",
-      "phone": "+1-202-555-0112"
+      "companyName": "صنایع هوافضای شاهین",
+      "phone": "+98-21-5550-0112"
     }
   },
   {
@@ -243,10 +240,10 @@
       "username": "nwalsh",
       "email": "nwalsh@meridiantelecom.com",
       "roles": [
-        "ROLE_USER"
+        "CUSTOMER"
       ],
-      "companyName": "مریدیان مخابرات",
-      "phone": "+1-202-555-0113"
+      "companyName": "ارتباطات نصف‌النهار",
+      "phone": "+98-21-5550-0113"
     }
   },
   {
@@ -262,11 +259,10 @@
       "username": "ydiaz",
       "email": "ydiaz@cedarhospitality.com",
       "roles": [
-        "ROLE_ADMIN",
-        "ROLE_USER"
+        "CUSTOMER"
       ],
-      "companyName": "سیدر هُسپیتالیته",
-      "phone": "+1-202-555-0114"
+      "companyName": "مهمان‌نوازی سرو",
+      "phone": "+98-21-5550-0114"
     }
   },
   {
@@ -282,10 +278,10 @@
       "username": "ckhan",
       "email": "ckhan@atlasconstruction.com",
       "roles": [
-        "ROLE_USER"
+        "CUSTOMER"
       ],
-      "companyName": "اطلس کانستراکشن",
-      "phone": "+1-202-555-0115"
+      "companyName": "ساختمان اطلس",
+      "phone": "+98-21-5550-0115"
     }
   },
   {
@@ -301,10 +297,10 @@
       "username": "pmurphy",
       "email": "pmurphy@hollowrobotics.com",
       "roles": [
-        "ROLE_USER"
+        "CUSTOMER"
       ],
-      "companyName": "هولو رباتیکس",
-      "phone": "+1-202-555-0116"
+      "companyName": "رباتیک آینده",
+      "phone": "+98-21-5550-0116"
     }
   },
   {
@@ -320,10 +316,10 @@
       "username": "ezhang",
       "email": "ezhang@crimsonanalytics.com",
       "roles": [
-        "ROLE_USER"
+        "CUSTOMER"
       ],
-      "companyName": "کریمرسن آنالیتیکس",
-      "phone": "+1-202-555-0117"
+      "companyName": "تحلیل داده سرخ",
+      "phone": "+98-21-5550-0117"
     }
   },
   {
@@ -339,10 +335,10 @@
       "username": "grossi",
       "email": "grossi@driftwoodapparel.com",
       "roles": [
-        "ROLE_USER"
+        "CUSTOMER"
       ],
-      "companyName": "دری‌وود اپارِل",
-      "phone": "+1-202-555-0118"
+      "companyName": "پوشاک چوبین",
+      "phone": "+98-21-5550-0118"
     }
   },
   {
@@ -358,11 +354,10 @@
       "username": "wokafor",
       "email": "wokafor@ironcladsecurity.com",
       "roles": [
-        "ROLE_ADMIN",
-        "ROLE_USER"
+        "CUSTOMER"
       ],
-      "companyName": "آیرونکلید سکوریتی",
-      "phone": "+1-202-555-0119"
+      "companyName": "امنیت دژ",
+      "phone": "+98-21-5550-0119"
     }
   },
   {
@@ -378,10 +373,10 @@
       "username": "jtanaka",
       "email": "jtanaka@wavelengthstudios.com",
       "roles": [
-        "ROLE_USER"
+        "CUSTOMER"
       ],
-      "companyName": "ویل‌نِگ استودیوز",
-      "phone": "+1-202-555-0120"
+      "companyName": "استودیو موج",
+      "phone": "+98-21-5550-0120"
     }
   }
 ]
