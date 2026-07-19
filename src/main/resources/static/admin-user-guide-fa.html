@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="راهنمای فارسی مفاهیم و گزینه‌های پنل مدیریت سامانه تیکتینگ">
+  <title>راهنمای مفاهیم پنل مدیریت سامانه تیکتینگ</title>
+  <style>
+    :root {
+      --navy: #102a43;
+      --blue: #1769aa;
+      --blue-soft: #eaf4fb;
+      --green: #13795b;
+      --green-soft: #e8f6f1;
+      --amber: #9a6700;
+      --amber-soft: #fff6d8;
+      --red: #b42318;
+      --red-soft: #fff0ee;
+      --ink: #25313c;
+      --muted: #617184;
+      --line: #dbe4ec;
+      --paper: #ffffff;
+      --page: #f4f7fa;
+      --shadow: 0 12px 30px rgba(16, 42, 67, .08);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+      font-family: Tahoma, "Segoe UI", Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.9;
+    }
+
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code, .code {
+      direction: ltr;
+      unicode-bidi: isolate;
+      display: inline-block;
+      padding: .05rem .38rem;
+      border: 1px solid #d8e3ed;
+      border-radius: .35rem;
+      background: #f4f7fa;
+      color: #173f5f;
+      font-family: Consolas, Monaco, monospace;
+      font-size: .88em;
+    }
+
+    .hero {
+      padding: 3.25rem 1.25rem 4.5rem;
+      background: linear-gradient(135deg, #0e3a5d, #1769aa 60%, #15948a);
+      color: #fff;
+    }
+    .hero-inner, .layout { max-width: 1240px; margin: 0 auto; }
+    .eyebrow { margin: 0 0 .35rem; color: #cce9ff; font-size: .92rem; }
+    h1 { margin: 0; font-size: clamp(1.8rem, 4vw, 3rem); line-height: 1.45; }
+    .lead { max-width: 850px; margin: .7rem 0 0; color: #eef8ff; font-size: 1.05rem; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 270px minmax(0, 1fr);
+      gap: 1.35rem;
+      padding: 0 1rem 3rem;
+      margin-top: -2.25rem;
+      align-items: start;
+    }
+    .sidebar, .content > section {
+      border: 1px solid var(--line);
+      border-radius: 1rem;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+    .sidebar { position: sticky; top: 1rem; padding: 1rem; }
+    .sidebar strong { color: var(--navy); }
+    .sidebar nav { margin-top: .55rem; }
+    .sidebar a {
+      display: block;
+      padding: .42rem .6rem;
+      border-radius: .5rem;
+      color: #3d5266;
+    }
+    .sidebar a:hover { background: var(--blue-soft); text-decoration: none; }
+    .search {
+      width: 100%;
+      margin-top: .85rem;
+      padding: .68rem .75rem;
+      border: 1px solid #cbd8e3;
+      border-radius: .65rem;
+      color: var(--ink);
+      font: inherit;
+    }
+    .search:focus { outline: 3px solid rgba(23, 105, 170, .15); border-color: var(--blue); }
+
+    .content { display: grid; gap: 1.25rem; }
+    .content > section { padding: clamp(1.1rem, 3vw, 2rem); scroll-margin-top: 1rem; }
+    h2 { margin: 0 0 .45rem; color: var(--navy); font-size: 1.55rem; }
+    h3 { margin: 1.35rem 0 .35rem; color: #174f78; font-size: 1.13rem; }
+    p { margin: .35rem 0 .8rem; }
+    .section-intro { color: var(--muted); }
+
+    .note {
+      margin: 1rem 0;
+      padding: .8rem 1rem;
+      border-right: 4px solid var(--blue);
+      border-radius: .6rem;
+      background: var(--blue-soft);
+    }
+    .note.warning { border-color: var(--amber); background: var(--amber-soft); }
+    .note.danger { border-color: var(--red); background: var(--red-soft); }
+    .note.success { border-color: var(--green); background: var(--green-soft); }
+
+    .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .8rem; }
+    .card {
+      padding: 1rem;
+      border: 1px solid var(--line);
+      border-radius: .8rem;
+      background: #fbfdff;
+    }
+    .card h3 { margin-top: 0; }
+    .card p:last-child { margin-bottom: 0; }
+    .choice { display: flex; align-items: center; gap: .5rem; margin-bottom: .35rem; }
+    .badge {
+      display: inline-block;
+      padding: .08rem .52rem;
+      border-radius: 999px;
+      background: var(--blue-soft);
+      color: #0e5a91;
+      font-size: .82rem;
+      font-weight: 700;
+      direction: ltr;
+      unicode-bidi: isolate;
+    }
+    .badge.green { background: var(--green-soft); color: var(--green); }
+    .badge.amber { background: var(--amber-soft); color: var(--amber); }
+    .badge.red { background: var(--red-soft); color: var(--red); }
+
+    .table-wrap { overflow-x: auto; margin-top: .85rem; }
+    table { width: 100%; border-collapse: collapse; min-width: 680px; }
+    th, td { padding: .72rem .7rem; border-bottom: 1px solid var(--line); text-align: right; vertical-align: top; }
+    th { background: #f0f5f9; color: var(--navy); white-space: nowrap; }
+    tr:last-child td { border-bottom: 0; }
+    ul { margin: .3rem 0 .8rem; padding-right: 1.25rem; }
+    li { margin: .18rem 0; }
+    .flow { display: flex; flex-wrap: wrap; gap: .45rem; align-items: center; margin: .9rem 0; }
+    .flow span { padding: .35rem .65rem; border-radius: .55rem; background: #edf3f8; color: var(--navy); }
+    .flow b { color: var(--muted); direction: ltr; }
+    .checklist { list-style: none; padding: 0; }
+    .checklist li { position: relative; padding-right: 1.7rem; }
+    .checklist li::before { content: "✓"; position: absolute; right: .25rem; color: var(--green); font-weight: 700; }
+    .empty { display: none; padding: 1.5rem; text-align: center; color: var(--muted); }
+    footer { padding: 1.5rem; text-align: center; color: var(--muted); font-size: .9rem; }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { position: static; }
+      .sidebar nav { columns: 2; }
+      .cards { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+      .hero { padding-top: 2rem; }
+      .layout { padding-inline: .65rem; }
+      .sidebar nav { columns: 1; }
+      .cards { grid-template-columns: 1fr; }
+      .content > section { border-radius: .75rem; }
+    }
+    @media print {
+      body { background: #fff; font-size: 11pt; }
+      .hero { padding: 1rem 0; background: none; color: #000; }
+      .hero .lead, .hero .eyebrow { color: #333; }
+      .layout { display: block; max-width: none; margin: 0; padding: 0; }
+      .sidebar, .search, footer { display: none; }
+      .content > section { box-shadow: none; break-inside: avoid; margin: 0 0 .7rem; }
+      a { color: inherit; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <p class="eyebrow">مرجع انتخاب گزینه صحیح هنگام ورود و ویرایش داده</p>
+      <h1>راهنمای مفاهیم پنل مدیریت</h1>
+      <p class="lead">این راهنما اصطلاحات، گزینه‌ها و وضعیت‌هایی را توضیح می‌دهد که مدیر سامانه در پنل می‌بیند. هدف آن تعریف واژه‌ها و کمک به انتخاب مقدار درست است؛ نه آموزش گام‌به‌گام کار با رابط کاربری.</p>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar" aria-label="فهرست راهنما">
+      <strong>فهرست مفاهیم</strong>
+      <input id="guide-search" class="search" type="search" placeholder="جست‌وجو در راهنما..." aria-label="جست‌وجو در راهنما">
+      <nav>
+        <a href="#quick-rules">قواعد سریع ورود داده</a>
+        <a href="#users">انواع کاربر و نقش‌ها</a>
+        <a href="#user-fields">فیلدهای کاربران</a>
+        <a href="#availability">وضعیت دسترس‌پذیری</a>
+        <a href="#sla">قرارداد SLA و دسته‌بندی</a>
+        <a href="#ticket">مفاهیم تیکت</a>
+        <a href="#priority">اولویت تیکت</a>
+        <a href="#status">وضعیت و گردش تیکت</a>
+        <a href="#access">دسترسی، مجوز و محدوده</a>
+        <a href="#permissions">کدهای مجوز</a>
+        <a href="#other">سایر اصطلاحات</a>
+      </nav>
+    </aside>
+
+    <main class="content" id="guide-content">
+      <section id="quick-rules" data-searchable>
+        <h2>قواعد سریع ورود داده</h2>
+        <p class="section-intro">پیش از ثبت هر رکورد، این چند قاعده از خطاهای رایج جلوگیری می‌کند.</p>
+        <ul class="checklist">
+          <li>نوع کاربر و نقش امنیتی او را هماهنگ انتخاب کنید: مشتری با <code>CUSTOMER</code>، عضو تیم با <code>TEAM_MEMBER</code> و مدیر تیم با <code>TEAM_MANAGER</code>.</li>
+          <li>برای هر تیکت، مشتری واقعی ایجادکننده درخواست را انتخاب کنید؛ این انتخاب مالکیت و محدوده مشاهده تیکت را تعیین می‌کند.</li>
+          <li>قرارداد SLA باید متعلق به همان مشتری تیکت باشد و در زمان ثبت یا رسیدگی فعال باشد.</li>
+          <li>اولویت را بر اساس اثر کسب‌وکاری انتخاب کنید، نه صرفاً اصرار درخواست‌کننده.</li>
+          <li>تیکت را فقط به عضو تیمی تخصیص دهید که وضعیت او <code>AVAILABLE</code> یا در شرایط لازم <code>BUSY</code> است.</li>
+          <li>هنگام تغییر وضعیت، مسیر مجاز گردش تیکت را رعایت و علت تغییر را در «یادداشت وضعیت» ثبت کنید.</li>
+          <li>برای استثناهای دسترسی ابتدا نقش را بررسی کنید؛ سپس فقط در صورت نیاز از مجوز فردی یا محدوده اختصاصی استفاده کنید.</li>
+        </ul>
+        <div class="note warning"><strong>نکته:</strong> شناسه‌ها، تاریخ ایجاد و تاریخ آخرین به‌روزرسانی معمولاً سیستمی هستند. آن‌ها را به‌عنوان مفهوم مرجع ببینید و فقط اگر پنل اجازه می‌دهد تغییر دهید.</div>
+      </section>
+
+      <section id="users" data-searchable>
+        <h2>انواع کاربر و نقش‌ها</h2>
+        <p class="section-intro">«نوع کاربر» ماهیت حساب را مشخص می‌کند و «نقش» مجموعه مجوزهای پیش‌فرض او را. در این سامانه نام استاندارد هر دو با هم هماهنگ است.</p>
+        <div class="cards">
+          <article class="card">
+            <div class="choice"><span class="badge">CUSTOMER</span><strong>مشتری</strong></div>
+            <p>شخص یا سازمانی که درخواست پشتیبانی ثبت می‌کند. مشتری فقط باید تیکت‌های متعلق به خودش را ببیند و قراردادهای SLA به حساب او متصل می‌شوند.</p>
+            <p><strong>انتخاب کنید وقتی:</strong> حساب برای دریافت‌کننده خدمت یا نماینده شرکت مشتری است.</p>
+          </article>
+          <article class="card">
+            <div class="choice"><span class="badge">TEAM_MEMBER</span><strong>عضو تیم</strong></div>
+            <p>کارشناس یا عامل پشتیبانی که تیکت‌ها به او تخصیص داده می‌شوند و روی بررسی، پاسخ و حل آن‌ها کار می‌کند.</p>
+            <p><strong>انتخاب کنید وقتی:</strong> کاربر مجری رسیدگی به تیکت است، نه سرپرست کل تیم.</p>
+          </article>
+          <article class="card">
+            <div class="choice"><span class="badge">TEAM_MANAGER</span><strong>مدیر تیم</strong></div>
+            <p>سرپرستی که اعضای تیم، بار کاری، تیکت‌های تیم و تنظیمات مدیریتی را کنترل می‌کند. نقش اولیه این نوع کاربر همه مجوزهای سامانه را دارد.</p>
+            <p><strong>انتخاب کنید وقتی:</strong> کاربر مسئول نظارت، تخصیص و مدیریت دسترسی‌هاست.</p>
+          </article>
+        </div>
+        <div class="note danger"><strong>از نقش نامعتبر استفاده نکنید:</strong> مقادیری مانند <code>ROLE_USER</code> یا <code>ROLE_ADMIN</code> جزو سه نقش استاندارد داده‌های فعلی سامانه نیستند. برای مشتری، مقدار صحیح <code>CUSTOMER</code> است.</div>
+        <h3>حذف نرم (Soft Delete)</h3>
+        <p>حذف کاربر به معنای علامت‌گذاری حساب به‌عنوان حذف‌شده است، نه لزوماً پاک‌شدن فیزیکی سابقه. این روش ارتباط تیکت‌ها و گزارش‌های تاریخی را حفظ می‌کند. گزینه «حذف‌شده» را فقط برای حسابی انتخاب کنید که دیگر نباید فعال باشد.</p>
+      </section>
+
+      <section id="user-fields" data-searchable>
+        <h2>فیلدهای اطلاعات کاربران</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>فیلد</th><th>تعریف</th><th>راهنمای انتخاب یا ورود</th></tr></thead>
+            <tbody>
+              <tr><td>نام کاربری</td><td>شناسه ورود حساب و مقداری یکتا در سامانه</td><td>کوتاه، ثابت و بدون فاصله انتخاب شود. نام کاربری یک شخص را برای حساب دیگری تکرار نکنید.</td></tr>
+              <tr><td>رمز عبور</td><td>عبارت محرمانه ورود که در پایگاه داده به‌صورت رمزنگاری‌شده ذخیره می‌شود</td><td>برای حساب واقعی از رمز قوی و غیرمشترک استفاده کنید. رمزهای پیش‌فرض داده‌های نمایشی برای محیط عملیاتی مناسب نیستند.</td></tr>
+              <tr><td>ایمیل</td><td>نشانی ارتباطی کاربر</td><td>ایمیل معتبر و متعلق به همان شخص یا سازمان وارد شود؛ برای اعلان‌ها و شناسایی کاربر اهمیت دارد.</td></tr>
+              <tr><td>نام و نام خانوادگی</td><td>نام نمایشی شخص</td><td>برای جست‌وجو و تشخیص صحیح کاربران کامل و فارسی ثبت شود.</td></tr>
+              <tr><td>تصویر پروفایل</td><td>تصویر نمایشی حساب</td><td>تصویر واضح، کم‌حجم و سازمانی بارگذاری شود؛ نشانی فایل توسط سامانه نگهداری می‌شود.</td></tr>
+              <tr><td>نام شرکت</td><td>سازمانی که مشتری به نمایندگی از آن درخواست ثبت می‌کند</td><td>فقط برای مشتری معنی دارد. نام رسمی و قابل تشخیص شرکت را وارد کنید.</td></tr>
+              <tr><td>شماره تماس</td><td>راه تماس با مشتری</td><td>با کد کشور، مانند <code>+98</code>، و با قالبی ثابت ثبت شود.</td></tr>
+              <tr><td>عنوان شغلی</td><td>سمت تخصصی عضو تیم</td><td>مانند «کارشناس شبکه» یا «توسعه‌دهنده بک‌اند»؛ برای تخصیص درست تیکت کاربرد دارد.</td></tr>
+              <tr><td>مدیر تیم</td><td>سرپرست مستقیم عضو تیم</td><td>مدیری را انتخاب کنید که واقعاً مسئول آن عضو است؛ این رابطه محدوده تیکت‌های قابل مشاهده مدیر را تعیین می‌کند.</td></tr>
+              <tr><td>دپارتمان</td><td>واحد سازمانی مدیر تیم</td><td>مانند «پشتیبانی نرم‌افزار» یا «زیرساخت»؛ نام واحد را یکدست وارد کنید.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="availability" data-searchable>
+        <h2>وضعیت دسترس‌پذیری عضو تیم</h2>
+        <p class="section-intro">این وضعیت نشان می‌دهد کارشناس در حال حاضر تا چه حد امکان پذیرش تیکت جدید دارد.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>مقدار</th><th>معنی</th><th>زمان انتخاب</th><th>امکان تخصیص در سامانه</th></tr></thead>
+            <tbody>
+              <tr><td><span class="badge green">AVAILABLE</span></td><td>در دسترس</td><td>عضو فعال است و ظرفیت پذیرش کار جدید دارد.</td><td>بله؛ انتخاب پیشنهادی برای تخصیص عادی</td></tr>
+              <tr><td><span class="badge amber">BUSY</span></td><td>مشغول</td><td>عضو روی کارهای جاری متمرکز است، اما ممکن است برای مورد مهم ظرفیت داشته باشد.</td><td>بله؛ با بررسی بار کاری یا برای مورد ضروری</td></tr>
+              <tr><td><span class="badge">OFF_DUTY</span></td><td>خارج از شیفت</td><td>مرخصی، پایان شیفت، استراحت یا برنامه عدم حضور ثبت‌شده</td><td>خیر؛ سامانه تخصیص را رد می‌کند</td></tr>
+              <tr><td><span class="badge red">UNAVAILABLE</span></td><td>غیرقابل دسترس</td><td>غیبت پیش‌بینی‌نشده، مشکل موقت یا هر وضعیتی که مانع رسیدگی است</td><td>خیر؛ سامانه تخصیص را رد می‌کند</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="sla" data-searchable>
+        <h2>قرارداد SLA و دسته‌بندی خدمت</h2>
+        <p><strong>SLA</strong> مخفف «توافق‌نامه سطح خدمت» است؛ قراردادی میان ارائه‌دهنده خدمت و مشتری که دامنه خدمت و زمان پاسخ مورد انتظار را مشخص می‌کند.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>مفهوم یا فیلد</th><th>تعریف</th><th>راهنمای ورود</th></tr></thead>
+            <tbody>
+              <tr><td>نام قرارداد</td><td>عنوان قابل شناسایی توافق‌نامه</td><td>نامی روشن مانند «پشتیبانی طلایی ۲۴/۷» وارد کنید؛ نام باید سطح یا نوع خدمت را قابل تشخیص کند.</td></tr>
+              <tr><td>دامنه خدمت</td><td>خدمات، سامانه‌ها، ساعات و شرایطی که قرارداد پوشش می‌دهد</td><td>دقیق بنویسید چه چیزهایی تحت پوشش و چه چیزهایی خارج از پوشش‌اند.</td></tr>
+              <tr><td>زمان پاسخ (ساعت)</td><td>حداکثر زمان تعهدشده برای شروع پاسخ‌گویی پس از ثبت درخواست</td><td>عدد صحیح و مثبت وارد کنید. مقدار کمتر یعنی تعهد سریع‌تر و سخت‌گیرانه‌تر.</td></tr>
+              <tr><td>فعال</td><td>نشان می‌دهد قرارداد اکنون قابل استفاده است</td><td>فقط قرارداد معتبر و جاری را فعال کنید. قرارداد منقضی، تعلیق‌شده یا خاتمه‌یافته باید غیرفعال باشد.</td></tr>
+              <tr><td>مشتری</td><td>مالک قرارداد</td><td>مشتری حقوقی صحیح را انتخاب کنید. قرارداد یک مشتری را برای تیکت مشتری دیگر به کار نبرید.</td></tr>
+              <tr><td>دسته‌بندی</td><td>گروه موضوعی خدمت، مانند نرم‌افزار، شبکه یا زیرساخت</td><td>دسته‌ای انتخاب کنید که دامنه قرارداد را بهتر توصیف می‌کند. نام دسته باید یکتا و توضیح آن روشن باشد.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note"><strong>زمان پاسخ با زمان حل تفاوت دارد:</strong> زمان پاسخ، مهلت آغاز ارتباط و رسیدگی است؛ الزاماً به معنای حل کامل مشکل در همان مدت نیست.</div>
+        <div class="note warning"><strong>هنگام اتصال SLA به تیکت:</strong> مالک قرارداد، مشتری تیکت و وضعیت فعال قرارداد را کنترل کنید. اگر درخواست خارج از دامنه قرارداد است، SLA نامرتبط انتخاب نکنید.</div>
+      </section>
+
+      <section id="ticket" data-searchable>
+        <h2>مفاهیم اصلی تیکت</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>مفهوم یا فیلد</th><th>تعریف</th><th>راهنمای ورود</th></tr></thead>
+            <tbody>
+              <tr><td>عنوان</td><td>خلاصه کوتاه مسئله یا درخواست</td><td>مشخص، قابل جست‌وجو و بدون عبارت‌های مبهمی مانند «فوری» یا «مشکل دارم» باشد.</td></tr>
+              <tr><td>شرح</td><td>جزئیات مشکل، محیط، نشانه‌ها و نتیجه مورد انتظار</td><td>اطلاعات لازم برای بازتولید یا تشخیص را کامل ثبت کنید و داده محرمانه غیرضروری ننویسید.</td></tr>
+              <tr><td>مشتری</td><td>ایجادکننده و مالک درخواست</td><td>مشتری صحیح را انتخاب کنید؛ مشتری فقط به تیکت‌های خودش دسترسی دارد.</td></tr>
+              <tr><td>قرارداد SLA</td><td>تعهد سطح خدمتی حاکم بر تیکت</td><td>قرارداد فعال و متعلق به همان مشتری را انتخاب کنید. این فیلد می‌تواند در ثبت اولیه خالی باشد.</td></tr>
+              <tr><td>عضو تخصیص‌یافته</td><td>کارشناس مسئول فعلی رسیدگی</td><td>تخصص، مدیر تیم، بار کاری و وضعیت دسترس‌پذیری عضو را بررسی کنید.</td></tr>
+              <tr><td>سررسید</td><td>زمان هدف برای اقدام یا تکمیل تیکت</td><td>با تعهد SLA و اولویت هماهنگ باشد. سررسید یک موعد عملیاتی است، نه همان زمان پاسخ SLA.</td></tr>
+              <tr><td>اضطراری</td><td>پرچم داخلی برای رخداد نیازمند توجه ویژه</td><td>فقط برای رخداد واقعاً فوری فعال کنید. این علامت برای مشتری نمایش داده نمی‌شود و برای عضو مسئول و مدیران تیم است.</td></tr>
+              <tr><td>یادداشت وضعیت</td><td>علت انسانی تغییر وضعیت</td><td>کوتاه و قابل ممیزی بنویسید؛ مانند «پس از تأیید مشتری حل شد».</td></tr>
+              <tr><td>تخصیص مجدد</td><td>انتقال مسئولیت به عضو دیگری</td><td>عضو مقصد باید قابل تخصیص باشد. بهتر است علت انتقال در یادداشت ثبت شود.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="priority" data-searchable>
+        <h2>اولویت تیکت</h2>
+        <p class="section-intro">اولویت ترتیب و فوریت رسیدگی را نشان می‌دهد. مقدار پیش‌فرض سامانه <code>MEDIUM</code> است.</p>
+        <div class="cards">
+          <article class="card">
+            <div class="choice"><span class="badge green">LOW</span><strong>کم</strong></div>
+            <p>درخواست عادی بدون فشار زمانی؛ مانند پرسش عمومی، پیشنهاد قابلیت یا ایراد جزئی بدون اثر جدی.</p>
+          </article>
+          <article class="card">
+            <div class="choice"><span class="badge">MEDIUM</span><strong>متوسط</strong></div>
+            <p>درخواست استاندارد که باید در روال معمول و مطابق SLA رسیدگی شود. در نبود شواهد فوریت، این گزینه مناسب است.</p>
+          </article>
+          <article class="card">
+            <div class="choice"><span class="badge amber">HIGH</span><strong>زیاد</strong></div>
+            <p>مشکلی مهم که بهره‌وری یا عملیات کسب‌وکار را به‌طور جدی مختل کرده و پاسخ سریع می‌خواهد.</p>
+          </article>
+          <article class="card">
+            <div class="choice"><span class="badge red">CRITICAL</span><strong>بحرانی</strong></div>
+            <p>قطعی سرویس، رخداد امنیتی یا توقف یک فرایند حیاتی که اقدام فوری و هماهنگی سریع لازم دارد.</p>
+          </article>
+        </div>
+        <div class="note danger"><strong><code>CRITICAL</code> را محدود استفاده کنید:</strong> اهمیت شخصی درخواست یا پیگیری مکرر به‌تنهایی دلیل بحرانی‌بودن نیست. اثر واقعی، تعداد کاربران متاثر، نبود راه‌حل جایگزین و ریسک امنیتی را بسنجید.</div>
+        <h3>تفاوت «اولویت» و «اضطراری»</h3>
+        <p>اولویت یک سطح چهارگانه برای ترتیب رسیدگی است. «اضطراری» یک علامت داخلی مستقل برای جلب توجه ویژه است. معمولاً تیکت اضطراری اولویت بالا یا بحرانی دارد، اما این دو فیلد یکسان نیستند و باید جداگانه ارزیابی شوند.</p>
+      </section>
+
+      <section id="status" data-searchable>
+        <h2>وضعیت تیکت و مسیرهای مجاز</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>مقدار</th><th>معنی</th><th>زمان انتخاب</th></tr></thead>
+            <tbody>
+              <tr><td><span class="badge">UNALLOCATED</span></td><td>تخصیص‌نیافته</td><td>تیکت ایجاد شده اما هنوز کارشناس مسئولی ندارد. این وضعیت اولیه تیکت بدون مسئول است.</td></tr>
+              <tr><td><span class="badge">ASSIGNED</span></td><td>تخصیص‌یافته</td><td>کارشناس مسئول مشخص شده، اما رسیدگی فعال هنوز شروع نشده یا تیکت در صف اوست.</td></tr>
+              <tr><td><span class="badge amber">IN_PROGRESS</span></td><td>در حال انجام</td><td>بررسی، عیب‌یابی یا اجرای راه‌حل عملاً آغاز شده است.</td></tr>
+              <tr><td><span class="badge green">RESOLVED</span></td><td>حل‌شده</td><td>راه‌حل ارائه یا مشکل برطرف شده و تیکت آماده تأیید و بستن است. در صورت بازگشت مشکل قابل بازگشایی است.</td></tr>
+              <tr><td><span class="badge red">CLOSED</span></td><td>بسته‌شده</td><td>چرخه تیکت پایان یافته است؛ برای حل موفق پس از تأیید، درخواست نامعتبر، تکراری، هرزنامه یا انصراف نیز استفاده می‌شود.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>نقشه گردش وضعیت</h3>
+        <div class="flow" aria-label="گردش معمول تیکت">
+          <span>تخصیص‌نیافته</span><b>←</b><span>تخصیص‌یافته</span><b>←</b><span>در حال انجام</span><b>←</b><span>حل‌شده</span><b>←</b><span>بسته‌شده</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>وضعیت فعلی</th><th>وضعیت‌های بعدی مجاز</th><th>توضیح کاربردی</th></tr></thead>
+            <tbody>
+              <tr><td><code>UNALLOCATED</code></td><td><code>ASSIGNED</code> یا <code>CLOSED</code></td><td>یا مسئول تعیین کنید، یا درخواست نامعتبر/غیرقابل پیگیری را ببندید.</td></tr>
+              <tr><td><code>ASSIGNED</code></td><td><code>IN_PROGRESS</code>، <code>UNALLOCATED</code> یا <code>CLOSED</code></td><td>کار را آغاز کنید، تخصیص را بردارید یا با دلیل معتبر ببندید.</td></tr>
+              <tr><td><code>IN_PROGRESS</code></td><td><code>RESOLVED</code>، <code>CLOSED</code> یا <code>ASSIGNED</code></td><td>حل را اعلام کنید، پرونده را ببندید یا برای ادامه به صف تخصیص برگردانید.</td></tr>
+              <tr><td><code>RESOLVED</code></td><td><code>CLOSED</code> یا <code>IN_PROGRESS</code></td><td>پس از تأیید ببندید؛ در صورت تکرار مشکل دوباره در حال انجام کنید.</td></tr>
+              <tr><td><code>CLOSED</code></td><td>هیچ‌کدام</td><td>وضعیت نهایی است و سامانه تغییر بعدی را نمی‌پذیرد.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note success"><strong>قاعده ثبت:</strong> وضعیت باید واقعیت فعلی کار را نشان دهد. برای گزارش بهتر، تیکت حل‌شده را بلافاصله «بسته» نکنید مگر فرایند سازمان چنین اقتضا کند؛ مرحله تأیید را با <code>RESOLVED</code> حفظ کنید.</div>
+      </section>
+
+      <section id="access" data-searchable>
+        <h2>دسترسی، مجوز و محدوده داده</h2>
+        <p><strong>نقش (Role)</strong> بسته‌ای از مجوزهای پیش‌فرض است. <strong>مجوز (Permission)</strong> اجازه انجام یک عملیات مشخص است. <strong>محدوده (Scope)</strong> تعیین می‌کند آن عملیات روی کدام داده‌ها قابل انجام است.</p>
+        <div class="note"><strong>مثال:</strong> مجوز <code>TICKET_READ</code> می‌گوید کاربر اصولاً حق مشاهده تیکت دارد؛ محدوده <code>ASSIGNED</code> می‌گوید فقط تیکت‌های تخصیص‌یافته به خودش را می‌بیند.</div>
+
+        <h3>اثر مجوز فردی</h3>
+        <div class="cards">
+          <article class="card">
+            <div class="choice"><span class="badge green">ALLOW</span><strong>اجازه صریح</strong></div>
+            <p>مجوز مورد نظر را به دسترسی‌های کاربر اضافه می‌کند، حتی اگر نقش او آن را نداشته باشد.</p>
+          </article>
+          <article class="card">
+            <div class="choice"><span class="badge red">DENY</span><strong>منع صریح</strong></div>
+            <p>مجوز را از دسترسی مؤثر کاربر حذف می‌کند و بر مجوز نقش یا اجازه فردی اولویت دارد.</p>
+          </article>
+        </div>
+        <p>حذف یک override فردی یعنی کاربر دوباره از سیاست نقش خود پیروی می‌کند. برای تغییر عمومی همه دارندگان یک نقش، مجوزهای خود نقش را اصلاح کنید؛ برای یک استثنای محدود، grant فردی بسازید.</p>
+
+        <h3>محدوده دسترسی به منبع <code>TICKET</code></h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>مقدار</th><th>تعریف</th><th>زمان انتخاب</th></tr></thead>
+            <tbody>
+              <tr><td><code>NONE</code></td><td>بدون دسترسی به هیچ تیکت</td><td>حساب محدود، تعلیق‌شده یا بدون نیاز کاری</td></tr>
+              <tr><td><code>OWN</code></td><td>فقط تیکت‌هایی که خود کاربر/مشتری ایجاد کرده است</td><td>محدوده طبیعی مشتری</td></tr>
+              <tr><td><code>ASSIGNED</code></td><td>فقط تیکت‌های تخصیص‌یافته به همان کاربر</td><td>محدوده طبیعی عضو تیم</td></tr>
+              <tr><td><code>TEAM</code></td><td>تیکت‌های درون تیم کاربر</td><td>وقتی مشاهده بار کاری مشترک تیم لازم است</td></tr>
+              <tr><td><code>ALL</code></td><td>همه تیکت‌های سامانه</td><td>فقط مدیر یا ناظر دارای مسئولیت سراسری</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p><strong>پیش‌فرض‌ها:</strong> مشتری <code>OWN</code>، عضو تیم <code>ASSIGNED</code>، مدیر تیم <code>ALL</code> و حساب بدون نقش شناخته‌شده <code>NONE</code>. محدوده اختصاصی کاربر بر این پیش‌فرض نقش غلبه می‌کند.</p>
+        <div class="note danger"><strong>اصل کمترین دسترسی:</strong> گزینه <code>ALL</code> یا grant نوع <code>ALLOW</code> را فقط با نیاز کاری مستند بدهید. دسترسی مؤثر نتیجه ترکیب نقش، مجوز فردی و محدوده است.</div>
+      </section>
+
+      <section id="permissions" data-searchable>
+        <h2>فرهنگ کدهای مجوز</h2>
+        <p class="section-intro">پسوندها معنی عملیات را مشخص می‌کنند: <code>CREATE</code> ایجاد، <code>READ</code> مشاهده، <code>UPDATE</code> ویرایش و <code>DELETE</code> حذف.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>گروه</th><th>کدها</th><th>معنی</th></tr></thead>
+            <tbody>
+              <tr><td>مدیریت دسترسی</td><td><code>ACCESS_ADMIN</code></td><td>مشاهده و مدیریت نقش‌ها، مجوزهای فردی و محدوده‌های دسترسی</td></tr>
+              <tr><td>تیکت</td><td><code>TICKET_CREATE</code><br><code>TICKET_READ</code><br><code>TICKET_UPDATE</code><br><code>TICKET_DELETE</code></td><td>ایجاد، مشاهده، ویرایش و حذف تیکت‌ها؛ محدوده داده همچنان اعمال می‌شود.</td></tr>
+              <tr><td>مشتری</td><td><code>CUSTOMER_CREATE</code><br><code>CUSTOMER_READ</code><br><code>CUSTOMER_UPDATE</code><br><code>CUSTOMER_DELETE</code></td><td>ایجاد، مشاهده، ویرایش و حذف سوابق مشتریان</td></tr>
+              <tr><td>عضو تیم</td><td><code>TEAM_MEMBER_READ</code><br><code>TEAM_MEMBER_UPDATE</code></td><td>مشاهده یا ویرایش اطلاعات اعضای تیم</td></tr>
+              <tr><td>مدیر تیم</td><td><code>TEAM_MANAGER_READ</code></td><td>مشاهده اطلاعات مدیران تیم</td></tr>
+              <tr><td>قرارداد SLA</td><td><code>SLA_CREATE</code><br><code>SLA_READ</code><br><code>SLA_UPDATE</code><br><code>SLA_DELETE</code></td><td>ایجاد، مشاهده، ویرایش و حذف قراردادهای سطح خدمت</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="other" data-searchable>
+        <h2>سایر اصطلاحات قابل مشاهده</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>اصطلاح</th><th>تعریف و کاربرد</th></tr></thead>
+            <tbody>
+              <tr><td>شناسه (ID)</td><td>عدد یکتای سیستمی هر رکورد. برای اتصال رکوردها استفاده می‌شود و نباید با نام کاربری اشتباه شود.</td></tr>
+              <tr><td>تاریخ ایجاد</td><td>زمان ثبت اولیه رکورد که سامانه به‌طور خودکار تعیین می‌کند.</td></tr>
+              <tr><td>آخرین به‌روزرسانی</td><td>زمان آخرین تغییر رکورد که برای پیگیری تازگی اطلاعات مفید است.</td></tr>
+              <tr><td>تاریخچه وضعیت</td><td>سابقه وضعیت قبلی، وضعیت جدید، زمان تغییر، شخص تغییردهنده و یادداشت علت؛ برای ممیزی و تحلیل فرایند.</td></tr>
+              <tr><td>پیام تیکت</td><td>مکالمه مرتبط با تیکت که فرستنده آن می‌تواند مشتری، عضو تیم یا مدیر تیم باشد. وضعیت «خوانده‌شده توسط مشتری/تیم» مشخص می‌کند پیام برای کدام طرف دیده شده است.</td></tr>
+              <tr><td>پیوست</td><td>فایل مرتبط با تیکت یا پیام؛ شامل نام فایل، نوع محتوا، حجم، بارگذار و زمان بارگذاری است. فقط فایل مرتبط و بدون اطلاعات حساس غیرضروری اضافه کنید.</td></tr>
+              <tr><td>دسترسی مؤثر</td><td>نتیجه نهایی ترکیب مجوزهای نقش، <code>ALLOW</code>ها، <code>DENY</code>ها و محدوده‌های اختصاصی کاربر.</td></tr>
+              <tr><td>نوع منبع</td><td>نام گروه داده‌ای که Scope روی آن اعمال می‌شود. مقدار استاندارد فعلی برای تیکت‌ها <code>TICKET</code> است.</td></tr>
+              <tr><td>مرتب‌سازی صعودی</td><td><code>ASC</code>؛ از کوچک به بزرگ، قدیمی به جدید یا الف تا ی، بسته به فیلد.</td></tr>
+              <tr><td>مرتب‌سازی نزولی</td><td><code>DESC</code>؛ از بزرگ به کوچک، جدید به قدیم یا ی تا الف. پیش‌فرض فهرست تیکت‌ها بر اساس زمان ایجاد نزولی است.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note warning"><strong>جست‌وجو و فیلتر:</strong> وضعیت، اولویت، مشتری، عضو تخصیص‌یافته، تیم و بازه تاریخ ایجاد معیارهای محدودکردن نتایج‌اند؛ تغییر فیلتر داده‌ای را ویرایش نمی‌کند.</div>
+      </section>
+
+      <p id="empty-state" class="empty">مفهومی مطابق عبارت جست‌وجو پیدا نشد.</p>
+    </main>
+  </div>
+
+  <footer>راهنمای داخلی پنل مدیریت سامانه تیکتینگ — مقادیر انگلیسی داخل کادر، مقادیر فنی قابل ثبت در سامانه هستند.</footer>
+
+  <script>
+    (function () {
+      const input = document.getElementById('guide-search');
+      const sections = Array.from(document.querySelectorAll('[data-searchable]'));
+      const emptyState = document.getElementById('empty-state');
+
+      input.addEventListener('input', function () {
+        const query = input.value.trim().toLocaleLowerCase('fa');
+        let visibleCount = 0;
+
+        sections.forEach(function (section) {
+          const visible = !query || section.textContent.toLocaleLowerCase('fa').includes(query);
+          section.hidden = !visible;
+          if (visible) visibleCount += 1;
+        });
+
+        emptyState.style.display = visibleCount ? 'none' : 'block';
+      });
+    }());
+  </script>
+</body>
+</html>
