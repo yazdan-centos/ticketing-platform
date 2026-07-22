@@ -401,6 +401,7 @@
           </article>
         </div>
         <p>حذف یک override فردی یعنی کاربر دوباره از سیاست نقش خود پیروی می‌کند. برای تغییر عمومی همه دارندگان یک نقش، مجوزهای خود نقش را اصلاح کنید؛ برای یک استثنای محدود، grant فردی بسازید.</p>
+        <p><strong>APIهای کاربر:</strong> درخواست <code>PUT /api/admin/access/users/{userId}/permissions/{permissionCode}</code> مجوز را با اثر <code>ALLOW</code> اختصاص می‌دهد و درخواست <code>DELETE /api/admin/access/users/{userId}/permissions/{permissionCode}</code> آن را با اثر <code>DENY</code> لغو می‌کند. برای حذف کامل override و بازگشت به سیاست نقش از <code>DELETE /api/admin/access/users/{userId}/grants/{permissionCode}</code> استفاده کنید.</p>
 
         <h3>محدوده دسترسی به منبع <code>TICKET</code></h3>
         <div class="table-wrap">
@@ -431,6 +432,9 @@
               <tr><td>مشتری</td><td><code>CUSTOMER_CREATE</code><br><code>CUSTOMER_READ</code><br><code>CUSTOMER_UPDATE</code><br><code>CUSTOMER_DELETE</code></td><td>ایجاد، مشاهده، ویرایش و حذف سوابق مشتریان</td></tr>
               <tr><td>عضو تیم</td><td><code>TEAM_MEMBER_READ</code><br><code>TEAM_MEMBER_UPDATE</code></td><td>مشاهده یا ویرایش اطلاعات اعضای تیم</td></tr>
               <tr><td>مدیر تیم</td><td><code>TEAM_MANAGER_READ</code></td><td>مشاهده اطلاعات مدیران تیم</td></tr>
+              <tr><td>تیم</td><td><code>TEAM_CREATE</code><br><code>TEAM_READ</code><br><code>TEAM_UPDATE</code><br><code>TEAM_DELETE</code></td><td>ایجاد، مشاهده، ویرایش و حذف تیم‌ها و مدیریت اعضای آن‌ها</td></tr>
+              <tr><td>جلسه</td><td><code>MEETING_CREATE</code><br><code>MEETING_READ</code><br><code>MEETING_UPDATE</code><br><code>MEETING_DELETE</code></td><td>ایجاد، مشاهده، ویرایش و حذف جلسات و مدیریت جزئیات آن‌ها</td></tr>
+              <tr><td>وظیفه</td><td><code>TASK_CREATE</code><br><code>TASK_READ</code><br><code>TASK_UPDATE</code><br><code>TASK_DELETE</code></td><td>ایجاد، مشاهده، ویرایش و حذف وظایف</td></tr>
               <tr><td>قرارداد SLA</td><td><code>SLA_CREATE</code><br><code>SLA_READ</code><br><code>SLA_UPDATE</code><br><code>SLA_DELETE</code></td><td>ایجاد، مشاهده، ویرایش و حذف قراردادهای سطح خدمت</td></tr>
             </tbody>
           </table>

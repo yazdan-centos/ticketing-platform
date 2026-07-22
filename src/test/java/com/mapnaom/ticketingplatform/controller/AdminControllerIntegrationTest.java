@@ -510,4 +510,34 @@ class AdminControllerIntegrationTest {
                 .andExpect(jsonPath("$.permissionCodes", not(hasItem("TICKET_READ"))))
                 .andExpect(jsonPath("$.permissionCodes", hasItem("TICKET_WRITE")));
     }
+
+    @Test
+    @Order(26)
+    @WithMockUser(authorities = {"ACCESS_ADMIN"})
+    void testAssignPermissionToUser() throws Exception {
+        mockMvc.perform(put("/api/admin/access/users/{userId}/permissions/{permissionCode}",
+                        testUser.getId(), "ticket_write"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.permissionCode").value("TICKET_WRITE"))
+                .andExpect(jsonPath("$.effect").value("ALLOW"));
+
+        mockMvc.perform(get("/api/admin/access/users/{userId}", testUser.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.permissionCodes", hasItem("TICKET_WRITE")));
+    }
+
+    @Test
+    @Order(27)
+    @WithMockUser(authorities = {"ACCESS_ADMIN"})
+    void testRevokeRoleInheritedPermissionFromUser() throws Exception {
+        mockMvc.perform(delete("/api/admin/access/users/{userId}/permissions/{permissionCode}",
+                        testUser.getId(), "ticket_read"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.permissionCode").value("TICKET_READ"))
+                .andExpect(jsonPath("$.effect").value("DENY"));
+
+        mockMvc.perform(get("/api/admin/access/users/{userId}", testUser.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.permissionCodes", not(hasItem("TICKET_READ"))));
+    }
 }

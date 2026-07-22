@@ -46,7 +46,7 @@ public class AdminController {
         return accessAdminService.getEffectiveAccess(userId);
     }
 
-    @GetMapping("/")
+    @GetMapping("/team-members/{teamMemberId}/permissions/status")
     public PermissionStatusDto getTeamMemberPermissionStatus(@PathVariable Long teamMemberId) {
         return accessAdminService.getTeamMemberPermissionStatus(teamMemberId);
     }
@@ -56,6 +56,18 @@ public class AdminController {
     @GetMapping("/users/{userId}/grants")
     public List<GrantDto> listGrants(@PathVariable Long userId) {
         return accessAdminService.listGrants(userId);
+    }
+
+    @PutMapping("/users/{userId}/permissions/{permissionCode}")
+    public GrantDto assignPermission(@PathVariable Long userId,
+                                     @PathVariable String permissionCode) {
+        return accessAdminService.assignPermission(userId, permissionCode);
+    }
+
+    @DeleteMapping("/users/{userId}/permissions/{permissionCode}")
+    public GrantDto revokePermission(@PathVariable Long userId,
+                                     @PathVariable String permissionCode) {
+        return accessAdminService.revokePermission(userId, permissionCode);
     }
 
     @PostMapping("/users/{userId}/grants")

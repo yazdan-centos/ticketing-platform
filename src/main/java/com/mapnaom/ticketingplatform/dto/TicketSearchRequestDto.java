@@ -13,6 +13,7 @@ public class TicketSearchRequestDto {
     private String status;
     private String priority;
     private Long customerId;
+    private String customerFullName;
     private Long assignedToId;
     private Long teamId;
     private LocalDateTime createdFrom;

@@ -29,6 +29,7 @@ public class TicketListDto implements Serializable {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Long customerId;
+    private String customerFullName;
     private Long slaContractId;
     private Long assignedMemberId;
 }

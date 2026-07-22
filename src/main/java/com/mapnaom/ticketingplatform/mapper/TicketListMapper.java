@@ -12,6 +12,7 @@ public interface TicketListMapper {
     Ticket toEntity(TicketListDto ticketListDto);
 
     @InheritInverseConfiguration(name = "toEntity")
+    @Mapping(target = "customerFullName", expression = "java(ticket.getCustomer() != null ? ticket.getCustomer().getFullName() : null)")
     TicketListDto toDto(Ticket ticket);
 
     @InheritConfiguration(name = "toEntity")

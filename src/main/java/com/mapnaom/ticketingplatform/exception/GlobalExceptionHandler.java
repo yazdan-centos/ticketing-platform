@@ -29,6 +29,13 @@ import java.util.Map;
 @Slf4j
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(MeetingConflictException.class)
+    public ResponseEntity<ErrorResponse> handleMeetingConflict(
+            MeetingConflictException ex, HttpServletRequest request) {
+        logException(ex, request, "Meeting scheduling conflict");
+        return response(HttpStatus.CONFLICT, "Meeting Conflict", userMessage(ex), request);
+    }
+
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFound(
             EntityNotFoundException ex, HttpServletRequest request) {
@@ -55,6 +62,13 @@ public class GlobalExceptionHandler {
             IllegalArgumentException ex, HttpServletRequest request) {
         logException(ex, request, "Invalid request argument");
         return response(HttpStatus.BAD_REQUEST, "Invalid Argument", userMessage(ex), request);
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalState(
+            IllegalStateException ex, HttpServletRequest request) {
+        logException(ex, request, "Invalid resource state");
+        return response(HttpStatus.CONFLICT, "Invalid State", userMessage(ex), request);
     }
 
     @ExceptionHandler(AuthenticationException.class)

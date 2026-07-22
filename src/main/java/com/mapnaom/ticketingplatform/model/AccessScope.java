@@ -8,38 +8,39 @@ package com.mapnaom.ticketingplatform.model;
  * The scopes are ordered from most restrictive (NONE) to least restrictive (ALL).
  * </p>
  *
- * @see com.mapnaom.ticketingplatform.model.Ticket
+ * @see Ticket
  */
 public enum AccessScope {
-    
+
     /**
-     * No access - user cannot view or interact with any tickets.
-     * Typically used for disabled or restricted accounts.
+     * All tickets - user can access all tickets in the system.
+     * Reserved for administrators and supervisors with full platform visibility.
      */
-    NONE,
-    
-    /**
-     * Own tickets only - user can only access tickets they created.
-     * Suitable for basic users who can only see their own submitted tickets.
-     */
-    OWN,
-    
+    ALL,
+
     /**
      * Assigned tickets - user can access tickets assigned to them.
      * Typically used for agents or support staff who work on assigned tickets.
      */
     ASSIGNED,
-    
+
+    /**
+     * No access - user cannot view or interact with any tickets.
+     * Typically used for disabled or restricted accounts.
+     */
+    NONE,
+
+    /**
+     * Own tickets only - user can only access tickets they created.
+     * Suitable for basic users who can only see their own submitted tickets.
+     */
+    OWN,
+
     /**
      * Team tickets - user can access all tickets within their team(s).
      * Suitable for team leads or members who need visibility across team workload.
      */
-    TEAM,
-    
-    /**
-     * All tickets - user can access all tickets in the system.
-     * Reserved for administrators and supervisors with full platform visibility.
-     */
-    ALL
+    TEAM
+
 }
 

@@ -138,6 +138,16 @@ public class AccessAdminService {
                 .toList();
     }
 
+    @Transactional
+    public GrantDto assignPermission(Long userId, String permissionCode) {
+        return upsertGrant(userId, permissionCode, GrantEffect.ALLOW);
+    }
+
+    @Transactional
+    public GrantDto revokePermission(Long userId, String permissionCode) {
+        return upsertGrant(userId, permissionCode, GrantEffect.DENY);
+    }
+
     /**
      * Creates or updates an individual permission grant for a user.
      * <p>

@@ -82,6 +82,18 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/tickets/*")
                         .hasAnyRole(CUSTOMER, TEAM_MEMBER, TEAM_MANAGER)
 
+                        // ---- Tasks ----
+                        .requestMatchers(HttpMethod.GET, "/api/tasks", "/api/tasks/*")
+                        .hasAnyRole(TEAM_MEMBER, TEAM_MANAGER)
+                        .requestMatchers(HttpMethod.POST, "/api/tasks/search")
+                        .hasAnyRole(TEAM_MEMBER, TEAM_MANAGER)
+                        .requestMatchers(HttpMethod.POST, "/api/tasks")
+                        .hasRole(TEAM_MANAGER)
+                        .requestMatchers(HttpMethod.PUT, "/api/tasks/*")
+                        .hasAnyRole(TEAM_MEMBER, TEAM_MANAGER)
+                        .requestMatchers(HttpMethod.DELETE, "/api/tasks/*")
+                        .hasRole(TEAM_MANAGER)
+
                         // ---- Customers ----
                         .requestMatchers(HttpMethod.POST, "/api/customers").hasRole(TEAM_MANAGER)
                         .requestMatchers(HttpMethod.GET, "/api/customers").hasRole(TEAM_MANAGER)
