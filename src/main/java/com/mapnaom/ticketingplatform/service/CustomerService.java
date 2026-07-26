@@ -70,6 +70,14 @@ public class CustomerService {
                 .toList();
     }
 
+    public List<CustomerResponseDto> searchOptionsBySlaContract(Long slaContractId, String searchKey) {
+        String normalizedSearchKey = searchKey == null ? "" : searchKey.trim();
+        return customerRepository.findOptionsBySlaContract(slaContractId, normalizedSearchKey).stream()
+                .limit(50)
+                .map(customerMapper::toResponseDto)
+                .toList();
+    }
+
     // --- Get Customer By ID ---
     public CustomerResponseDto getCustomerById(Long id) {
         Customer customer = customerRepository.findById(id)

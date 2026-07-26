@@ -2,7 +2,9 @@ package com.mapnaom.ticketingplatform.service;
 
 import com.mapnaom.ticketingplatform.dto.TicketSearchRequestDto;
 import com.mapnaom.ticketingplatform.dto.ticket.*;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -63,4 +65,6 @@ public interface TicketService {
      * assignee may re-assign; customers may never re-assign.
      */
     TicketResponse reassign(Long ticketId, TicketReassignRequest request, Long actorId);
+
+    ResponseEntity<Resource> getFile(Long attachmentId);
 }

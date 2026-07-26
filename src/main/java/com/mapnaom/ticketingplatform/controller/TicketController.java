@@ -7,6 +7,7 @@ import com.mapnaom.ticketingplatform.service.TicketMessageService;
 import com.mapnaom.ticketingplatform.service.TicketService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -131,6 +132,10 @@ public class TicketController {
     public ResponseEntity<Void> detachFile(@PathVariable Long attachmentId) {
         ticketService.detach(attachmentId);
         return ResponseEntity.noContent().build();
+    }
+    @GetMapping("/attachments/{attachmentId}")
+    public ResponseEntity<Resource> getFile(@PathVariable Long attachmentId) {
+        return ticketService.getFile(attachmentId);
     }
 
 }

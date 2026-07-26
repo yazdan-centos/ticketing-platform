@@ -16,5 +16,7 @@ public class TicketCreateRequest {
 
     private Long slaContractId;
 
+    private Long customerId;
+
     private Long assignedMemberId;
 }

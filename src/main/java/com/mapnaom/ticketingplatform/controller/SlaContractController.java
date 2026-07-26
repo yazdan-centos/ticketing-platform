@@ -34,6 +34,12 @@ public class SlaContractController {
         return ResponseEntity.ok(contracts);
     }
 
+    @GetMapping("/options")
+    public ResponseEntity<List<SlaContractResponseDto>> searchActiveOptions(
+            @RequestParam(name = "search-key", required = false) String searchKey) {
+        return ResponseEntity.ok(slaContractService.searchActiveOptions(searchKey));
+    }
+
     // --- Get SLA Contract By ID ---
     @GetMapping("/{id}")
     public ResponseEntity<SlaContractResponseDto> getSlaContractById(@PathVariable Long id) {

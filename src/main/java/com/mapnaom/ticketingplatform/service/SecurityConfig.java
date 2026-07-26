@@ -48,8 +48,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/authenticate").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/signout").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
-                        .requestMatchers(
+                        .requestMatchers(HttpMethod.GET,
                                 "/uploads/**",
+                                "/api/files/download/**",
+                                "/api/tickets/attachments/*/download")
+                        .permitAll()
+                        .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html").permitAll()
@@ -97,6 +101,7 @@ public class SecurityConfig {
                         // ---- Customers ----
                         .requestMatchers(HttpMethod.POST, "/api/customers").hasRole(TEAM_MANAGER)
                         .requestMatchers(HttpMethod.GET, "/api/customers").hasRole(TEAM_MANAGER)
+                        .requestMatchers(HttpMethod.GET, "/api/customers/options").hasRole(TEAM_MANAGER)
                         .requestMatchers(HttpMethod.GET, "/api/customers/*")
                         .hasAnyRole(CUSTOMER, TEAM_MANAGER)
                         .requestMatchers(HttpMethod.POST, "/api/customers/*/avatar")
@@ -123,6 +128,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/team-managers/**").hasRole(TEAM_MANAGER)
 
                         // ---- SLA Contracts ----
+                        .requestMatchers(HttpMethod.GET, "/api/sla-contracts/options")
+                        .hasRole(TEAM_MANAGER)
                         .requestMatchers(HttpMethod.GET, "/api/sla-contracts/*")
                         .hasAnyRole(CUSTOMER, TEAM_MANAGER)
                         .requestMatchers("/api/sla-contracts/**").hasRole(TEAM_MANAGER)

@@ -17,20 +17,26 @@ import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -73,9 +79,7 @@ public class TicketServiceImpl implements TicketService {
     @Override
     public TicketResponse create(TicketCreateRequest request) {
         AppUser currentUser = findUserByUserName();
-        if (!(currentUser instanceof Customer customer)) {
-            throw new AccessDeniedException("Only customers can create tickets");
-        }
+        Customer customer = resolveTicketCustomer(currentUser, request.getCustomerId());
 
         Ticket ticket = new Ticket();
         ticket.setTitle(request.getTitle());
@@ -85,6 +89,10 @@ public class TicketServiceImpl implements TicketService {
 
         if (request.getSlaContractId() != null) {
             SlaContract sla = findActiveSlaContract(request.getSlaContractId());
+            if (sla.getCustomer() == null || !sla.getCustomer().getId().equals(customer.getId())) {
+                throw new IllegalArgumentException(
+                        "SLA contract " + sla.getId() + " does not belong to customer " + customer.getId());
+            }
             ticket.setSlaContract(sla);
             // Compute due-date from SLA response-time so the ticket is SLA-tracked from creation
             if (sla.getResponseTimeHours() != null) {
@@ -103,6 +111,26 @@ public class TicketServiceImpl implements TicketService {
         Ticket saved = ticketRepository.save(ticket);
         log.info("Ticket created: id={}, customerId={}, status={}", saved.getId(), saved.getCustomer().getId(), saved.getStatus());
         return ticketMapper.toResponse(saved);
+    }
+
+    private Customer resolveTicketCustomer(AppUser currentUser, Long requestedCustomerId) {
+        if (currentUser instanceof Customer customer) {
+            if (requestedCustomerId != null && !customer.getId().equals(requestedCustomerId)) {
+                throw new AccessDeniedException("Customers can only create tickets for their own account");
+            }
+            return customer;
+        }
+        if (currentUser instanceof TeamManager) {
+            if (requestedCustomerId == null) {
+                throw new IllegalArgumentException("customerId is required when a manager creates a ticket");
+            }
+            AppUser customer = appUserRepository.findById(requestedCustomerId)
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "Customer not found with id: " + requestedCustomerId));
+            if (customer instanceof Customer resolvedCustomer) return resolvedCustomer;
+            throw new IllegalArgumentException("User " + requestedCustomerId + " is not a customer");
+        }
+        throw new AccessDeniedException("Only customers or team managers can create tickets");
     }
 
     private AppUser findUserByUserName() {
@@ -262,6 +290,63 @@ public class TicketServiceImpl implements TicketService {
         log.info("Ticket re-assigned: id={}, newMemberId={}, actorId={}, role={}",
                 ticketId, target.getId(), actorId, userType);
         return ticketMapper.toResponse(updated);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ResponseEntity<Resource> getFile(Long attachmentId) {
+        TicketAttachment attachment = ticketAttachmentRepository.findById(attachmentId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Attachment not found with id: " + attachmentId));
+
+        if (!StringUtils.hasText(attachment.getStorageKey())) {
+            throw new EntityNotFoundException(
+                    "Stored file not found for attachment id: " + attachmentId);
+        }
+
+        Path uploadRoot = Paths.get(uploadDir).toAbsolutePath().normalize();
+        Path filePath = Paths.get(attachment.getStorageKey()).toAbsolutePath().normalize();
+        if (!filePath.startsWith(uploadRoot)) {
+            log.warn("Rejected attachment path outside upload root: attachmentId={}", attachmentId);
+            throw new AccessDeniedException("Invalid attachment storage path");
+        }
+
+        if (!Files.isRegularFile(filePath) || !Files.isReadable(filePath)) {
+            throw new EntityNotFoundException(
+                    "Stored file not found for attachment id: " + attachmentId);
+        }
+
+        String fileName = StringUtils.hasText(attachment.getFileName())
+                ? attachment.getFileName()
+                : "attachment-" + attachmentId;
+        MediaType mediaType = resolveAttachmentMediaType(attachment.getContentType());
+        Resource resource = new FileSystemResource(filePath);
+
+        try {
+            return ResponseEntity.ok()
+                    .contentType(mediaType)
+                    .contentLength(Files.size(filePath))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
+                            .filename(fileName, StandardCharsets.UTF_8)
+                            .build()
+                            .toString())
+                    .body(resource);
+        } catch (IOException ex) {
+            throw new RuntimeException(
+                    "Failed to read attachment with id: " + attachmentId, ex);
+        }
+    }
+
+    private MediaType resolveAttachmentMediaType(String contentType) {
+        if (!StringUtils.hasText(contentType)) {
+            return MediaType.APPLICATION_OCTET_STREAM;
+        }
+        try {
+            return MediaType.parseMediaType(contentType);
+        } catch (IllegalArgumentException ex) {
+            log.warn("Invalid stored attachment content type: {}", contentType);
+            return MediaType.APPLICATION_OCTET_STREAM;
+        }
     }
 
     @Override

@@ -43,6 +43,13 @@ public class SlaContractService {
                 .toList();
     }
 
+    public List<SlaContractResponseDto> searchActiveOptions(String searchKey) {
+        return slaContractRepository.findActiveOptions(normalizeSearchKey(searchKey)).stream()
+                .limit(50)
+                .map(slaContractMapper::toResponseDto)
+                .toList();
+    }
+
     // --- Get SLA Contract By ID ---
     public SlaContractResponseDto getSlaContractById(Long id) {
         SlaContract contract = slaContractRepository.findById(id)
@@ -80,5 +87,9 @@ public class SlaContractService {
         SlaContract contract = slaContractRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("SLA Contract not found with id: " + id));
         slaContractRepository.delete(contract);
+    }
+
+    private String normalizeSearchKey(String searchKey) {
+        return searchKey == null ? "" : searchKey.trim();
     }
 }

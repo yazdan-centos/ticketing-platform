@@ -62,6 +62,13 @@ public class CustomerController {
         return ResponseEntity.ok(customers);
     }
 
+    @GetMapping("/options")
+    public ResponseEntity<List<CustomerResponseDto>> searchCustomerOptions(
+            @RequestParam Long slaContractId,
+            @RequestParam(name = "search-key", required = false) String searchKey) {
+        return ResponseEntity.ok(customerService.searchOptionsBySlaContract(slaContractId, searchKey));
+    }
+
     // --- Get Customer By ID ---
     @GetMapping("/{id}")
     public ResponseEntity<CustomerResponseDto> getCustomerById(@PathVariable Long id) {
