@@ -575,6 +575,9 @@ public class TicketServiceImpl implements TicketService {
         String resolvedNote = (note != null && !note.isBlank()) ? note : "Status updated to " + newStatus;
         recordStatusChange(ticket, newStatus, actor, resolvedNote);
         ticket.setStatus(newStatus);
+        if (newStatus == TicketStatus.UNALLOCATED && ticket.getAssignedMember() != null) {
+            ticket.setAssignedMember(null);
+        }
     }
 
     /**

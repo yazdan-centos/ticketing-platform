@@ -477,7 +477,7 @@ class AdminControllerIntegrationTest {
         mockMvc.perform(post("/api/admin/access/users/{userId}/grants", testUser.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(grantDto)))
-                .andExpect(status().isCreated());
+                        .andExpect(status().isCreated());
 
         // 3. Verify effective access includes new permission
         mockMvc.perform(get("/api/admin/access/users/{userId}", testUser.getId()))
@@ -490,19 +490,20 @@ class AdminControllerIntegrationTest {
                         testUser.getId(), "TICKET")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(scopeDto)))
-                .andExpect(status().isOk());
+                        .andExpect(status().isOk());
 
         // 5. Verify scope in effective access
         mockMvc.perform(get("/api/admin/access/users/{userId}", testUser.getId()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.scopes.TICKET").value("ALL"));
+                .andExpect(jsonPath("$.scopes.TICKET")
+                        .value("ALL"));
 
         // 6. Deny a permission
         GrantDto denyDto = new GrantDto("TICKET_READ", GrantEffect.DENY);
         mockMvc.perform(post("/api/admin/access/users/{userId}/grants", testUser.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(denyDto)))
-                .andExpect(status().isCreated());
+                        .andExpect(status().isCreated());
 
         // 7. Verify DENY takes effect
         mockMvc.perform(get("/api/admin/access/users/{userId}", testUser.getId()))
