@@ -5,7 +5,16 @@ import com.mapnaom.ticketingplatform.dto.ticket.TicketResponse;
 import com.mapnaom.ticketingplatform.dto.ticket.TicketSummaryResponse;
 import com.mapnaom.ticketingplatform.model.AccessScope;
 import com.mapnaom.ticketingplatform.model.AppUserDetails;
+import com.mapnaom.ticketingplatform.model.Meeting;
+import com.mapnaom.ticketingplatform.model.Task;
+import com.mapnaom.ticketingplatform.model.TeamMember;
 import com.mapnaom.ticketingplatform.model.Ticket;
+import com.mapnaom.ticketingplatform.repository.MeetingParticipantRepository;
+import com.mapnaom.ticketingplatform.repository.TeamMembershipRepository;
+import com.mapnaom.ticketingplatform.specification.ResourceScopeSpecification;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -30,7 +39,11 @@ import java.util.Objects;
  * @see AppUserDetails
  */
 @Component("access")
+@RequiredArgsConstructor
 public class AccessChecker {
+
+    private final TeamMembershipRepository membershipRepository;
+    private final MeetingParticipantRepository participantRepository;
 
     /**
      * Retrieves the {@link AccessScope} for the current authenticated user on a specific resource type.
@@ -74,11 +87,94 @@ public class AccessChecker {
 
         AccessScope accessScope = scope(resourceType);
         return switch (accessScope) {
-            case ALL, TEAM -> true;
+            case ALL -> true;
+            case TEAM -> matchesTeam(resource);
             case ASSIGNED -> matchesAssignedUser(resource);
             case OWN -> matchesOwnerUser(resource);
             case NONE -> false;
         };
+    }
+
+    public void requireCanSee(String resourceType, Object resource) {
+        if (!canSee(resourceType, resource)) {
+            throw new EntityNotFoundException(resourceType + " not found");
+        }
+    }
+
+    public void requireTeamAccess(String resourceType, Long teamId) {
+        AccessScope accessScope = scope(resourceType);
+        if (accessScope == AccessScope.ALL) {
+            return;
+        }
+        Long userId = currentUserId();
+        if (accessScope != AccessScope.TEAM || userId == null
+                || !membershipRepository.existsByTeamIdAndUserId(teamId, userId)) {
+            throw new EntityNotFoundException(resourceType + " scope not found");
+        }
+    }
+
+    public Specification<Ticket> visibleTickets() {
+        return ResourceScopeSpecification.tickets(scope("TICKET"), currentUserId(), currentManagerId());
+    }
+
+    public Specification<Meeting> visibleMeetings() {
+        return ResourceScopeSpecification.meetings(scope("MEETING"), currentUserId());
+    }
+
+    public Specification<Task> visibleTasks() {
+        return ResourceScopeSpecification.tasks(scope("TASK"), currentUserId(), currentManagerId());
+    }
+
+    public Long currentUserId() {
+        AppUserDetails principal = principal();
+        if (principal == null) {
+            throw new EntityNotFoundException("Authenticated user not found");
+        }
+        return principal.getId();
+    }
+
+    public boolean hasAllScope(String resourceType) {
+        return scope(resourceType) == AccessScope.ALL;
+    }
+
+    private boolean matchesTeam(Object resource) {
+        Long userId = currentUserId();
+        if (resource instanceof Meeting meeting) {
+            return meeting.getTeam() != null
+                    && membershipRepository.existsByTeamIdAndUserId(meeting.getTeam().getId(), userId);
+        }
+        if (resource instanceof Task task) {
+            if (task.getMeeting() != null) {
+                return task.getMeeting().getTeam() != null
+                        && membershipRepository.existsByTeamIdAndUserId(task.getMeeting().getTeam().getId(), userId);
+            }
+            return task.getAssignedMember() != null && usersShareTeam(userId, task.getAssignedMember());
+        }
+        if (resource instanceof Ticket ticket) {
+            return ticket.getAssignedMember() != null && usersShareTeam(userId, ticket.getAssignedMember());
+        }
+        return false;
+    }
+
+    private boolean usersShareTeam(Long userId, TeamMember otherMember) {
+        if (Objects.equals(userId, otherMember.getId())) {
+            return true;
+        }
+        if (membershipRepository.usersShareTeam(userId, otherMember.getId())) {
+            return true;
+        }
+        Long managerId = currentManagerId();
+        return managerId != null && otherMember.getManager() != null
+                && Objects.equals(managerId, otherMember.getManager().getId());
+    }
+
+    private Long currentManagerId() {
+        AppUserDetails principal = principal();
+        if (principal != null && principal.getAppUser() instanceof TeamMember member
+                && member.getManager() != null) {
+            return member.getManager().getId();
+        }
+        return null;
     }
 
     /**
@@ -148,6 +244,13 @@ public class AccessChecker {
         if (resource instanceof Ticket ticket && ticket.getAssignedMember() != null) {
             return ticket.getAssignedMember().getId();
         }
+        if (resource instanceof Task task && task.getAssignedMember() != null) {
+            return task.getAssignedMember().getId();
+        }
+        if (resource instanceof Meeting meeting) {
+            return participantRepository.existsByMeetingIdAndUserId(meeting.getId(), currentUserId())
+                    ? currentUserId() : null;
+        }
         return null;
     }
 
@@ -169,6 +272,12 @@ public class AccessChecker {
         }
         if (resource instanceof Ticket ticket && ticket.getCustomer() != null) {
             return ticket.getCustomer().getId();
+        }
+        if (resource instanceof Task task && task.getCreatedBy() != null) {
+            return task.getCreatedBy().getId();
+        }
+        if (resource instanceof Meeting meeting && meeting.getOrganizer() != null) {
+            return meeting.getOrganizer().getId();
         }
         return null;
     }
@@ -213,11 +322,6 @@ public class AccessChecker {
      *
      * @return the current user's ID, or {@code null} if no user is authenticated
      */
-    private Long currentUserId() {
-        AppUserDetails principal = principal();
-        return principal == null ? null : principal.getId();
-    }
-
     /**
      * Retrieves the current authenticated user's username.
      *

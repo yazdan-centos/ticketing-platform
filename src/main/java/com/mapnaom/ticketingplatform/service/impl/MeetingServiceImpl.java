@@ -25,10 +25,13 @@ import com.mapnaom.ticketingplatform.repository.MeetingRepository;
 import com.mapnaom.ticketingplatform.repository.TeamMembershipRepository;
 import com.mapnaom.ticketingplatform.repository.TeamRepository;
 import com.mapnaom.ticketingplatform.service.MeetingService;
+import com.mapnaom.ticketingplatform.service.AccessChecker;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,11 +52,14 @@ public class MeetingServiceImpl implements MeetingService {
     private final AgendaItemRepository agendaItemRepository;
     private final MeetingNoteRepository noteRepository;
     private final MeetingMapper meetingMapper;
+    private final AccessChecker access;
 
     @Override
     public MeetingResponse createMeeting(MeetingCreateRequest request) {
         validateTimeRange(request.startTime(), request.endTime());
         Team team = findActiveTeam(request.teamId());
+        access.requireTeamAccess("MEETING", team.getId());
+        requireSelfOrAllScope(request.organizerId());
         AppUser organizer = findActiveUser(request.organizerId());
         requireTeamMember(team.getId(), organizer.getId());
         ensureNoConflict(team.getId(), request.startTime(), request.endTime(), null);
@@ -67,6 +73,7 @@ public class MeetingServiceImpl implements MeetingService {
         meeting.setEndTime(request.endTime());
         meeting.setLocation(request.location());
         meeting.setStatus(MeetingStatus.SCHEDULED);
+        access.requireCanSee("MEETING", meeting);
         meetingRepository.save(meeting);
 
         Set<Long> participantIds = new LinkedHashSet<>();
@@ -88,6 +95,7 @@ public class MeetingServiceImpl implements MeetingService {
     @Transactional(readOnly = true)
     public Page<MeetingResponse> getMeetingsForTeam(Long teamId, Pageable pageable) {
         findActiveTeam(teamId);
+        access.requireTeamAccess("MEETING", teamId);
         return meetingRepository.findByTeamIdAndActiveTrue(teamId, pageable).map(meetingMapper::toResponse);
     }
 
@@ -96,7 +104,15 @@ public class MeetingServiceImpl implements MeetingService {
     public List<MeetingResponse> getUpcomingMeetingsForUser(Long userId, LocalDateTime from, LocalDateTime to) {
         findActiveUser(userId);
         validateTimeRange(from, to);
-        return meetingRepository.findUpcomingForUser(userId, from, to).stream()
+        var upcoming = access.visibleMeetings().and((root, query, cb) -> {
+            query.distinct(true);
+            var participant = root.join("participants");
+            return cb.and(
+                    cb.isTrue(root.get("active")),
+                    cb.equal(participant.get("user").get("id"), userId),
+                    cb.between(root.get("startTime"), from, to));
+        });
+        return meetingRepository.findAll(upcoming, Sort.by(Sort.Direction.ASC, "startTime")).stream()
                 .map(meetingMapper::toResponse)
                 .toList();
     }
@@ -150,6 +166,7 @@ public class MeetingServiceImpl implements MeetingService {
     @Override
     public void respondToInvite(Long meetingId, Long userId, RsvpStatus response) {
         Meeting meeting = findActiveMeeting(meetingId);
+        requireSelfOrAllScope(userId);
         if (meeting.getStatus() == MeetingStatus.CANCELLED) {
             throw new IllegalStateException("Cannot respond to a cancelled meeting");
         }
@@ -214,6 +231,7 @@ public class MeetingServiceImpl implements MeetingService {
     @Override
     public MeetingNoteResponse addNote(Long meetingId, MeetingNoteRequest request) {
         Meeting meeting = findActiveMeeting(meetingId);
+        requireSelfOrAllScope(request.authorId());
         AppUser author = findActiveUser(request.authorId());
         requireTeamMember(meeting.getTeam().getId(), author.getId());
         MeetingNote note = new MeetingNote();
@@ -250,8 +268,10 @@ public class MeetingServiceImpl implements MeetingService {
     }
 
     private Meeting findActiveMeeting(Long meetingId) {
-        return meetingRepository.findByIdAndActiveTrue(meetingId)
+        Meeting meeting = meetingRepository.findByIdAndActiveTrue(meetingId)
                 .orElseThrow(() -> new EntityNotFoundException("Active meeting not found with id: " + meetingId));
+        access.requireCanSee("MEETING", meeting);
+        return meeting;
     }
 
     private Team findActiveTeam(Long teamId) {
@@ -277,6 +297,12 @@ public class MeetingServiceImpl implements MeetingService {
     private void requireTeamMember(Long teamId, Long userId) {
         if (!membershipRepository.existsByTeamIdAndUserId(teamId, userId)) {
             throw new IllegalArgumentException("User " + userId + " is not a member of team " + teamId);
+        }
+    }
+
+    private void requireSelfOrAllScope(Long userId) {
+        if (!access.hasAllScope("MEETING") && !access.currentUserId().equals(userId)) {
+            throw new AccessDeniedException("Cannot act on behalf of another meeting participant");
         }
     }
 

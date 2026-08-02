@@ -10,6 +10,7 @@ import com.mapnaom.ticketingplatform.model.enums.TicketStatus;
 import com.mapnaom.ticketingplatform.model.enums.UserType;
 import com.mapnaom.ticketingplatform.repository.*;
 import com.mapnaom.ticketingplatform.service.TicketService;
+import com.mapnaom.ticketingplatform.service.AccessChecker;
 import com.mapnaom.ticketingplatform.specification.TicketSpecification;
 import jakarta.persistence.EntityNotFoundException;
 
@@ -61,6 +62,7 @@ public class TicketServiceImpl implements TicketService {
     private final TicketCustomerMapper ticketCustomerMapper;
     // Add these dependencies to TicketServiceImpl
     private final TicketAttachmentRepository ticketAttachmentRepository;
+    private final AccessChecker access;
     @Value("${file.upload-dir:/tmp/ticket-uploads}") // Define in application.properties
     private String uploadDir;
 
@@ -108,6 +110,7 @@ public class TicketServiceImpl implements TicketService {
             ticket.setStatus(TicketStatus.ASSIGNED);
         }
 
+        access.requireCanSee("TICKET", ticket);
         Ticket saved = ticketRepository.save(ticket);
         log.info("Ticket created: id={}, customerId={}, status={}", saved.getId(), saved.getCustomer().getId(), saved.getStatus());
         return ticketMapper.toResponse(saved);
@@ -120,17 +123,14 @@ public class TicketServiceImpl implements TicketService {
             }
             return customer;
         }
-        if (currentUser instanceof TeamManager) {
-            if (requestedCustomerId == null) {
-                throw new IllegalArgumentException("customerId is required when a manager creates a ticket");
-            }
-            AppUser customer = appUserRepository.findById(requestedCustomerId)
-                    .orElseThrow(() -> new EntityNotFoundException(
-                            "Customer not found with id: " + requestedCustomerId));
-            if (customer instanceof Customer resolvedCustomer) return resolvedCustomer;
-            throw new IllegalArgumentException("User " + requestedCustomerId + " is not a customer");
+        if (requestedCustomerId == null) {
+            throw new IllegalArgumentException("customerId is required when a team user creates a ticket");
         }
-        throw new AccessDeniedException("Only customers or team managers can create tickets");
+        AppUser customer = appUserRepository.findById(requestedCustomerId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Customer not found with id: " + requestedCustomerId));
+        if (customer instanceof Customer resolvedCustomer) return resolvedCustomer;
+        throw new IllegalArgumentException("User " + requestedCustomerId + " is not a customer");
     }
 
     private AppUser findUserByUserName() {
@@ -161,6 +161,7 @@ public class TicketServiceImpl implements TicketService {
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Ticket not found with id: " + ticketId));
+        access.requireCanSee("TICKET", ticket);
 
         AppUser actor = appUserRepository.findById(actorId)
                 .orElseThrow(() -> new EntityNotFoundException(
@@ -193,6 +194,7 @@ public class TicketServiceImpl implements TicketService {
             applyStatusTransition(ticket, request.getStatus(), actor, request.getStatusNote());
         }
 
+        access.requireCanSee("TICKET", ticket);
         Ticket updated = ticketRepository.save(ticket);
         log.info("Ticket updated: id={}, status={}, actorId={}", updated.getId(), updated.getStatus(), actorId);
         return ticketMapper.toResponse(updated);
@@ -204,6 +206,7 @@ public class TicketServiceImpl implements TicketService {
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Ticket not found with id: " + ticketId));
+        access.requireCanSee("TICKET", ticket);
         return ticketMapper.toResponse(ticket);
     }
 
@@ -226,21 +229,10 @@ public class TicketServiceImpl implements TicketService {
         AppUser actor = appUserRepository.findById(actorId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Actor not found with id: " + actorId));
-
-        UserType userType = resolveUserType(actor);
-        boolean allowed = switch (userType) {
-            case CUSTOMER -> isTicketOwner(ticket, actorId);
-            case TEAM_MEMBER -> isTicketAssignee(ticket, actorId);
-            case TEAM_MANAGER -> isWithinManagerTeam(ticket, actorId);
-        };
-
-        if (!allowed) {
-            throw new AccessDeniedException(
-                    "You are not permitted to delete ticket " + ticketId);
-        }
+        access.requireCanSee("TICKET", ticket);
 
         ticketRepository.delete(ticket);
-        log.info("Ticket deleted: id={}, actorId={}, role={}", ticketId, actorId, userType);
+        log.info("Ticket deleted: id={}, actorId={}", ticketId, actorId);
     }
 
     /**
@@ -261,21 +253,11 @@ public class TicketServiceImpl implements TicketService {
         AppUser actor = appUserRepository.findById(actorId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Actor not found with id: " + actorId));
-
-        UserType userType = resolveUserType(actor);
-        boolean allowed = switch (userType) {
-            case TEAM_MEMBER -> isTicketAssignee(ticket, actorId);
-            case TEAM_MANAGER -> isWithinManagerTeam(ticket, actorId);
-            case CUSTOMER -> false;
-        };
-
-        if (!allowed) {
-            throw new AccessDeniedException(
-                    "You are not permitted to re-assign ticket " + ticketId);
-        }
+        access.requireCanSee("TICKET", ticket);
 
         TeamMember target = findAvailableTeamMember(request.getAssignedMemberId());
         ticket.setAssignedMember(target);
+        access.requireCanSee("TICKET", ticket);
         // Re-assignment (re)activates the ticket into the ASSIGNED state when
         // it is currently unallocated so the SLA/assignment lifecycle is consistent.
         if (ticket.getStatus() == TicketStatus.UNALLOCATED) {
@@ -287,8 +269,8 @@ public class TicketServiceImpl implements TicketService {
         }
 
         Ticket updated = ticketRepository.save(ticket);
-        log.info("Ticket re-assigned: id={}, newMemberId={}, actorId={}, role={}",
-                ticketId, target.getId(), actorId, userType);
+        log.info("Ticket re-assigned: id={}, newMemberId={}, actorId={}",
+                ticketId, target.getId(), actorId);
         return ticketMapper.toResponse(updated);
     }
 
@@ -298,6 +280,7 @@ public class TicketServiceImpl implements TicketService {
         TicketAttachment attachment = ticketAttachmentRepository.findById(attachmentId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Attachment not found with id: " + attachmentId));
+        access.requireCanSee("TICKET", attachment.getTicket());
 
         if (!StringUtils.hasText(attachment.getStorageKey())) {
             throw new EntityNotFoundException(
@@ -357,6 +340,7 @@ public class TicketServiceImpl implements TicketService {
 
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new EntityNotFoundException("Ticket not found with id: " + ticketId));
+        access.requireCanSee("TICKET", ticket);
 
         AppUser uploader = appUserRepository.findById(uploaderId)
                 .orElseThrow(() -> new EntityNotFoundException("Uploader not found with id: " + uploaderId));
@@ -372,6 +356,7 @@ public class TicketServiceImpl implements TicketService {
 
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new EntityNotFoundException("Ticket not found with id: " + ticketId));
+        access.requireCanSee("TICKET", ticket);
 
         AppUser uploader = appUserRepository.findById(customerId)
                 .orElseThrow(() -> new EntityNotFoundException("Uploader not found with id: " + customerId));
@@ -424,6 +409,7 @@ public class TicketServiceImpl implements TicketService {
     public void detach(Long attachmentId) {
         TicketAttachment attachment = ticketAttachmentRepository.findById(attachmentId)
                 .orElseThrow(() -> new EntityNotFoundException("Attachment not found with id: " + attachmentId));
+        access.requireCanSee("TICKET", attachment.getTicket());
 
         try {
             if (attachment.getStorageKey() != null && !attachment.getStorageKey().isBlank()) {
@@ -445,7 +431,7 @@ public class TicketServiceImpl implements TicketService {
     @Transactional(readOnly = true)
     @Override
     public List<TicketSummaryResponse> getAll() {
-        return ticketRepository.findAll().stream()
+        return ticketRepository.findAll(access.visibleTickets()).stream()
                 .map(ticketMapper::toSummaryResponse)
                 .toList();
     }
@@ -457,7 +443,7 @@ public class TicketServiceImpl implements TicketService {
         PageRequest pageRequest = PageRequest.of(pageNumber, pageSize, buildSort(sortBy, order));
 
         Page<Ticket> ticketPage = ticketRepository.findAll(
-                TicketSpecification.bySearchRequest(request),
+                TicketSpecification.bySearchRequest(request).and(access.visibleTickets()),
                 pageRequest
         );
 
@@ -471,7 +457,7 @@ public class TicketServiceImpl implements TicketService {
     public Page<TeamTicketDto> searchForTeam(TicketSearchRequestDto request, String sortBy, String order, int pageNumber, int pageSize, Long actorId, boolean isManager) {
         PageRequest pageRequest = PageRequest.of(pageNumber, pageSize, buildSort(sortBy, order));
 
-        Specification<Ticket> spec = TicketSpecification.bySearchRequest(request);
+        Specification<Ticket> spec = TicketSpecification.bySearchRequest(request).and(access.visibleTickets());
         Page<Ticket> ticketPage = ticketRepository.findAll(spec, pageRequest);
 
         // Resolve emergency visibility and delete/reassign capability per row
@@ -505,12 +491,13 @@ public class TicketServiceImpl implements TicketService {
                 yield searchForCustomer(request, sortBy, order, pageNumber, pageSize, actorId);
             }
             case TEAM_MEMBER -> {
-                request.setAssignedToId(actorId);
+                request.setAssignedToId(null);
                 request.setCustomerId(null);
+                request.setTeamId(null);
                 yield searchForTeam(request, sortBy, order, pageNumber, pageSize, actorId, false);
             }
             case TEAM_MANAGER -> {
-                request.setTeamId(actorId);
+                request.setTeamId(null);
                 request.setCustomerId(null);
                 request.setAssignedToId(null);
                 yield searchForTeam(request, sortBy, order, pageNumber, pageSize, actorId, true);

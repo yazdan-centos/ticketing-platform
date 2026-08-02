@@ -12,6 +12,7 @@ import com.mapnaom.ticketingplatform.repository.TicketMessageRepository;
 import com.mapnaom.ticketingplatform.repository.TicketRepository;
 import com.mapnaom.ticketingplatform.service.EmailNotificationService;
 import com.mapnaom.ticketingplatform.service.TicketMessageService;
+import com.mapnaom.ticketingplatform.service.AccessChecker;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -30,11 +31,13 @@ public class TicketMessageServiceImpl implements TicketMessageService {
     private final TicketMessageRepository ticketMessageRepository;
     private final TicketMapper ticketMapper;
     private final EmailNotificationService emailNotificationService;
+    private final AccessChecker access;
 
     @Override
     public TicketMessageResponse addMessage(Long ticketId, TicketMessageCreateRequest request, Long senderId) {
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new EntityNotFoundException("Ticket not found"));
+        access.requireCanSee("TICKET", ticket);
 
         AppUser sender = appUserRepository.findById(senderId)
                 .orElseThrow(() -> new EntityNotFoundException("Sender not found"));
@@ -46,6 +49,7 @@ public class TicketMessageServiceImpl implements TicketMessageService {
     public TicketMessageResponse addMessageByTeamMember(Long ticketId, TicketMessageCreateRequest request, Long senderId) {
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new EntityNotFoundException("Ticket not found"));
+        access.requireCanSee("TICKET", ticket);
 
         AppUser sender = appUserRepository.findById(senderId)
                 .orElseThrow(() -> new EntityNotFoundException("Sender not found"));

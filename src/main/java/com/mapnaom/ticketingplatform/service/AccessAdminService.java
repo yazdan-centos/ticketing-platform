@@ -62,6 +62,8 @@ import java.util.stream.Collectors;
 public class AccessAdminService {
 
     private static final String TICKET_RESOURCE = "TICKET";
+    private static final String MEETING_RESOURCE = "MEETING";
+    private static final String TASK_RESOURCE = "TASK";
 
     private final AppUserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -411,7 +413,9 @@ public class AccessAdminService {
      */
     private Map<String, AccessScope> effectiveScopes(AppUser user) {
         Map<String, AccessScope> scopes = new LinkedHashMap<>();
-        scopes.put(TICKET_RESOURCE, defaultTicketScope(user));
+        scopes.put(TICKET_RESOURCE, defaultScope(user, true));
+        scopes.put(MEETING_RESOURCE, defaultScope(user, false));
+        scopes.put(TASK_RESOURCE, defaultScope(user, false));
         scopeRepository.findByUser(user).forEach(scope ->
                 scopes.put(scope.getResourceType(), scope.getScope()));
         return scopes;
@@ -432,15 +436,15 @@ public class AccessAdminService {
      * @param user the user to determine default scope for
      * @return the default {@link AccessScope} for tickets based on roles
      */
-    private AccessScope defaultTicketScope(AppUser user) {
+    private AccessScope defaultScope(AppUser user, boolean customerOwnScope) {
         Set<String> names = roleNames(user);
         if (names.contains("TEAM_MANAGER") || names.contains("ADMIN")) {
             return AccessScope.ALL;
         }
         if (names.contains("TEAM_MEMBER")) {
-            return AccessScope.ASSIGNED;
+            return AccessScope.TEAM;
         }
-        if (names.contains("CUSTOMER")) {
+        if (customerOwnScope && names.contains("CUSTOMER")) {
             return AccessScope.OWN;
         }
         return AccessScope.NONE;

@@ -1,0 +1,107 @@
+You are a full-permission API automation agent and a senior Spring Boot / Java / JPA / PostgreSQL engineer specializing in RBAC and permission-based authorization.
+
+Repository:
+https://github.com/yazdan-centos/ticketing-platform.git
+
+Objective:
+Implement a robust authorization model for Tickets, Tasks, and Meetings with the following rules:
+
+1. Roles control DATA SCOPE (visibility):
+   - Scope is primarily based on Team and Project.
+   - Users should only be able to see entities that fall within their allowed scope.
+
+2. Permissions control ACTIONS:
+   - CRUD permissions must determine whether a user can create, read, update, or delete Tickets, Tasks, and Meetings.
+
+Current domain assumptions based on the existing codebase:
+- Main roles:
+  - CUSTOMER
+  - TEAM_MEMBER
+  - TEAM_MANAGER
+- TEAM_MANAGER currently acts as an elevated/admin-like role and may retain broad access.
+- Authentication is JWT-based.
+- Security is stateless.
+- User principal is loaded through UserDetailsService and populated by JwtAuthenticationFilter.
+- Meetings belong to Team.
+- Tasks belong to Meeting, and therefore indirectly belong to Team.
+- Team and Project are the main visibility boundaries.
+- You may inspect and refine these assumptions against the actual code before applying changes.
+
+Authorization goals:
+- CUSTOMER:
+  - Can access only their own tickets and related allowed data, if applicable.
+  - Cannot access internal team-wide management data unless explicitly permitted.
+- TEAM_MEMBER:
+  - Can access tickets, meetings, and tasks within their Team/Project scope.
+  - CRUD abilities must be controlled by explicit permissions, not by role name alone.
+- TEAM_MANAGER:
+  - Has broad access across team-managed resources.
+  - May also have admin-level access where already intended by the existing system.
+  - Still enforce permissions cleanly rather than relying only on hardcoded role checks.
+
+Required implementation guidelines:
+1. Inspect the existing security, entity relationships, repositories, services, and controllers.
+2. Design and implement a clean RBAC + permissions model aligned with the current domain.
+3. Use roles for visibility scope and permissions for CRUD authorization.
+4. Prevent IDOR vulnerabilities:
+   - A user must never access Tickets, Tasks, or Meetings outside their allowed Team/Project/ownership scope, even if they know the ID.
+5. You may modify:
+   - JPA entity relationships
+   - fields
+   - repositories and queries
+   - service-layer authorization logic
+   - controller restrictions
+   - DTOs / mappers
+   - security config
+   - seed/init data
+   - migrations if needed
+6. Keep changes minimal and consistent with the current architecture and coding style.
+7. Avoid unnecessary dependencies or large rewrites.
+
+Suggested implementation direction:
+- Introduce or refine a permission model with explicit permission codes such as:
+  - TICKET_CREATE, TICKET_READ, TICKET_UPDATE, TICKET_DELETE
+  - TASK_CREATE, TASK_READ, TASK_UPDATE, TASK_DELETE
+  - MEETING_CREATE, MEETING_READ, MEETING_UPDATE, MEETING_DELETE
+- Ensure roles map to an appropriate permission set.
+- Ensure scope rules are enforced in read/list/query operations.
+- Prefer enforcing access in service layer and repository query layer, with method-level security if appropriate.
+- Add or refine fields needed for scope enforcement, such as:
+  - createdBy
+  - assignedTo
+  - team
+  - project
+  - customer
+  - ownership/visibility markers where required
+- Add indexes where filtering by scope is frequent.
+
+Expected behavior:
+- List endpoints must return only scoped data.
+- Read-by-id endpoints must deny out-of-scope access.
+- Create/update/delete must require matching permissions.
+- Error handling should be consistent:
+  - 403 for forbidden actions
+  - 404 where hiding existence is more appropriate for out-of-scope resources, if that matches the project’s current API style
+
+Execution rules (strict):
+1. NEVER rewrite an entire file if editing a block or a few lines is sufficient.
+2. Minimize terminal commands and avoid speculative command chains.
+3. For straightforward fixes, perform the minimal required modifications and stop immediately.
+4. Do not produce long conversational summaries after applying the changes.
+5. Keep patches small, reviewable, and production-oriented.
+
+Output format:
+1. Plan
+   - 5 to 10 concise bullets
+2. Changes
+   - file path
+   - short reason
+   - patch-style snippet showing only modified sections
+3. Migrations
+   - only if needed
+4. Tests
+   - added/updated test snippets and file paths
+5. Stop
+
+Important:
+Before implementing, first verify the actual code structure and adapt the design to the repository’s existing entity model and security flow rather than forcing a generic RBAC structure.

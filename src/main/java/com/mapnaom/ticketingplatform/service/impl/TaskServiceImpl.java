@@ -10,7 +10,9 @@ import com.mapnaom.ticketingplatform.repository.TaskRepository;
 import com.mapnaom.ticketingplatform.repository.AppUserRepository;
 import com.mapnaom.ticketingplatform.repository.MeetingRepository;
 import com.mapnaom.ticketingplatform.repository.TeamMemberRepository;
+import com.mapnaom.ticketingplatform.repository.TeamMembershipRepository;
 import com.mapnaom.ticketingplatform.service.TaskService;
+import com.mapnaom.ticketingplatform.service.AccessChecker;
 import com.mapnaom.ticketingplatform.specification.TaskSpecification;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -29,18 +31,25 @@ public class TaskServiceImpl implements TaskService {
     private final MeetingRepository meetingRepository;
     private final AppUserRepository appUserRepository;
     private final TaskMapper taskMapper;
+    private final AccessChecker access;
+    private final TeamMembershipRepository membershipRepository;
 
     @Override
     public TaskDto create(TaskDto dto) {
         Task task = new Task();
         apply(task, dto);
+        task.setCreatedBy(appUserRepository.findById(access.currentUserId())
+                .orElseThrow(() -> new EntityNotFoundException("Authenticated user not found")));
+        access.requireCanSee("TASK", task);
         return taskMapper.toDto(taskRepository.save(task));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<TaskDto> getAll() {
-        return taskRepository.findAllByActiveTrue(Sort.by(Sort.Direction.DESC, "createdAt")).stream()
+        return taskRepository.findAll(
+                        access.visibleTasks().and((root, query, cb) -> cb.isTrue(root.get("active"))),
+                        Sort.by(Sort.Direction.DESC, "createdAt")).stream()
                 .map(taskMapper::toDto)
                 .toList();
     }
@@ -48,15 +57,15 @@ public class TaskServiceImpl implements TaskService {
     @Override
     @Transactional(readOnly = true)
     public TaskDto getById(Long id) {
-        return taskMapper.toDto(find(id));
+        return taskMapper.toDto(findScoped(id));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<TaskDto> getByMeetingId(Long meetingId) {
-        if (!meetingRepository.existsById(meetingId)) {
-            throw new EntityNotFoundException("Meeting not found with id: " + meetingId);
-        }
+        var meeting = meetingRepository.findByIdAndActiveTrue(meetingId)
+                .orElseThrow(() -> new EntityNotFoundException("Meeting not found with id: " + meetingId));
+        access.requireCanSee("MEETING", meeting);
         return taskRepository.findByMeetingIdAndActiveTrueOrderByCreatedAtDesc(meetingId).stream()
                 .map(taskMapper::toDto)
                 .toList();
@@ -64,14 +73,15 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public TaskDto update(Long id, TaskDto dto) {
-        Task task = find(id);
+        Task task = findScoped(id);
         apply(task, dto);
+        access.requireCanSee("TASK", task);
         return taskMapper.toDto(taskRepository.save(task));
     }
 
     @Override
     public void delete(Long id) {
-        Task task = find(id);
+        Task task = findScoped(id);
         task.setActive(false);
         taskRepository.save(task);
     }
@@ -82,12 +92,19 @@ public class TaskServiceImpl implements TaskService {
         String safeSort = List.of("id", "title", "status", "priority", "progress", "dueDate", "createdAt", "updatedAt").contains(sortBy) ? sortBy : "createdAt";
         Sort.Direction direction = "ASC".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(Math.max(0, page), Math.max(1, Math.min(size, 100)), Sort.by(direction, safeSort));
-        return taskRepository.findAll(TaskSpecification.bySearchRequest(request), pageable).map(taskMapper::toDto);
+        return taskRepository.findAll(
+                TaskSpecification.bySearchRequest(request).and(access.visibleTasks()), pageable).map(taskMapper::toDto);
     }
 
     private Task find(Long id) {
         return taskRepository.findByIdAndActiveTrue(id)
                 .orElseThrow(() -> new EntityNotFoundException("Active task not found with id: " + id));
+    }
+
+    private Task findScoped(Long id) {
+        Task task = find(id);
+        access.requireCanSee("TASK", task);
+        return task;
     }
 
     private void apply(Task task, TaskDto dto) {
@@ -105,9 +122,10 @@ public class TaskServiceImpl implements TaskService {
             task.setMeeting(meetingRepository.findByIdAndActiveTrue(dto.getMeetingId())
                     .orElseThrow(() -> new EntityNotFoundException("Active meeting not found with id: " + dto.getMeetingId())));
         }
-        if (dto.getCreatedById() != null) {
-            task.setCreatedBy(appUserRepository.findById(dto.getCreatedById())
-                    .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + dto.getCreatedById())));
+        if (task.getMeeting() != null && task.getAssignedMember() != null
+                && !membershipRepository.existsByTeamIdAndUserId(
+                task.getMeeting().getTeam().getId(), task.getAssignedMember().getId())) {
+            throw new IllegalArgumentException("Assigned member must belong to the meeting team");
         }
         if (task.getStatus() == TaskStatus.COMPLETED) {
             task.setProgress(100);

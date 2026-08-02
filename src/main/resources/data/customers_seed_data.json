@@ -4,6 +4,8 @@
     "password": "customer123",
     "email": "jsmith@nimbuscorp.com",
     "roles": ["CUSTOMER"],
+    "firstName": "جان",
+    "lastName": "اسمیت",
     "companyName": "شرکت راهکارهای ابری نیما",
     "phone": "+98-21-5550-0101"
   },
@@ -12,6 +14,8 @@
     "password": "customer123",
     "email": "agarcia@bluepeaksolutions.com",
     "roles": ["CUSTOMER"],
+    "firstName": "آنا",
+    "lastName": "گارسیا",
     "companyName": "راهکارهای فناوری آبی",
     "phone": "+98-21-5550-0102"
   },
@@ -20,6 +24,8 @@
     "password": "customer123",
     "email": "mwong@quantumretail.com",
     "roles": ["CUSTOMER"],
+    "firstName": "مینگ",
+    "lastName": "وونگ",
     "companyName": "فروشگاه زنجیره‌ای کوانتوم",
     "phone": "+98-21-5550-0103"
   },
@@ -28,6 +34,8 @@
     "password": "customer123",
     "email": "klee@skylinelogistics.com",
     "roles": ["CUSTOMER"],
+    "firstName": "کوین",
+    "lastName": "لی",
     "companyName": "حمل‌ونقل آسمان",
     "phone": "+98-21-5550-0104"
   },
@@ -36,6 +44,8 @@
     "password": "customer123",
     "email": "rpatel@vertexhealth.com",
     "roles": ["CUSTOMER"],
+    "firstName": "ریا",
+    "lastName": "پاتل",
     "companyName": "سلامت برتر",
     "phone": "+98-21-5550-0105"
   },
@@ -44,6 +54,8 @@
     "password": "customer123",
     "email": "tnguyen@granitefinancial.com",
     "roles": ["CUSTOMER"],
+    "firstName": "تام",
+    "lastName": "نگوین",
     "companyName": "سرمایه‌گذاری گرانیت",
     "phone": "+98-21-5550-0106"
   },
@@ -52,6 +64,8 @@
     "password": "customer123",
     "email": "sbrown@solarisenergy.com",
     "roles": ["CUSTOMER"],
+    "firstName": "سارا",
+    "lastName": "براون",
     "companyName": "انرژی خورشیدی پارس",
     "phone": "+98-21-5550-0107"
   },
@@ -60,6 +74,8 @@
     "password": "customer123",
     "email": "dkim@cobaltmfg.com",
     "roles": ["CUSTOMER"],
+    "firstName": "دانیل",
+    "lastName": "کیم",
     "companyName": "صنایع تولیدی کبالت",
     "phone": "+98-21-5550-0108"
   },
@@ -68,6 +84,8 @@
     "password": "customer123",
     "email": "lmartin@lighthousemedia.com",
     "roles": ["CUSTOMER"],
+    "firstName": "لورا",
+    "lastName": "مارتین",
     "companyName": "رسانه فانوس",
     "phone": "+98-21-5550-0109"
   },
@@ -76,6 +94,8 @@
     "password": "customer123",
     "email": "fortiz@pinnacleinsurance.com",
     "roles": ["CUSTOMER"],
+    "firstName": "فیلیپ",
+    "lastName": "ارتیز",
     "companyName": "بیمه پیشگامان",
     "phone": "+98-21-5550-0110"
   },
@@ -84,6 +104,8 @@
     "password": "customer123",
     "email": "hcohen@orchardeducation.com",
     "roles": ["CUSTOMER"],
+    "firstName": "حنا",
+    "lastName": "کوهن",
     "companyName": "آموزش باغ دانایی",
     "phone": "+98-21-5550-0111"
   },
@@ -92,6 +114,8 @@
     "password": "customer123",
     "email": "bsingh@falconaerospace.com",
     "roles": ["CUSTOMER"],
+    "firstName": "بهاویش",
+    "lastName": "سینگ",
     "companyName": "صنایع هوافضای شاهین",
     "phone": "+98-21-5550-0112"
   },
@@ -100,6 +124,8 @@
     "password": "customer123",
     "email": "nwalsh@meridiantelecom.com",
     "roles": ["CUSTOMER"],
+    "firstName": "نورا",
+    "lastName": "والش",
     "companyName": "ارتباطات نصف‌النهار",
     "phone": "+98-21-5550-0113"
   },
@@ -108,6 +134,8 @@
     "password": "customer123",
     "email": "ydiaz@cedarhospitality.com",
     "roles": ["CUSTOMER"],
+    "firstName": "یارا",
+    "lastName": "دیاز",
     "companyName": "مهمان‌نوازی سرو",
     "phone": "+98-21-5550-0114"
   },
@@ -116,6 +144,8 @@
     "password": "customer123",
     "email": "ckhan@atlasconstruction.com",
     "roles": ["CUSTOMER"],
+    "firstName": "سایروس",
+    "lastName": "خان",
     "companyName": "ساختمان اطلس",
     "phone": "+98-21-5550-0115"
   },
@@ -124,6 +154,8 @@
     "password": "customer123",
     "email": "pmurphy@hollowrobotics.com",
     "roles": ["CUSTOMER"],
+    "firstName": "پاتریک",
+    "lastName": "مورفی",
     "companyName": "رباتیک آینده",
     "phone": "+98-21-5550-0116"
   },
@@ -132,6 +164,8 @@
     "password": "customer123",
     "email": "ezhang@crimsonanalytics.com",
     "roles": ["CUSTOMER"],
+    "firstName": "امیلی",
+    "lastName": "ژانگ",
     "companyName": "تحلیل داده سرخ",
     "phone": "+98-21-5550-0117"
   },
@@ -140,6 +174,8 @@
     "password": "customer123",
     "email": "grossi@driftwoodapparel.com",
     "roles": ["CUSTOMER"],
+    "firstName": "جولیا",
+    "lastName": "روسی",
     "companyName": "پوشاک چوبین",
     "phone": "+98-21-5550-0118"
   },
@@ -148,6 +184,8 @@
     "password": "customer123",
     "email": "wokafor@ironcladsecurity.com",
     "roles": ["CUSTOMER"],
+    "firstName": "وایل",
+    "lastName": "اوکافور",
     "companyName": "امنیت دژ",
     "phone": "+98-21-5550-0119"
   },
@@ -156,6 +194,8 @@
     "password": "customer123",
     "email": "jtanaka@wavelengthstudios.com",
     "roles": ["CUSTOMER"],
+    "firstName": "علیرضا",
+    "lastName": "حسنی",
     "companyName": "استودیو موج",
     "phone": "+98-21-5550-0120"
   }

@@ -54,13 +54,15 @@ public class AppUserDetailsService implements UserDetailsService {
 
     private Map<String, AccessScope> resolveScopes(AppUser user) {
         Map<String, AccessScope> scopes = new LinkedHashMap<>();
-        scopes.put("TICKET", defaultTicketScope(user));
+        scopes.put("TICKET", defaultScope(user, true));
+        scopes.put("MEETING", defaultScope(user, false));
+        scopes.put("TASK", defaultScope(user, false));
         scopeRepo.findByUser(user).forEach(scope ->
                 scopes.put(scope.getResourceType(), scope.getScope()));
         return scopes;
     }
 
-    private AccessScope defaultTicketScope(AppUser user) {
+    private AccessScope defaultScope(AppUser user, boolean customerOwnScope) {
         Set<String> roleNames = user.getRoles().stream()
                 .map(Role::getName)
                 .collect(Collectors.toSet());
@@ -69,9 +71,9 @@ public class AppUserDetailsService implements UserDetailsService {
             return AccessScope.ALL;
         }
         if (roleNames.contains("TEAM_MEMBER")) {
-            return AccessScope.ASSIGNED;
+            return AccessScope.TEAM;
         }
-        if (roleNames.contains("CUSTOMER")) {
+        if (customerOwnScope && roleNames.contains("CUSTOMER")) {
             return AccessScope.OWN;
         }
         return AccessScope.NONE;

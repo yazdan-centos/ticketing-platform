@@ -40,7 +40,7 @@ public class MeetingController {
     private final MeetingService meetingService;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('TEAM_MEMBER', 'TEAM_MANAGER')")
+    @PreAuthorize("hasAuthority('MEETING_CREATE')")
     public ResponseEntity<ApiResponse<MeetingResponse>> createMeeting(
             @Valid @RequestBody MeetingCreateRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -48,17 +48,20 @@ public class MeetingController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('MEETING_READ')")
     public ResponseEntity<ApiResponse<MeetingResponse>> getMeeting(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success(meetingService.getMeeting(id)));
     }
 
     @GetMapping("/team/{teamId}")
+    @PreAuthorize("hasAuthority('MEETING_READ')")
     public ResponseEntity<ApiResponse<Page<MeetingResponse>>> getTeamMeetings(
             @PathVariable Long teamId, Pageable pageable) {
         return ResponseEntity.ok(ApiResponse.success(meetingService.getMeetingsForTeam(teamId, pageable)));
     }
 
     @GetMapping("/user/{userId}/upcoming")
+    @PreAuthorize("hasAuthority('MEETING_READ')")
     public ResponseEntity<ApiResponse<List<MeetingResponse>>> getUpcomingForUser(
             @PathVariable Long userId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
@@ -68,7 +71,7 @@ public class MeetingController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('TEAM_MANAGER')")
+    @PreAuthorize("hasAuthority('MEETING_UPDATE')")
     public ResponseEntity<ApiResponse<MeetingResponse>> updateMeeting(
             @PathVariable Long id,
             @Valid @RequestBody MeetingUpdateRequest request) {
@@ -76,21 +79,21 @@ public class MeetingController {
     }
 
     @PostMapping("/{id}/cancel")
-    @PreAuthorize("hasRole('TEAM_MANAGER')")
+    @PreAuthorize("hasAuthority('MEETING_UPDATE')")
     public ResponseEntity<ApiResponse<Void>> cancelMeeting(@PathVariable Long id) {
         meetingService.cancelMeeting(id);
         return ResponseEntity.ok(ApiResponse.success(null, "Meeting cancelled"));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('TEAM_MANAGER')")
+    @PreAuthorize("hasAuthority('MEETING_DELETE')")
     public ResponseEntity<ApiResponse<Void>> deleteMeeting(@PathVariable Long id) {
         meetingService.deleteMeeting(id);
         return ResponseEntity.ok(ApiResponse.success(null, "Meeting deleted"));
     }
 
     @PostMapping("/{id}/participants")
-    @PreAuthorize("hasRole('TEAM_MANAGER')")
+    @PreAuthorize("hasAuthority('MEETING_UPDATE')")
     public ResponseEntity<ApiResponse<Void>> addParticipants(
             @PathVariable Long id,
             @RequestBody List<Long> userIds) {
@@ -99,7 +102,7 @@ public class MeetingController {
     }
 
     @PostMapping("/{id}/participants/{userId}/rsvp")
-    @PreAuthorize("hasAnyRole('TEAM_MEMBER', 'TEAM_MANAGER')")
+    @PreAuthorize("hasAuthority('MEETING_UPDATE')")
     public ResponseEntity<ApiResponse<Void>> respondToInvite(
             @PathVariable Long id,
             @PathVariable Long userId,
@@ -109,7 +112,7 @@ public class MeetingController {
     }
 
     @PutMapping("/{id}/participants/{userId}/attendance")
-    @PreAuthorize("hasRole('TEAM_MANAGER')")
+    @PreAuthorize("hasAuthority('MEETING_UPDATE')")
     public ResponseEntity<ApiResponse<Void>> markAttendance(
             @PathVariable Long id,
             @PathVariable Long userId,
@@ -119,7 +122,7 @@ public class MeetingController {
     }
 
     @PostMapping("/{id}/agenda")
-    @PreAuthorize("hasAnyRole('TEAM_MEMBER', 'TEAM_MANAGER')")
+    @PreAuthorize("hasAuthority('MEETING_UPDATE')")
     public ResponseEntity<ApiResponse<AgendaItemResponse>> addAgendaItem(
             @PathVariable Long id,
             @Valid @RequestBody AgendaItemRequest request) {
@@ -128,7 +131,7 @@ public class MeetingController {
     }
 
     @PutMapping("/{id}/agenda/reorder")
-    @PreAuthorize("hasAnyRole('TEAM_MEMBER', 'TEAM_MANAGER')")
+    @PreAuthorize("hasAuthority('MEETING_UPDATE')")
     public ResponseEntity<ApiResponse<Void>> reorderAgenda(
             @PathVariable Long id,
             @RequestBody List<Long> orderedIds) {
@@ -137,7 +140,7 @@ public class MeetingController {
     }
 
     @PostMapping("/{id}/notes")
-    @PreAuthorize("hasAnyRole('TEAM_MEMBER', 'TEAM_MANAGER')")
+    @PreAuthorize("hasAuthority('MEETING_UPDATE')")
     public ResponseEntity<ApiResponse<MeetingNoteResponse>> addNote(
             @PathVariable Long id,
             @Valid @RequestBody MeetingNoteRequest request) {
@@ -146,6 +149,7 @@ public class MeetingController {
     }
 
     @GetMapping("/{id}/notes")
+    @PreAuthorize("hasAuthority('MEETING_READ')")
     public ResponseEntity<ApiResponse<List<MeetingNoteResponse>>> getNotes(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success(meetingService.getNotes(id)));
     }

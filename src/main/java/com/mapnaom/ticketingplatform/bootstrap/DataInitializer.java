@@ -87,6 +87,10 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws IOException {
+        if (targetTablesContainData()) {
+            return;
+        }
+
         Set<String> newPermissionCodes = syncPermissions();
         seedRolesIfEmpty();
         assignNewPermissionsToDefaultRoles(newPermissionCodes);
@@ -98,10 +102,28 @@ public class DataInitializer implements CommandLineRunner {
         seedMeetingTasksIfEmpty();
     }
 
+    private boolean targetTablesContainData() {
+        return permissionRepository.count() > 0
+                || roleRepository.count() > 0
+                || customerRepository.count() > 0
+                || teamManagerRepository.count() > 0
+                || teamMemberRepository.count() > 0
+                || slaContractRepository.count() > 0
+                || ticketRepository.count() > 0
+                || teamRepository.count() > 0
+                || teamMembershipRepository.count() > 0
+                || meetingRepository.count() > 0
+                || taskRepository.count() > 0;
+    }
+
 /*******************    💫 Codegeex Inline Diff    *******************/
     private Set<String> syncPermissions() {
         List<Permission> definedPermissions = List.of(
                 permission("ACCESS_ADMIN", "مدیریت دسترسی‌ها و محدوده‌ها"),
+                permission("USER_CREATE", "ایجاد کاربر"),
+                permission("USER_READ", "مشاهده کاربران"),
+                permission("USER_UPDATE", "ویرایش کاربران و نقش‌های آن‌ها"),
+                permission("USER_DELETE", "حذف کاربران بدون داده وابسته"),
                 permission("TICKET_CREATE", "ایجاد تیکت پشتیبانی"),
                 permission("TICKET_READ", "مشاهده تیکت‌های پشتیبانی"),
                 permission("TICKET_UPDATE", "به‌روزرسانی تیکت‌های پشتیبانی"),

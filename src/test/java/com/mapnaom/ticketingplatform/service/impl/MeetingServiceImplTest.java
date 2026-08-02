@@ -16,6 +16,7 @@ import com.mapnaom.ticketingplatform.repository.MeetingParticipantRepository;
 import com.mapnaom.ticketingplatform.repository.MeetingRepository;
 import com.mapnaom.ticketingplatform.repository.TeamMembershipRepository;
 import com.mapnaom.ticketingplatform.repository.TeamRepository;
+import com.mapnaom.ticketingplatform.service.AccessChecker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,6 +43,7 @@ class MeetingServiceImplTest {
     @Mock private MeetingParticipantRepository participantRepository;
     @Mock private AgendaItemRepository agendaItemRepository;
     @Mock private MeetingNoteRepository noteRepository;
+    @Mock private AccessChecker access;
 
     private MeetingServiceImpl service;
     private Team team;
@@ -58,7 +60,8 @@ class MeetingServiceImplTest {
                 participantRepository,
                 agendaItemRepository,
                 noteRepository,
-                new MeetingMapper());
+                new MeetingMapper(),
+                access);
 
         team = new Team();
         team.setId(10L);
@@ -66,6 +69,7 @@ class MeetingServiceImplTest {
 
         organizer = user(20L, "organizer");
         invitee = user(30L, "invitee");
+        when(access.hasAllScope("MEETING")).thenReturn(true);
     }
 
     @Test

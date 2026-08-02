@@ -1,6 +1,7 @@
 package com.mapnaom.ticketingplatform.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -22,6 +23,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 @Configuration
 @EnableWebSecurity
@@ -31,6 +33,9 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserDetailsService userDetailsService;
+
+    @Value("${app.cors.allowed-origin-patterns}")
+    private String allowedOriginPatterns;
 
     private static final String CUSTOMER = "CUSTOMER";
     private static final String TEAM_MEMBER = "TEAM_MEMBER";
@@ -60,43 +65,45 @@ public class SecurityConfig {
 
                         // ---- Ticket Messages (more specific than /api/tickets/*) ----
                         .requestMatchers(HttpMethod.POST, "/api/tickets/*/messages")
-                        .hasAnyRole(CUSTOMER, TEAM_MEMBER, TEAM_MANAGER)
+                        .hasAuthority("TICKET_UPDATE")
                         .requestMatchers(HttpMethod.GET, "/api/tickets/*/messages")
-                        .hasAnyRole(CUSTOMER, TEAM_MEMBER, TEAM_MANAGER)
+                        .hasAuthority("TICKET_READ")
                         .requestMatchers(HttpMethod.POST, "/api/tickets/*/attachments")
-                        .hasAnyRole(CUSTOMER, TEAM_MEMBER, TEAM_MANAGER)
+                        .hasAuthority("TICKET_UPDATE")
                         .requestMatchers(HttpMethod.DELETE, "/api/tickets/attachments/*")
-                        .hasAnyRole(CUSTOMER, TEAM_MEMBER, TEAM_MANAGER)
+                        .hasAuthority("TICKET_UPDATE")
                         .requestMatchers(HttpMethod.POST, "/api/team-members/tickets/*/messages")
                         .hasRole(TEAM_MEMBER)
                         .requestMatchers(HttpMethod.POST, "/api/customers/tickets/*/attachments")
                         .hasRole(CUSTOMER)
 
                         // ---- Tickets ----
+                        .requestMatchers(HttpMethod.POST, "/api/tickets/search")
+                        .hasAuthority("TICKET_READ")
                         .requestMatchers(HttpMethod.POST, "/api/tickets")
-                        .hasAnyRole(CUSTOMER, TEAM_MANAGER)
+                        .hasAuthority("TICKET_CREATE")
                         .requestMatchers(HttpMethod.GET, "/api/tickets")
-                        .hasAnyRole(TEAM_MEMBER, TEAM_MANAGER)
+                        .hasAuthority("TICKET_READ")
                         .requestMatchers(HttpMethod.GET, "/api/tickets/*")
-                        .hasAnyRole(CUSTOMER, TEAM_MEMBER, TEAM_MANAGER)
+                        .hasAuthority("TICKET_READ")
                         .requestMatchers(HttpMethod.POST, "/api/tickets/*/reassign")
-                        .hasAnyRole(TEAM_MEMBER, TEAM_MANAGER)
+                        .hasAuthority("TICKET_UPDATE")
                         .requestMatchers(HttpMethod.PUT, "/api/tickets/*")
-                        .hasAnyRole(TEAM_MEMBER, TEAM_MANAGER)
+                        .hasAuthority("TICKET_UPDATE")
                         .requestMatchers(HttpMethod.DELETE, "/api/tickets/*")
-                        .hasAnyRole(CUSTOMER, TEAM_MEMBER, TEAM_MANAGER)
+                        .hasAuthority("TICKET_DELETE")
 
                         // ---- Tasks ----
-                        .requestMatchers(HttpMethod.GET, "/api/tasks", "/api/tasks/*")
-                        .hasAnyRole(TEAM_MEMBER, TEAM_MANAGER)
+                        .requestMatchers(HttpMethod.GET, "/api/tasks", "/api/tasks/**")
+                        .hasAuthority("TASK_READ")
                         .requestMatchers(HttpMethod.POST, "/api/tasks/search")
-                        .hasAnyRole(TEAM_MEMBER, TEAM_MANAGER)
+                        .hasAuthority("TASK_READ")
                         .requestMatchers(HttpMethod.POST, "/api/tasks")
-                        .hasRole(TEAM_MANAGER)
+                        .hasAuthority("TASK_CREATE")
                         .requestMatchers(HttpMethod.PUT, "/api/tasks/*")
-                        .hasAnyRole(TEAM_MEMBER, TEAM_MANAGER)
+                        .hasAuthority("TASK_UPDATE")
                         .requestMatchers(HttpMethod.DELETE, "/api/tasks/*")
-                        .hasRole(TEAM_MANAGER)
+                        .hasAuthority("TASK_DELETE")
 
                         // ---- Customers ----
                         .requestMatchers(HttpMethod.POST, "/api/customers").hasRole(TEAM_MANAGER)
@@ -165,7 +172,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000","http://localhost:5173"));
+        config.setAllowedOriginPatterns(Stream.of(allowedOriginPatterns.split(","))
+                .map(String::trim)
+                .filter(pattern -> !pattern.isEmpty())
+                .toList());
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
