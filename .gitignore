@@ -42,3 +42,6 @@ build/
 DATABASE_SEEDER_SUMMARY.md
 FRONTEND_AGENT_API_GUIDE.md
 src/main/java/com/mapnaom/ticketingplatform/model/enums/UserType.java
+
+# Local Docker Compose configuration
+.env
