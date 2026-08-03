@@ -1,0 +1,61 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ticketing_platform_db}
+      POSTGRES_USER: ${POSTGRES_USER:-ticketing}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ticketing_dev_password}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SOURCE_REPOSITORY: ${SOURCE_REPOSITORY:-https://github.com/yazdan-centos/ticketing-platform.git}
+        SOURCE_BRANCH: ${SOURCE_BRANCH:-main}
+    image: ticketing-platform:${APP_IMAGE_TAG:-latest}
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-ticketing_platform_db}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-ticketing}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-ticketing_dev_password}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      FLYWAY_ENABLED: "true"
+      APP_JWT_SECRET: ${APP_JWT_SECRET:-VGlja2V0aW5nUGxhdGZvcm1Kd3RTZWNyZXRLZXlGb3JIUzI1NlNpZ25pbmc=}
+      APP_CORS_ALLOWED_ORIGIN_PATTERNS: ${APP_CORS_ALLOWED_ORIGIN_PATTERNS:-http://localhost:*,http://127.0.0.1:*}
+      FILE_UPLOAD_DIR: /var/lib/ticketing/uploads
+      JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--XX:MaxRAMPercentage=75.0 -XX:+UseContainerSupport}
+    volumes:
+      - upload-data:/var/lib/ticketing/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+      args:
+        FRONTEND_REPOSITORY: ${FRONTEND_REPOSITORY:-https://github.com/yazdan-centos/collaboration2.git}
+        FRONTEND_BRANCH: ${FRONTEND_BRANCH:-main}
+        REACT_APP_API_BASE_URL: ${REACT_APP_API_BASE_URL:-http://localhost}
+    image: ticketing-platform-frontend:${APP_IMAGE_TAG:-latest}
+    ports:
+      - "${APP_PORT:-80}:80"
+    depends_on:
+      - app
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  upload-data:
