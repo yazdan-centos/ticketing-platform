@@ -26,6 +26,7 @@ import com.mapnaom.ticketingplatform.model.enums.RsvpStatus;
 import com.mapnaom.ticketingplatform.model.enums.TaskStatus;
 import com.mapnaom.ticketingplatform.model.enums.TeamRole;
 import com.mapnaom.ticketingplatform.model.enums.TicketStatus;
+import com.mapnaom.ticketingplatform.repository.AppUserRepository;
 import com.mapnaom.ticketingplatform.repository.CustomerRepository;
 import com.mapnaom.ticketingplatform.repository.MeetingRepository;
 import com.mapnaom.ticketingplatform.repository.PermissionRepository;
@@ -70,6 +71,7 @@ public class DataInitializer implements CommandLineRunner {
 
     private final PermissionRepository permissionRepository;
     private final RoleRepository roleRepository;
+    private final AppUserRepository appUserRepository;
     private final CustomerRepository customerRepository;
     private final TeamManagerRepository teamManagerRepository;
     private final TeamMemberRepository teamMemberRepository;
@@ -87,10 +89,6 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws IOException {
-        if (targetTablesContainData()) {
-            return;
-        }
-
         Set<String> newPermissionCodes = syncPermissions();
         seedRolesIfEmpty();
         assignNewPermissionsToDefaultRoles(newPermissionCodes);
@@ -100,20 +98,6 @@ public class DataInitializer implements CommandLineRunner {
         seedTeamsIfEmpty();
         seedMeetingsIfEmpty();
         seedMeetingTasksIfEmpty();
-    }
-
-    private boolean targetTablesContainData() {
-        return permissionRepository.count() > 0
-                || roleRepository.count() > 0
-                || customerRepository.count() > 0
-                || teamManagerRepository.count() > 0
-                || teamMemberRepository.count() > 0
-                || slaContractRepository.count() > 0
-                || ticketRepository.count() > 0
-                || teamRepository.count() > 0
-                || teamMembershipRepository.count() > 0
-                || meetingRepository.count() > 0
-                || taskRepository.count() > 0;
     }
 
 /*******************    💫 Codegeex Inline Diff    *******************/
@@ -247,8 +231,9 @@ public class DataInitializer implements CommandLineRunner {
             seedCustomersFromJson(customerRole);
         }
 
-        if (teamManagerRepository.count() == 0 && teamMemberRepository.count() == 0) {
-            TeamManager manager = new TeamManager();
+        TeamManager manager = null;
+        if (!appUserRepository.existsByUsernameIgnoreCase("manager")) {
+            manager = new TeamManager();
             manager.setUsername("manager");
             manager.setFirstName("مینا");
             manager.setLastName("مدیر");
@@ -256,20 +241,33 @@ public class DataInitializer implements CommandLineRunner {
             manager.setPassword(passwordEncoder.encode("manager123"));
             manager.setDepartment("پشتیبانی");
             manager.setRoles(Set.of(teamManagerRole));
+        } else {
+            manager = teamManagerRepository.findAll().stream()
+                    .filter(existingManager -> "manager".equalsIgnoreCase(existingManager.getUsername()))
+                    .findFirst()
+                    .orElse(null);
+        }
 
-
-
-            manager.addTeamMember(teamMember("yazdanparast_m", "مهدی", "یزدان پرست", "sara@mps.mapnagroup.com", "برنامه نویس", teamMemberRole));
-            manager.addTeamMember(teamMember("aghelifar", "مهرنوش", "عاقلی فر", "aghelifar_m@mps.mapnagroup.com", "برنامه نویس", teamMemberRole));
-            manager.addTeamMember(teamMember("Nematollahian_m", "محمد", "نعمت الهیان", "Nematollahian_m@mps.mapnagroup.com", "برنامه نویس", teamMemberRole));
-            manager.addTeamMember(teamMember("Rahmani_mh", "فرشاد رحمانی", "محمد حسین", "sara@mps.mapnagroup.com", "برنامه نویس", teamMemberRole));
-            manager.addTeamMember(teamMember("naji_smh", "سید محمد حسن", "ناجی", "sara@mps.mapnagroup.com", "برنامه نویس", teamMemberRole));
-            manager.addTeamMember(teamMember("Motaghian_m", "ملیگا", "اسمیت", "motaghian_m@mps.mapnagroup.com", "برنامه نویس", teamMemberRole));
-            manager.addTeamMember(teamMember("Gordani_ma", "محمد امین", "گردانی","Gordani_ma@mps.mapnagroup.com", "برنامه نویس", teamMemberRole));
-            manager.addTeamMember(teamMember("Bagherpour_a", "امیر", "باقرپور", "sara@mps.mapnagroup.com", "برنامه نویس", teamMemberRole));
-
+        if (manager != null) {
+            seedTeamMemberIfMissing(manager, "yazdanparast_m", "مهدی", "یزدان پرست", "sara@mps.mapnagroup.com", "برنامه نویس", teamMemberRole);
+            seedTeamMemberIfMissing(manager, "aghelifar", "مهرنوش", "عاقلی فر", "aghelifar_m@mps.mapnagroup.com", "برنامه نویس", teamMemberRole);
+            seedTeamMemberIfMissing(manager, "Nematollahian_m", "محمد", "نعمت الهیان", "Nematollahian_m@mps.mapnagroup.com", "برنامه نویس", teamMemberRole);
+            seedTeamMemberIfMissing(manager, "Rahmani_mh", "فرشاد رحمانی", "محمد حسین", "sara@mps.mapnagroup.com", "برنامه نویس", teamMemberRole);
+            seedTeamMemberIfMissing(manager, "naji_smh", "سید محمد حسن", "ناجی", "sara@mps.mapnagroup.com", "برنامه نویس", teamMemberRole);
+            seedTeamMemberIfMissing(manager, "Motaghian_m", "ملیگا", "اسمیت", "motaghian_m@mps.mapnagroup.com", "برنامه نویس", teamMemberRole);
+            seedTeamMemberIfMissing(manager, "Gordani_ma", "محمد امین", "گردانی","Gordani_ma@mps.mapnagroup.com", "برنامه نویس", teamMemberRole);
+            seedTeamMemberIfMissing(manager, "Bagherpour_a", "امیر", "باقرپور", "sara@mps.mapnagroup.com", "برنامه نویس", teamMemberRole);
             teamManagerRepository.save(manager);
         }
+    }
+
+    private void seedTeamMemberIfMissing(TeamManager manager, String username, String firstName,
+                                         String lastName, String email, String jobTitle, Role role) {
+        if (appUserRepository.existsByUsernameIgnoreCase(username)) {
+            return;
+        }
+
+        manager.addTeamMember(teamMember(username, firstName, lastName, email, jobTitle, role));
     }
 
     /**
