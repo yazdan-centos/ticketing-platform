@@ -25,6 +25,8 @@ public class Customer extends AppUser {
     // Specific Customer Fields
     private String companyName;
     private String phone;
+    private String firstName;
+    private String lastName;
 
     // Relationships
     // Customer has many SLA Contracts. Inverse side.
