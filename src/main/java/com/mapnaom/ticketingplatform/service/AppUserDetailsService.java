@@ -1,6 +1,7 @@
 package com.mapnaom.ticketingplatform.service;
 
 import com.mapnaom.ticketingplatform.model.*;
+import com.mapnaom.ticketingplatform.model.enums.AccessScope;
 import com.mapnaom.ticketingplatform.model.enums.GrantEffect;
 import com.mapnaom.ticketingplatform.repository.AppUserRepository;
 import com.mapnaom.ticketingplatform.repository.UserPermissionGrantRepository;

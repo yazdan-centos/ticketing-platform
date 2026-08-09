@@ -1,4 +1,6 @@
-package com.mapnaom.ticketingplatform.model;
+package com.mapnaom.ticketingplatform.model.enums;
+
+import com.mapnaom.ticketingplatform.model.Ticket;
 
 /**
  * Defines the scope of access control for tickets and related entities in the ticketing platform.

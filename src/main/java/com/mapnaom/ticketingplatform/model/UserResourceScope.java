@@ -1,5 +1,6 @@
 package com.mapnaom.ticketingplatform.model;
 
+import com.mapnaom.ticketingplatform.model.enums.AccessScope;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

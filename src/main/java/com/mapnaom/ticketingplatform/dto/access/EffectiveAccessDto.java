@@ -1,6 +1,6 @@
 package com.mapnaom.ticketingplatform.dto.access;
 
-import com.mapnaom.ticketingplatform.model.AccessScope;
+import com.mapnaom.ticketingplatform.model.enums.AccessScope;
 
 import java.util.Map;
 import java.util.Set;

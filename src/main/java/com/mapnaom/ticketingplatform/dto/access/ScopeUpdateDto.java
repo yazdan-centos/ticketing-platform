@@ -1,6 +1,6 @@
 package com.mapnaom.ticketingplatform.dto.access;
 
-import com.mapnaom.ticketingplatform.model.AccessScope;
+import com.mapnaom.ticketingplatform.model.enums.AccessScope;
 import jakarta.validation.constraints.NotNull;
 
 public record ScopeUpdateDto(@NotNull AccessScope scope) {

@@ -1,6 +1,6 @@
 package com.mapnaom.ticketingplatform.service;
 
-import com.mapnaom.ticketingplatform.model.AccessScope;
+import com.mapnaom.ticketingplatform.model.enums.AccessScope;
 import com.mapnaom.ticketingplatform.model.AppUserDetails;
 import com.mapnaom.ticketingplatform.model.Customer;
 import com.mapnaom.ticketingplatform.model.Meeting;

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mapnaom.ticketingplatform.dto.access.GrantDto;
 import com.mapnaom.ticketingplatform.dto.access.RolePermissionsUpdateDto;
 import com.mapnaom.ticketingplatform.dto.access.ScopeUpdateDto;
-import com.mapnaom.ticketingplatform.model.AccessScope;
+import com.mapnaom.ticketingplatform.model.enums.AccessScope;
 import com.mapnaom.ticketingplatform.model.AppUser;
 import com.mapnaom.ticketingplatform.model.Customer;
 import com.mapnaom.ticketingplatform.model.Permission;

@@ -3,7 +3,7 @@ package com.mapnaom.ticketingplatform.service;
 import com.mapnaom.ticketingplatform.dto.ticket.TicketDto;
 import com.mapnaom.ticketingplatform.dto.ticket.TicketResponse;
 import com.mapnaom.ticketingplatform.dto.ticket.TicketSummaryResponse;
-import com.mapnaom.ticketingplatform.model.AccessScope;
+import com.mapnaom.ticketingplatform.model.enums.AccessScope;
 import com.mapnaom.ticketingplatform.model.AppUserDetails;
 import com.mapnaom.ticketingplatform.model.Meeting;
 import com.mapnaom.ticketingplatform.model.Task;

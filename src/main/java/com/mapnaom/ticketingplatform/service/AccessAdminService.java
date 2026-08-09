@@ -5,7 +5,7 @@ import com.mapnaom.ticketingplatform.dto.access.GrantDto;
 import com.mapnaom.ticketingplatform.dto.access.PermissionDto;
 import com.mapnaom.ticketingplatform.dto.access.PermissionStatusDto;
 import com.mapnaom.ticketingplatform.dto.access.ScopeDto;
-import com.mapnaom.ticketingplatform.model.AccessScope;
+import com.mapnaom.ticketingplatform.model.enums.AccessScope;
 import com.mapnaom.ticketingplatform.model.AppUser;
 import com.mapnaom.ticketingplatform.model.Permission;
 import com.mapnaom.ticketingplatform.model.Role;

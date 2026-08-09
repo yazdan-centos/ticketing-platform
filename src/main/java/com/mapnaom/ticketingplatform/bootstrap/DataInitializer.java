@@ -41,9 +41,11 @@ import com.mapnaom.ticketingplatform.repository.TicketRepository;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -82,6 +84,10 @@ public class DataInitializer implements CommandLineRunner {
     private final MeetingRepository meetingRepository;
     private final TaskRepository taskRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JdbcTemplate jdbcTemplate;
+
+    @Value("${app.database.initialize-on-startup:true}")
+    private boolean initializeOnStartup;
 
     private final ObjectMapper objectMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule());
@@ -89,19 +95,47 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws IOException {
-        Set<String> newPermissionCodes = syncPermissions();
-        seedRolesIfEmpty();
-        assignNewPermissionsToDefaultRoles(newPermissionCodes);
-        seedAppUsersIfEmpty();
-        seedSlaContractsIfEmpty();
-        seedTicketsIfEmpty();
-        seedTeamsIfEmpty();
-        seedMeetingsIfEmpty();
-        seedMeetingTasksIfEmpty();
+        if (!initializeOnStartup) {
+            return;
+        }
+
+        resetDatabase();
+        seedPermissions();
+        seedRoles();
+        seedAppUsers();
+        seedSlaContracts();
+        seedTickets();
+        seedTeams();
+        seedMeetings();
+        seedMeetingTasks();
     }
 
-/*******************    💫 Codegeex Inline Diff    *******************/
-    private Set<String> syncPermissions() {
+    private void resetDatabase() {
+        List<String> tablesInDeleteOrder = List.of(
+                "ticket_attachments",
+                "ticket_messages",
+                "ticket_status_histories",
+                "tasks",
+                "agenda_items",
+                "meeting_notes",
+                "meeting_participants",
+                "meetings",
+                "team_memberships",
+                "tickets",
+                "sla_contracts",
+                "user_permission_grants",
+                "user_resource_scopes",
+                "app_user_roles",
+                "app_users",
+                "role_permissions",
+                "roles",
+                "permissions",
+                "categories");
+
+        tablesInDeleteOrder.forEach(table -> jdbcTemplate.update("DELETE FROM " + table));
+    }
+
+    private void seedPermissions() {
         List<Permission> definedPermissions = List.of(
                 permission("ACCESS_ADMIN", "مدیریت دسترسی‌ها و محدوده‌ها"),
                 permission("USER_CREATE", "ایجاد کاربر"),
@@ -136,34 +170,10 @@ public class DataInitializer implements CommandLineRunner {
                 permission("SLA_UPDATE", "به‌روزرسانی قراردادهای SLA"),
                 permission("SLA_DELETE", "حذف قراردادهای SLA"));
 
-        Map<String, Permission> existingPermissions = permissionRepository.findAll().stream()
-                .collect(Collectors.toMap(Permission::getCode, Function.identity()));
-        Set<String> newPermissionCodes = definedPermissions.stream()
-                .map(Permission::getCode)
-                .filter(code -> !existingPermissions.containsKey(code))
-                .collect(Collectors.toSet());
-
-        List<Permission> synchronizedPermissions = definedPermissions.stream()
-                .map(definedPermission -> {
-                    Permission existingPermission = existingPermissions.get(definedPermission.getCode());
-                    if (existingPermission == null) {
-                        return definedPermission;
-                    }
-                    existingPermission.setDescription(definedPermission.getDescription());
-                    return existingPermission;
-                })
-                .toList();
-
-        permissionRepository.saveAll(synchronizedPermissions);
-        return newPermissionCodes;
+        permissionRepository.saveAll(definedPermissions);
     }
-/****************  5dd8e72be2ce4a34a3e69226bd05e106  ****************/
 
-    private void seedRolesIfEmpty() {
-        if (roleRepository.count() > 0) {
-            return;
-        }
-
+    private void seedRoles() {
         Set<Permission> allPermissions = Set.copyOf(permissionRepository.findAll());
         Role customer = role("CUSTOMER", "TICKET_CREATE", "TICKET_READ", "SLA_READ");
         Role teamMember = role(
@@ -180,37 +190,6 @@ public class DataInitializer implements CommandLineRunner {
         roleRepository.saveAll(List.of(customer, teamMember, teamManager));
     }
 
-    private void assignNewPermissionsToDefaultRoles(Set<String> newPermissionCodes) {
-        if (newPermissionCodes.isEmpty()) {
-            return;
-        }
-
-        Map<String, Permission> permissionsByCode = permissionRepository.findAll().stream()
-                .collect(Collectors.toMap(Permission::getCode, Function.identity()));
-
-        addRolePermissions("TEAM_MEMBER", newPermissionCodes, permissionsByCode, Set.of(
-                "TEAM_READ",
-                "MEETING_CREATE", "MEETING_READ", "MEETING_UPDATE",
-                "TASK_READ", "TASK_UPDATE"));
-        addRolePermissions("TEAM_MANAGER", newPermissionCodes, permissionsByCode, newPermissionCodes);
-    }
-
-    private void addRolePermissions(String roleName,
-                                    Set<String> newPermissionCodes,
-                                    Map<String, Permission> permissionsByCode,
-                                    Set<String> defaultPermissionCodes) {
-        roleRepository.findByName(roleName).ifPresent(role -> {
-            Set<Permission> permissions = new HashSet<>(role.getPermissions());
-            defaultPermissionCodes.stream()
-                    .filter(newPermissionCodes::contains)
-                    .map(permissionsByCode::get)
-                    .filter(Objects::nonNull)
-                    .forEach(permissions::add);
-            role.setPermissions(permissions);
-            roleRepository.save(role);
-        });
-    }
-
     /**
      * Seeds the domain users (customers, a manager and members) and assigns each
      * the matching security {@link Role}. Customers now come from the bundled
@@ -222,52 +201,31 @@ public class DataInitializer implements CommandLineRunner {
      * defined in the JSON fixture; {@code manager / manager123} (TEAM_MANAGER →
      * also has ACCESS_ADMIN); all team members use {@code password123}.
      */
-    private void seedAppUsersIfEmpty() throws IOException {
-        Role customerRole = getOrCreateRole("CUSTOMER");
-        Role teamMemberRole = getOrCreateRole("TEAM_MEMBER");
-        Role teamManagerRole = getOrCreateRole("TEAM_MANAGER");
+    private void seedAppUsers() throws IOException {
+        Role customerRole = requireRole("CUSTOMER");
+        Role teamMemberRole = requireRole("TEAM_MEMBER");
+        Role teamManagerRole = requireRole("TEAM_MANAGER");
 
-        if (customerRepository.count() == 0) {
-            seedCustomersFromJson(customerRole);
-        }
+        seedCustomersFromJson(customerRole);
 
-        TeamManager manager = null;
-        if (!appUserRepository.existsByUsernameIgnoreCase("manager")) {
-            manager = new TeamManager();
-            manager.setUsername("manager");
-            manager.setFirstName("مینا");
-            manager.setLastName("مدیر");
-            manager.setEmail("manager@example.com");
-            manager.setPassword(passwordEncoder.encode("manager123"));
-            manager.setDepartment("پشتیبانی");
-            manager.setRoles(Set.of(teamManagerRole));
-        } else {
-            manager = teamManagerRepository.findAll().stream()
-                    .filter(existingManager -> "manager".equalsIgnoreCase(existingManager.getUsername()))
-                    .findFirst()
-                    .orElse(null);
-        }
+        TeamManager manager = new TeamManager();
+        manager.setUsername("manager");
+        manager.setFirstName("مینا");
+        manager.setLastName("مدیر");
+        manager.setEmail("manager@example.com");
+        manager.setPassword(passwordEncoder.encode("manager123"));
+        manager.setDepartment("پشتیبانی");
+        manager.setRoles(Set.of(teamManagerRole));
 
-        if (manager != null) {
-            seedTeamMemberIfMissing(manager, "yazdanparast_m", "مهدی", "یزدان پرست", "sara@mps.mapnagroup.com", "برنامه نویس", teamMemberRole);
-            seedTeamMemberIfMissing(manager, "aghelifar", "مهرنوش", "عاقلی فر", "aghelifar_m@mps.mapnagroup.com", "برنامه نویس", teamMemberRole);
-            seedTeamMemberIfMissing(manager, "Nematollahian_m", "محمد", "نعمت الهیان", "Nematollahian_m@mps.mapnagroup.com", "برنامه نویس", teamMemberRole);
-            seedTeamMemberIfMissing(manager, "Rahmani_mh", "فرشاد رحمانی", "محمد حسین", "sara@mps.mapnagroup.com", "برنامه نویس", teamMemberRole);
-            seedTeamMemberIfMissing(manager, "naji_smh", "سید محمد حسن", "ناجی", "sara@mps.mapnagroup.com", "برنامه نویس", teamMemberRole);
-            seedTeamMemberIfMissing(manager, "Motaghian_m", "ملیگا", "اسمیت", "motaghian_m@mps.mapnagroup.com", "برنامه نویس", teamMemberRole);
-            seedTeamMemberIfMissing(manager, "Gordani_ma", "محمد امین", "گردانی","Gordani_ma@mps.mapnagroup.com", "برنامه نویس", teamMemberRole);
-            seedTeamMemberIfMissing(manager, "Bagherpour_a", "امیر", "باقرپور", "sara@mps.mapnagroup.com", "برنامه نویس", teamMemberRole);
-            teamManagerRepository.save(manager);
-        }
-    }
-
-    private void seedTeamMemberIfMissing(TeamManager manager, String username, String firstName,
-                                         String lastName, String email, String jobTitle, Role role) {
-        if (appUserRepository.existsByUsernameIgnoreCase(username)) {
-            return;
-        }
-
-        manager.addTeamMember(teamMember(username, firstName, lastName, email, jobTitle, role));
+        manager.addTeamMember(teamMember("yazdanparast_m", "مهدی", "یزدان پرست", "sara@mps.mapnagroup.com", "برنامه نویس", teamMemberRole));
+        manager.addTeamMember(teamMember("aghelifar", "مهرنوش", "عاقلی فر", "aghelifar_m@mps.mapnagroup.com", "برنامه نویس", teamMemberRole));
+        manager.addTeamMember(teamMember("Nematollahian_m", "محمد", "نعمت الهیان", "Nematollahian_m@mps.mapnagroup.com", "برنامه نویس", teamMemberRole));
+        manager.addTeamMember(teamMember("Rahmani_mh", "فرشاد رحمانی", "محمد حسین", "sara@mps.mapnagroup.com", "برنامه نویس", teamMemberRole));
+        manager.addTeamMember(teamMember("naji_smh", "سید محمد حسن", "ناجی", "sara@mps.mapnagroup.com", "برنامه نویس", teamMemberRole));
+        manager.addTeamMember(teamMember("Motaghian_m", "ملیگا", "اسمیت", "motaghian_m@mps.mapnagroup.com", "برنامه نویس", teamMemberRole));
+        manager.addTeamMember(teamMember("Gordani_ma", "محمد امین", "گردانی","Gordani_ma@mps.mapnagroup.com", "برنامه نویس", teamMemberRole));
+        manager.addTeamMember(teamMember("Bagherpour_a", "امیر", "باقرپور", "sara@mps.mapnagroup.com", "برنامه نویس", teamMemberRole));
+        teamManagerRepository.save(manager);
     }
 
     /**
@@ -285,6 +243,8 @@ public class DataInitializer implements CommandLineRunner {
             customer.setUsername(seed.getUsername());
             customer.setPassword(passwordEncoder.encode(seed.getPassword()));
             customer.setEmail(seed.getEmail());
+            customer.setFirstName(seed.getFirstName());
+            customer.setLastName(seed.getLastName());
             customer.setCompanyName(seed.getCompanyName());
             customer.setPhone(seed.getPhone());
             customer.setRoles(Set.of(customerRole));
@@ -300,13 +260,11 @@ public class DataInitializer implements CommandLineRunner {
      * saved customer list. {@code createdAt}/{@code updatedAt} from the JSON
      * are not applied —  stamps them itself.
      */
-    private void seedSlaContractsIfEmpty() throws IOException {
-        if (slaContractRepository.count() > 0) {
-            return;
-        }
-
+    private void seedSlaContracts() throws IOException {
         List<SlaContractSeedDto> seeds = readJsonArray("/data/sla_contracts_seed_data_persian.json", SlaContractSeedDto.class);
-        List<Customer> customers = customerRepository.findAll();
+        List<Customer> customers = customerRepository.findAll().stream()
+                .sorted(Comparator.comparing(Customer::getId))
+                .toList();
 
         List<SlaContract> contracts = new ArrayList<>();
         for (SlaContractSeedDto seed : seeds) {
@@ -331,15 +289,17 @@ public class DataInitializer implements CommandLineRunner {
      * but only 3 {@link TeamMember}s are seeded, so it wraps with modulo
      * rather than failing.
      */
-    private void seedTicketsIfEmpty() throws IOException {
-        if (ticketRepository.count() > 0) {
-            return;
-        }
-
+    private void seedTickets() throws IOException {
         List<TicketSeedDto> seeds = readJsonArray("/data/ticket_seed_data.json", TicketSeedDto.class);
-        List<Customer> customers = customerRepository.findAll();
-        List<SlaContract> contracts = slaContractRepository.findAll();
-        List<TeamMember> members = teamMemberRepository.findAll();
+        List<Customer> customers = customerRepository.findAll().stream()
+                .sorted(Comparator.comparing(Customer::getId))
+                .toList();
+        List<SlaContract> contracts = slaContractRepository.findAll().stream()
+                .sorted(Comparator.comparing(SlaContract::getId))
+                .toList();
+        List<TeamMember> members = teamMemberRepository.findAll().stream()
+                .sorted(Comparator.comparing(TeamMember::getId))
+                .toList();
 
         if (customers.isEmpty()) {
             return;
@@ -372,11 +332,7 @@ public class DataInitializer implements CommandLineRunner {
         ticketRepository.saveAll(tickets);
     }
 
-    private void seedTeamsIfEmpty() {
-        if (teamRepository.count() > 0) {
-            return;
-        }
-
+    private void seedTeams() {
         List<TeamMember> members = sortedTeamMembers();
         TeamManager manager = teamManagerRepository.findAll().stream().findFirst().orElse(null);
         if (manager == null || members.isEmpty()) {
@@ -403,11 +359,7 @@ public class DataInitializer implements CommandLineRunner {
         teamMembershipRepository.saveAll(memberships);
     }
 
-    private void seedMeetingsIfEmpty() {
-        if (meetingRepository.count() > 0) {
-            return;
-        }
-
+    private void seedMeetings() {
         List<Team> teams = teamRepository.findAll().stream()
                 .filter(Team::isActive)
                 .sorted(Comparator.comparing(Team::getId))
@@ -489,12 +441,7 @@ public class DataInitializer implements CommandLineRunner {
         meetingRepository.saveAll(meetings);
     }
 
-    private void seedMeetingTasksIfEmpty() {
-        boolean meetingTasksExist = taskRepository.findAll().stream().anyMatch(task -> task.getMeeting() != null);
-        if (meetingTasksExist) {
-            return;
-        }
-
+    private void seedMeetingTasks() {
         List<Meeting> meetings = meetingRepository.findAll().stream()
                 .filter(Meeting::isActive)
                 .sorted(Comparator.comparing(Meeting::getStartTime))
@@ -651,9 +598,9 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 
-    private Role getOrCreateRole(String name) {
+    private Role requireRole(String name) {
         return roleRepository.findByName(name)
-                .orElseGet(() -> roleRepository.save(new Role(name)));
+                .orElseThrow(() -> new IllegalStateException("Required seeded role is missing: " + name));
     }
 
     private Permission permission(String code, String description) {
@@ -696,6 +643,8 @@ public class DataInitializer implements CommandLineRunner {
         private String password;
         private String email;
         private Set<String> roles; // not used - this project's Role taxonomy doesn't match
+        private String firstName;
+        private String lastName;
         private String companyName;
         private String phone;
     }
