@@ -19,7 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-@CrossOrigin
+@CrossOrigin(origins = {"*"})
 @RestController
 @RequestMapping("/api/tickets")
 @RequiredArgsConstructor
@@ -145,6 +145,7 @@ public class TicketController {
         ticketService.detach(attachmentId);
         return ResponseEntity.noContent().build();
     }
+
     @GetMapping("/attachments/{attachmentId}")
     @PreAuthorize("hasAuthority('TICKET_READ')")
     public ResponseEntity<Resource> getFile(@PathVariable Long attachmentId) {
