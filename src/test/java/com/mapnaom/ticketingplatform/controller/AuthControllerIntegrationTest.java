@@ -93,8 +93,20 @@ class AuthControllerIntegrationTest {
 
     @Test
     void loginPreflightAcceptsFrontendLanOrigin() throws Exception {
-        String origin = "http://172.31.74.162:3000";
+        assertLoginPreflightAccepted("http://172.31.74.162:3000");
+    }
 
+    @Test
+    void loginPreflightAcceptsFrontendDevelopmentOrigin() throws Exception {
+        assertLoginPreflightAccepted("http://localhost:3000");
+    }
+
+    @Test
+    void loginPreflightAcceptsFrontendProductionOrigin() throws Exception {
+        assertLoginPreflightAccepted("http://155.117.13.30");
+    }
+
+    private void assertLoginPreflightAccepted(String origin) throws Exception {
         mockMvc.perform(options("/api/auth/authenticate")
                         .header("Origin", origin)
                         .header("Access-Control-Request-Method", "POST")
