@@ -22,7 +22,6 @@ import java.util.List;
     methods:
         - 
  */
-@CrossOrigin(origins = {"http://localhost:3000", "http://127.0.0.1:3000","http://155.117.13.30:3000","http://155.117.13.30:80"})
 @RestController
 @RequestMapping("/api/admin/access")
 @RequiredArgsConstructor

@@ -22,7 +22,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.nio.file.AccessDeniedException;
 import java.util.List;
 
-@CrossOrigin(origins = {"*"})
 
 @RestController
 @RequestMapping("/api/team-members")

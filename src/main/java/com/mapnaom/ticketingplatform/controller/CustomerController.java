@@ -22,7 +22,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-@CrossOrigin(origins = {"*"})
 @RestController
 @RequestMapping("/api/customers")
 @RequiredArgsConstructor
