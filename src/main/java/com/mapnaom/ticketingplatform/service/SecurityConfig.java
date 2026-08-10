@@ -32,8 +32,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserDetailsService userDetailsService;
 
-    @Value("${app.cors.allowed-origin-patterns}")
-    private String allowedOriginPatterns;
+
 
     private static final String CUSTOMER = "CUSTOMER";
     private static final String TEAM_MEMBER = "TEAM_MEMBER";
