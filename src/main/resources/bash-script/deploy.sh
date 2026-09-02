@@ -1,568 +1,374 @@
-#!/usr/bin/env bash
+#!/bin/bash
 #===============================================================================
-# Unattended deployment: Ticketing platform (React frontend + Spring Boot API)
-# Target: AlmaLinux 10.0 / IP-only host (155.117.13.33)
-# Usage : sudo bash ./deploy.sh
-# Re-run safe (idempotent).
+# FULL AUTOMATIC PRODUCTION DEPLOYMENT SCRIPT
+# AlmaLinux 9 | Spring Boot (Java 21) + PostgreSQL + React (CRA) + nginx
+#
+# Host:     155.117.13.33
+# Backend:  https://github.com/yazdan-centos/ticketing-platform.git
+# Frontend: https://github.com/yazdan-centos/collaboration2.git
+#
+# Usage (as root on the target host):
+#   ./deploy.sh
+#
+# The script is idempotent: safe to re-run for updates (git pull + rebuild).
+# It does NOT drop the database on re-runs (data-preserving deployment).
 #===============================================================================
-set -Eeuo pipefail
+set -euo pipefail
 
-#------------------------------- CONFIGURATION ---------------------------------
-: "${APP_USER:=ticketing}"
-: "${APP_ROOT:=/opt/ticketing}"
-: "${ENV_DIR:=/etc/ticketing}"
-: "${LOG_DIR:=/var/log/ticketing}"
+#------------------------------------------------------------------------------
+# CONFIGURATION
+#------------------------------------------------------------------------------
+BACKEND_REPO="https://github.com/yazdan-centos/ticketing-platform.git"
+FRONTEND_REPO="https://github.com/yazdan-centos/collaboration2.git"
 
-# Repository contents are opposite the labels supplied in the original request:
-# collaboration2 is React, while ticketing-platform is Spring Boot.
-: "${FRONTEND_REPO:=https://github.com/yazdan-centos/collaboration2.git}"
-: "${BACKEND_REPO:=https://github.com/yazdan-centos/ticketing-platform.git}"
-: "${FRONTEND_BRANCH:=}"          # empty = remote default branch
-: "${BACKEND_BRANCH:=}"
+SERVER_IP="155.117.13.33"
+SSH_PORT="9011"
 
-: "${DB_NAME:=${POSTGRES_DB:-ticketing}}"
-: "${DB_USER:=${POSTGRES_USER:-ticketing}}"
-: "${DB_HOST:=127.0.0.1}"
-: "${DB_PORT:=5432}"
-: "${DB_PASS:=${POSTGRES_PASSWORD:-}}" # empty = generate once and persist
+BACKEND_BIND="127.0.0.1"          # backend is only reachable through nginx
+BACKEND_PORT="8080"
 
-: "${BACKEND_PORT:=8080}"
-: "${BACKEND_BIND:=127.0.0.1}"
-: "${FRONTEND_PORT:=3000}"
-: "${HTTP_PORT:=80}"
-: "${SSH_PORT:=9011}"
-: "${PUBLIC_IP:=155.117.13.33}"
+APP_USER="appuser"
+APP_DIR="/opt/ticketing-platform"
+BACKEND_DIR="${APP_DIR}/backend"
+FRONTEND_DIR="${APP_DIR}/frontend"
+NGINX_ROOT="/usr/share/nginx/html"
+SERVICE_NAME="ticketing-platform"
 
-: "${JAVA_PKG:=java-21-openjdk-devel}"
-: "${NODE_MAJOR:=22}"
-: "${JPA_DDL_AUTO:=validate}"     # Flyway owns the production schema
-: "${SPRING_PROFILE:=prod}"
-: "${NODE_BUILD_MEM:=2048}"
-: "${APP_JWT_SECRET:=}"           # empty = generate once and persist
-: "${MAX_UPLOAD_SIZE:=25MB}"
-: "${NGINX_MAX_UPLOAD_SIZE:=25m}"
+JAVA_VERSION="21"
+NODE_MAJOR="20"
 
-BACKEND_DIR="$APP_ROOT/backend"
-FRONTEND_DIR="$APP_ROOT/frontend"
-FRONTEND_RELEASE_ROOT="$APP_ROOT/releases/frontend"
-FRONTEND_CURRENT="$APP_ROOT/frontend-current"
-DATA_DIR="/var/lib/ticketing"
-UPLOAD_DIR="$DATA_DIR/uploads"
-BACKEND_SERVICE=ticketing-backend
-FRONTEND_SERVICE=ticketing-frontend
-DEPLOY_LOG="$LOG_DIR/deploy-$(date +%Y%m%d-%H%M%S).log"
-if [[ "$HTTP_PORT" == 80 ]]; then
-  PUBLIC_ORIGIN="http://${PUBLIC_IP}"
+# Must match src/main/resources/application.properties of the backend
+DB_NAME="ticketing_platform_db"
+DB_USER="postgres"
+DB_PASS='sgsec!1390'
+DB_HOST="localhost"
+DB_PORT="5432"
+
+PGDATA="/var/lib/pgsql/data"
+
+#------------------------------------------------------------------------------
+# HELPERS
+#------------------------------------------------------------------------------
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BLUE='\033[0;34m'; NC='\033[0m'
+log()   { echo -e "${BLUE}[$(date +'%Y-%m-%d %H:%M:%S')] INFO:${NC} $1"; }
+warn()  { echo -e "${YELLOW}[$(date +'%Y-%m-%d %H:%M:%S')] WARN:${NC} $1"; }
+error() { echo -e "${RED}[$(date +'%Y-%m-%d %H:%M:%S')] ERROR:${NC} $1"; exit 1; }
+
+# Escape a value as a safe single-quoted SQL literal ('' doubling).
+sql_literal() {
+    local value="$1"
+    printf "'%s'" "${value//\'/\'\'}"
+}
+
+# Run psql as the postgres OS user from a directory it can read
+# (avoids: could not change directory to "/root": Permission denied).
+postgres_exec() {
+    (cd /var/lib/pgsql && sudo -u postgres -H psql -v ON_ERROR_STOP=1 "$@")
+}
+
+[[ $EUID -ne 0 ]] && error "This script must be run as root."
+
+log "Starting full deployment on ${SERVER_IP} (AlmaLinux 9)..."
+
+#===============================================================================
+# PHASE 1: SYSTEM PACKAGES
+#===============================================================================
+log "Updating system packages..."
+dnf update -y
+
+log "Installing base dependencies (git, nginx, Java ${JAVA_VERSION}, PostgreSQL)..."
+dnf install -y git curl wget tar policycoreutils-python-utils firewalld nginx \
+    java-${JAVA_VERSION}-openjdk java-${JAVA_VERSION}-openjdk-devel \
+    postgresql-server postgresql-contrib
+
+if ! command -v node &>/dev/null || [[ "$(node -v | sed 's/^v//' | cut -d'.' -f1)" -lt ${NODE_MAJOR} ]]; then
+    log "Installing Node.js ${NODE_MAJOR}.x..."
+    curl -fsSL https://rpm.nodesource.com/setup_${NODE_MAJOR}.x | bash -
+    dnf install -y nodejs
 else
-  PUBLIC_ORIGIN="http://${PUBLIC_IP}:${HTTP_PORT}"
+    log "Node.js $(node -v) already installed."
 fi
 
-#--------------------------------- HELPERS -------------------------------------
-log()  { printf '\n\033[1;34m==> %s\033[0m\n' "$*"; }
-info() { printf '    %s\n' "$*"; }
-warn() { printf '\033[1;33m[warn]\033[0m %s\n' "$*" >&2; }
-die()  { printf '\033[1;31m[fail]\033[0m %s\n' "$*" >&2; exit 1; }
+#===============================================================================
+# PHASE 2: POSTGRESQL (init, password, auth, readiness, database)
+#===============================================================================
+if [[ ! -f "${PGDATA}/PG_VERSION" ]]; then
+    log "Initializing PostgreSQL cluster..."
+    postgresql-setup --initdb
+fi
+systemctl enable postgresql --now
 
-write_file() {
-  local target="$1" mode="$2" owner="$3" group="$4"
-  local temporary="${target}.new"
-  install -o "$owner" -g "$group" -m "$mode" /dev/null "$temporary"
-  cat > "$temporary"
-  mv -f "$temporary" "$target"
-}
-
-on_error() {
-  local rc=$? line=$1
-  printf '\n\033[1;31m[fail]\033[0m aborted at line %s (exit %s). Log: %s\n' "$line" "$rc" "$DEPLOY_LOG" >&2
-  exit "$rc"
-}
-trap 'on_error $LINENO' ERR
-
-[[ $EUID -eq 0 ]] || die "must run as root"
-[[ -f /etc/almalinux-release || -f /etc/redhat-release ]] || warn "not an EL-family host; continuing anyway"
-[[ "$APP_USER" =~ ^[a-z_][a-z0-9_-]*\$?$ ]] || die "APP_USER is not a valid service account name"
-[[ "$DB_NAME" =~ ^[a-z_][a-z0-9_]*$ ]] || die "DB_NAME must be a lowercase PostgreSQL identifier"
-[[ "$DB_USER" =~ ^[a-z_][a-z0-9_]*$ ]] || die "DB_USER must be a lowercase PostgreSQL identifier"
-[[ "$DB_HOST" =~ ^[A-Za-z0-9._-]+$ ]] || die "DB_HOST contains invalid characters"
-[[ "$PUBLIC_IP" =~ ^[0-9]{1,3}(\.[0-9]{1,3}){3}$ ]] || die "PUBLIC_IP must be an IPv4 address"
-[[ "$MAX_UPLOAD_SIZE" =~ ^[0-9]+(KB|MB|GB)$ ]] || die "MAX_UPLOAD_SIZE must look like 25MB"
-[[ "$NGINX_MAX_UPLOAD_SIZE" =~ ^[0-9]+[kKmMgG]$ ]] || die "NGINX_MAX_UPLOAD_SIZE must look like 25m"
-[[ "$DB_PORT" =~ ^[0-9]+$ && "$BACKEND_PORT" =~ ^[0-9]+$ && "$FRONTEND_PORT" =~ ^[0-9]+$ \
-   && "$HTTP_PORT" =~ ^[0-9]+$ && "$SSH_PORT" =~ ^[0-9]+$ ]] \
-  || die "all configured ports must be numeric"
-for port in "$DB_PORT" "$BACKEND_PORT" "$FRONTEND_PORT" "$HTTP_PORT" "$SSH_PORT"; do
-  (( 10#$port >= 1 && 10#$port <= 65535 )) || die "all configured ports must be between 1 and 65535"
+log "Waiting for PostgreSQL (peer auth) to accept connections..."
+for i in {1..30}; do
+    if postgres_exec -c "SELECT 1;" &>/dev/null; then break; fi
+    [[ $i -eq 30 ]] && error "PostgreSQL did not become ready via peer auth."
+    sleep 1
 done
 
-mkdir -p "$LOG_DIR" "$ENV_DIR" "$APP_ROOT"
-chmod 750 "$ENV_DIR"
-exec > >(tee -a "$DEPLOY_LOG") 2>&1
-log "Deployment started $(date -Is) — log: $DEPLOY_LOG"
+# 1) Set the postgres password FIRST, while peer auth still works.
+#    Force scram-sha-256 hashing in the same session: PostgreSQL 13 defaults
+#    to md5, which would not satisfy the scram-sha-256 pg_hba rules below.
+log "Setting password for role '${DB_USER}'..."
+postgres_exec -c "SET password_encryption = 'scram-sha-256'; ALTER USER ${DB_USER} WITH ENCRYPTED PASSWORD $(sql_literal "${DB_PASS}");"
 
-#--------------------------- 1. SYSTEM DEPENDENCIES ----------------------------
-log "Installing base packages"
-dnf -y install dnf-plugins-core >/dev/null
-dnf -y install \
-  git curl wget tar unzip which policycoreutils-python-utils \
-  nginx postgresql-server postgresql-contrib \
-  "$JAVA_PKG" firewalld openssl rsync procps-ng
-
-node_major() {
-  command -v node >/dev/null 2>&1 || { echo 0; return; }
-  local version
-  if ! version=$(node -v 2>/dev/null); then
-    echo 0
-    return
-  fi
-  sed 's/^v\([0-9]*\).*/\1/' <<< "$version"
-}
-
-install_nodejs() {
-  local current
-  current=$(node_major)
-  if (( current == 0 )) && command -v node >/dev/null 2>&1; then
-    warn "installed Node.js is broken; synchronizing c-ares and libuv"
-    dnf -y upgrade c-ares libuv --disablerepo='nodesource*'
-    current=$(node_major)
-  fi
-  if (( current >= 18 )) && command -v npm >/dev/null 2>&1; then
-    info "node $(node -v) / npm $(npm -v) already present"
-    return
-  fi
-
-  info "installing Node.js from AlmaLinux repositories"
-  if dnf -y install nodejs npm c-ares libuv --disablerepo='nodesource*' >/dev/null 2>&1 \
-     && (( $(node_major) >= 18 )) && command -v npm >/dev/null 2>&1; then
-    info "node $(node -v) / npm $(npm -v)"
-    return
-  fi
-
-  warn "distro Node.js unavailable; falling back to NodeSource ${NODE_MAJOR}.x"
-  dnf -y remove nodejs-full-i18n nodejs-docs npm nodejs >/dev/null 2>&1 || true
-  curl -fsSL "https://rpm.nodesource.com/setup_${NODE_MAJOR}.x" | bash -
-  dnf -y install nodejs --allowerasing
-  (( $(node_major) >= 18 )) && command -v npm >/dev/null 2>&1 \
-    || die "Node.js installation failed"
-  info "node $(node -v) / npm $(npm -v)"
-}
-log "Ensuring Node.js toolchain"
-install_nodejs
-
-log "Ensuring static file server for the frontend"
-npm ls -g --depth=0 serve >/dev/null 2>&1 || npm install -g serve@14 --no-fund --no-audit
-
-#------------------------------ 2. SERVICE USER --------------------------------
-log "Ensuring service account: $APP_USER"
-id -u "$APP_USER" >/dev/null 2>&1 || \
-  useradd --system --create-home --home-dir "/home/$APP_USER" --shell /sbin/nologin "$APP_USER"
-mkdir -p "$BACKEND_DIR" "$FRONTEND_DIR" "$LOG_DIR"
-install -d -o "$APP_USER" -g "$APP_USER" -m 0750 \
-  "$DATA_DIR" "$UPLOAD_DIR" "$APP_ROOT/releases" "$FRONTEND_RELEASE_ROOT"
-chown -R "$APP_USER:$APP_USER" "$APP_ROOT" "$LOG_DIR"
-
-#------------------------------ 3. FIREWALL / SELINUX --------------------------
-log "Configuring firewalld (SSH ${SSH_PORT}, HTTP ${HTTP_PORT})"
-if systemctl is-active --quiet firewalld; then
-  mapfile -t FIREWALL_ZONES < <(firewall-cmd --get-active-zones | awk '/^[^[:space:]]/{print $1}')
-  if (( ${#FIREWALL_ZONES[@]} == 0 )); then
-    FIREWALL_ZONES=("$(firewall-cmd --get-default-zone)")
-  fi
-  for FIREWALL_ZONE in "${FIREWALL_ZONES[@]}"; do
-    firewall-cmd --permanent --zone="$FIREWALL_ZONE" --add-port="${SSH_PORT}/tcp" >/dev/null
-    firewall-cmd --permanent --zone="$FIREWALL_ZONE" --add-port="${SSH_PORT}/udp" >/dev/null
-    firewall-cmd --permanent --zone="$FIREWALL_ZONE" --add-port="${HTTP_PORT}/tcp" >/dev/null
-  done
-  firewall-cmd --reload >/dev/null
+# 2) Ensure TCP binding on both loopbacks. Explicit addresses are used instead
+#    of 'localhost' because /etc/hosts may map localhost only to ::1, which
+#    would leave 127.0.0.1 unbound and break pg_isready/JDBC over IPv4.
+if grep -Eq "^\s*listen_addresses" "${PGDATA}/postgresql.conf"; then
+    sed -i -E "s|^\s*listen_addresses\s*=.*|listen_addresses = '127.0.0.1, ::1'|" "${PGDATA}/postgresql.conf"
 else
-  FIREWALL_ZONE=$(firewall-offline-cmd --get-default-zone)
-  firewall-offline-cmd --zone="$FIREWALL_ZONE" --add-port="${SSH_PORT}/tcp" >/dev/null
-  firewall-offline-cmd --zone="$FIREWALL_ZONE" --add-port="${SSH_PORT}/udp" >/dev/null
-  firewall-offline-cmd --zone="$FIREWALL_ZONE" --add-port="${HTTP_PORT}/tcp" >/dev/null
-  systemctl enable --now firewalld >/dev/null
-fi
-systemctl enable firewalld >/dev/null
-info "app ports ${BACKEND_PORT}/${FRONTEND_PORT} intentionally NOT exposed (loopback only)"
-
-if command -v getenforce >/dev/null && [[ $(getenforce) != Disabled ]]; then
-  log "Allowing Nginx to proxy to loopback (SELinux)"
-  setsebool -P httpd_can_network_connect 1
+    echo "listen_addresses = '127.0.0.1, ::1'" >> "${PGDATA}/postgresql.conf"
 fi
 
-#------------------------------ 4. POSTGRESQL ----------------------------------
-log "Initialising PostgreSQL"
-PGDATA=$(systemctl show -p Environment postgresql.service | sed -n 's/.*PGDATA=\([^ ]*\).*/\1/p')
-PGDATA="${PGDATA:-/var/lib/pgsql/data}"
-if [[ ! -f "$PGDATA/PG_VERSION" ]]; then
-  /usr/bin/postgresql-setup --initdb
+# Make scram the cluster default for any future password changes.
+if grep -Eq "^\s*password_encryption" "${PGDATA}/postgresql.conf"; then
+    sed -i -E "s|^\s*password_encryption\s*=.*|password_encryption = scram-sha-256|" "${PGDATA}/postgresql.conf"
 else
-  info "cluster already initialised at $PGDATA"
+    echo "password_encryption = scram-sha-256" >> "${PGDATA}/postgresql.conf"
 fi
 
-PG_HBA="$PGDATA/pg_hba.conf"
-cp -n "$PG_HBA" "${PG_HBA}.orig"
-sed -ri 's@^(host[[:space:]]+all[[:space:]]+all[[:space:]]+127\.0\.0\.1/32[[:space:]]+)(ident|peer|trust|md5|password|scram-sha-256)@\1md5@' "$PG_HBA"
-sed -ri 's@^(host[[:space:]]+all[[:space:]]+all[[:space:]]+::1/128[[:space:]]+)(ident|peer|trust|md5|password|scram-sha-256)@\1md5@' "$PG_HBA"
-grep -qE '^password_encryption' "$PGDATA/postgresql.conf" \
-  && sed -ri "s@^#?password_encryption.*@password_encryption = md5@" "$PGDATA/postgresql.conf" \
-  || echo "password_encryption = md5" >> "$PGDATA/postgresql.conf"
-if grep -qE '^[[:space:]]*#?[[:space:]]*listen_addresses[[:space:]]*=' "$PGDATA/postgresql.conf"; then
-  sed -ri "0,/^[[:space:]]*#?[[:space:]]*listen_addresses[[:space:]]*=.*$/s//listen_addresses = '127.0.0.1,::1'/" \
-    "$PGDATA/postgresql.conf"
-else
-  echo "listen_addresses = '127.0.0.1,::1'" >> "$PGDATA/postgresql.conf"
-fi
+# 3) Switch host auth (127.0.0.1 / ::1) to scram-sha-256.
+sed -i -E 's|^(host\s+all\s+all\s+127\.0\.0\.1/32\s+)(ident\|peer\|trust\|md5)|\1scram-sha-256|' "${PGDATA}/pg_hba.conf"
+sed -i -E 's|^(host\s+all\s+all\s+::1/128\s+)(ident\|peer\|trust\|md5)|\1scram-sha-256|' "${PGDATA}/pg_hba.conf"
 
-systemctl enable postgresql >/dev/null
 systemctl restart postgresql
-for _ in {1..30}; do
-  runuser -u postgres -- pg_isready -q -h "$DB_HOST" -p "$DB_PORT" && break
-  sleep 1
+
+log "Polling pg_isready on ${DB_HOST}:${DB_PORT}..."
+for i in {1..30}; do
+    if (cd /var/lib/pgsql && sudo -u postgres -H pg_isready -h 127.0.0.1 -p "${DB_PORT}") &>/dev/null; then break; fi
+    [[ $i -eq 30 ]] && error "PostgreSQL did not become ready on TCP ${DB_PORT}."
+    sleep 1
 done
-runuser -u postgres -- pg_isready -q -h "$DB_HOST" -p "$DB_PORT" \
-  || die "PostgreSQL did not become ready on ${DB_HOST}:${DB_PORT}"
 
-# Password: reuse the persisted one so re-runs never break existing config.
-if [[ -z "$DB_PASS" && -f "$ENV_DIR/db.env" ]]; then
-  DB_PASS=$(grep -E '^DB_PASS=' "$ENV_DIR/db.env" | cut -d= -f2- || true)
-fi
-[[ -n "$DB_PASS" ]] || DB_PASS=$(openssl rand -base64 30 | tr -d '/+=' | cut -c1-28)
-[[ "$DB_PASS" =~ ^[A-Za-z0-9._~!@%^+=,-]+$ ]] \
-  || die "DB_PASS may contain only letters, digits, and ._~!@%^+=,-"
-
-psql_admin() { runuser -u postgres -- psql -v ON_ERROR_STOP=1 -qtAX -c "$1"; }
-log "Ensuring PostgreSQL login role '$DB_USER' and database '$DB_NAME'"
-if [[ $(psql_admin "SELECT 1 FROM pg_roles WHERE rolname='${DB_USER}'") != 1 ]]; then
-  psql_admin "CREATE ROLE ${DB_USER} LOGIN PASSWORD '${DB_PASS}'" >/dev/null
+# 4) Create the application database if missing (idempotent, non-destructive).
+if ! postgres_exec -tAc "SELECT 1 FROM pg_database WHERE datname = $(sql_literal "${DB_NAME}");" | grep -q 1; then
+    log "Creating database \"${DB_NAME}\" owned by ${DB_USER}..."
+    postgres_exec -c "CREATE DATABASE \"${DB_NAME}\" OWNER ${DB_USER};"
 else
-  psql_admin "ALTER ROLE ${DB_USER} WITH LOGIN PASSWORD '${DB_PASS}'" >/dev/null
+    log "Database \"${DB_NAME}\" already exists; preserving data."
 fi
-[[ $(psql_admin "SELECT left(rolpassword, 3) FROM pg_authid WHERE rolname='${DB_USER}'") == md5 ]] \
-  || die "PostgreSQL role '$DB_USER' was not stored with MD5 password encryption"
-if [[ $(psql_admin "SELECT 1 FROM pg_database WHERE datname='${DB_NAME}'") != 1 ]]; then
-  runuser -u postgres -- createdb -O "$DB_USER" -E UTF8 "$DB_NAME"
-fi
-psql_admin "GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO ${DB_USER}" >/dev/null
-runuser -u postgres -- psql -v ON_ERROR_STOP=1 -qtAX -d "$DB_NAME" \
-  -c "GRANT ALL ON SCHEMA public TO ${DB_USER}" >/dev/null
 
-write_file "$ENV_DIR/db.env" 0600 root root <<EOF
-DB_NAME=${DB_NAME}
-DB_USER=${DB_USER}
-DB_PASS=${DB_PASS}
-DB_HOST=${DB_HOST}
-DB_PORT=${DB_PORT}
+# 5) Verify an application-style TCP login with the password.
+log "Verifying TCP login as ${DB_USER}..."
+PGPASSWORD="${DB_PASS}" psql -h 127.0.0.1 -p "${DB_PORT}" -U "${DB_USER}" -d "${DB_NAME}" -c "SELECT 1;" >/dev/null \
+    || error "TCP login to PostgreSQL failed. Check pg_hba.conf and password."
+log "PostgreSQL ready. Database: ${DB_NAME}"
+
+#===============================================================================
+# PHASE 3: APPLICATION USER & DIRECTORIES
+#===============================================================================
+if ! id "${APP_USER}" &>/dev/null; then
+    useradd -r -m -s /bin/bash -d "${APP_DIR}" "${APP_USER}"
+fi
+mkdir -p "${APP_DIR}"
+chown -R "${APP_USER}:${APP_USER}" "${APP_DIR}"
+
+#===============================================================================
+# PHASE 4: BACKEND (clone/pull, configure, build)
+#===============================================================================
+log "Cloning/updating backend repository..."
+if [[ -d "${BACKEND_DIR}/.git" ]]; then
+    sudo -u "${APP_USER}" git -C "${BACKEND_DIR}" fetch --all --prune
+    sudo -u "${APP_USER}" git -C "${BACKEND_DIR}" reset --hard origin/HEAD
+else
+    rm -rf "${BACKEND_DIR}"
+    sudo -u "${APP_USER}" git clone "${BACKEND_REPO}" "${BACKEND_DIR}"
+fi
+
+log "Writing deployment profile (application-deploy.properties)..."
+cat > "${BACKEND_DIR}/src/main/resources/application-deploy.properties" << EOF
+# Bind only on loopback; nginx is the public entry point
+server.address=${BACKEND_BIND}
+server.port=${BACKEND_PORT}
+# PostgreSQL connection for the production host
+spring.datasource.url=jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+spring.datasource.username=${DB_USER}
+spring.datasource.password=${DB_PASS}
+spring.datasource.driverClassName=org.postgresql.Driver
+# Keep schema in sync without destroying data
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+# Quiet SQL logging in production
+spring.jpa.show-sql=false
 EOF
+chown "${APP_USER}:${APP_USER}" "${BACKEND_DIR}/src/main/resources/application-deploy.properties"
 
-#--------------------------- 5. SOURCE CHECKOUT --------------------------------
-clone_or_update() {
-  local repo="$1" dir="$2" branch="$3"
-  if [[ -d "$dir/.git" ]] \
-     && [[ $(runuser -u "$APP_USER" -- git -C "$dir" remote get-url origin) != "$repo" ]]; then
-    warn "repository URL changed for $dir; replacing the old checkout"
-    rm -rf "$dir"
-  fi
-  if [[ -d "$dir/.git" ]]; then
-    info "updating $(basename "$dir")"
-    runuser -u "$APP_USER" -- git -C "$dir" remote set-url origin "$repo"
-    runuser -u "$APP_USER" -- git -C "$dir" fetch --prune --tags origin
-  else
-    info "cloning $repo"
-    rm -rf "$dir"; mkdir -p "$dir"; chown "$APP_USER:$APP_USER" "$dir"
-    runuser -u "$APP_USER" -- git clone --quiet "$repo" "$dir"
-  fi
-  if [[ -z "$branch" ]]; then
-    branch=$(runuser -u "$APP_USER" -- git -C "$dir" remote show origin \
-             | sed -n 's/.*HEAD branch: //p' | head -1)
-    branch="${branch:-main}"
-  fi
-  runuser -u "$APP_USER" -- git -C "$dir" checkout -q -B "$branch" "origin/$branch"
-  runuser -u "$APP_USER" -- git -C "$dir" reset -q --hard "origin/$branch"
-  runuser -u "$APP_USER" -- git -C "$dir" clean -qfd -e node_modules -e target -e build/libs
-  info "$(basename "$dir") @ $branch $(runuser -u "$APP_USER" -- git -C "$dir" rev-parse --short HEAD)"
-}
+log "Building backend with Maven wrapper (Java ${JAVA_VERSION})..."
+JAVA_HOME_DIR="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+cd "${BACKEND_DIR}"
+chmod +x ./mvnw
+sudo -u "${APP_USER}" env JAVA_HOME="${JAVA_HOME_DIR}" ./mvnw -q -DskipTests clean package
 
-log "Fetching backend sources"
-clone_or_update "$BACKEND_REPO" "$BACKEND_DIR" "$BACKEND_BRANCH"
-log "Fetching frontend sources"
-clone_or_update "$FRONTEND_REPO" "$FRONTEND_DIR" "$FRONTEND_BRANCH"
+JAR_FILE="$(ls -1 "${BACKEND_DIR}"/target/*.jar 2>/dev/null | grep -v '\.original$' | head -n1)"
+[[ -z "${JAR_FILE}" ]] && error "Backend build produced no JAR in ${BACKEND_DIR}/target."
+log "Backend JAR: ${JAR_FILE}"
 
-[[ -f "$BACKEND_DIR/pom.xml" || -f "$BACKEND_DIR/gradlew" ]] \
-  || die "BACKEND_REPO is not a Maven/Gradle application: $BACKEND_REPO"
-[[ -f "$FRONTEND_DIR/package.json" ]] \
-  || die "FRONTEND_REPO is not a Node application: $FRONTEND_REPO"
-
-# Git on Linux is case-sensitive. Keep deployment compatible with the current
-# repository, which tracks Logo.png while Sidebar.jsx still imports LOGO.png.
-if [[ -f "$FRONTEND_DIR/src/assets/img/Logo.png" \
-   && -f "$FRONTEND_DIR/src/components/Sidebar.jsx" ]]; then
-  sed -i "s@../assets/img/LOGO\\.png@../assets/img/Logo.png@g" \
-    "$FRONTEND_DIR/src/components/Sidebar.jsx"
-fi
-
-#--------------------------- 6. BACKEND BUILD ----------------------------------
-log "Building Spring Boot backend"
-JAVA_HOME=$(dirname "$(dirname "$(readlink -f "$(command -v javac)")")")
-export JAVA_HOME
-info "JAVA_HOME=$JAVA_HOME"
-
-build_backend() {
-  cd "$BACKEND_DIR"
-  if [[ -f ./mvnw ]]; then
-    chmod +x ./mvnw
-    runuser -u "$APP_USER" -- env HOME="/home/$APP_USER" JAVA_HOME="$JAVA_HOME" \
-      ./mvnw -B -q -DskipTests clean package
-  elif [[ -f pom.xml ]]; then
-    command -v mvn >/dev/null || dnf -y install maven
-    runuser -u "$APP_USER" -- env HOME="/home/$APP_USER" JAVA_HOME="$JAVA_HOME" \
-      mvn -B -q -DskipTests clean package
-  elif [[ -f ./gradlew ]]; then
-    chmod +x ./gradlew
-    runuser -u "$APP_USER" -- env HOME="/home/$APP_USER" JAVA_HOME="$JAVA_HOME" \
-      ./gradlew --no-daemon -q clean bootJar -x test
-  else
-    die "no Maven or Gradle build found in $BACKEND_DIR"
-  fi
-}
-build_backend
-
-BACKEND_JAR=$(find "$BACKEND_DIR" \( -path '*/target/*.jar' -o -path '*/build/libs/*.jar' \) \
-  ! -name '*-plain.jar' ! -name '*sources*' ! -name '*javadoc*' -printf '%T@ %p\n' \
-  | sort -rn | head -1 | cut -d' ' -f2-)
-[[ -n "$BACKEND_JAR" ]] || die "build produced no runnable jar"
-install -o "$APP_USER" -g "$APP_USER" -m 0644 "$BACKEND_JAR" "$APP_ROOT/backend-app.jar.new"
-mv -f "$APP_ROOT/backend-app.jar.new" "$APP_ROOT/backend-app.jar"
-info "artifact: $(basename "$BACKEND_JAR")"
-
-if [[ -z "$APP_JWT_SECRET" && -f "$ENV_DIR/backend.env" ]]; then
-  APP_JWT_SECRET=$(grep -E '^APP_JWT_SECRET=' "$ENV_DIR/backend.env" | cut -d= -f2- || true)
-fi
-[[ -n "$APP_JWT_SECRET" ]] || APP_JWT_SECRET=$(openssl rand -base64 48 | tr -d '\n')
-[[ "$APP_JWT_SECRET" =~ ^[A-Za-z0-9+/=]+$ ]] || die "APP_JWT_SECRET must be standard Base64"
-
-write_file "$ENV_DIR/backend.env" 0640 root "$APP_USER" <<EOF
-SPRING_PROFILES_ACTIVE=${SPRING_PROFILE}
-SERVER_PORT=${BACKEND_PORT}
-SERVER_ADDRESS=${BACKEND_BIND}
-SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
-SPRING_DATASOURCE_USERNAME=${DB_USER}
-SPRING_DATASOURCE_PASSWORD=${DB_PASS}
-SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
-SPRING_JPA_HIBERNATE_DDL_AUTO=${JPA_DDL_AUTO}
-SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
-SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE=${MAX_UPLOAD_SIZE}
-SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE=${MAX_UPLOAD_SIZE}
-APP_JWT_SECRET=${APP_JWT_SECRET}
-APP_CORS_ALLOWED_ORIGIN_PATTERNS=${PUBLIC_ORIGIN}
-FILE_UPLOAD_DIR=${UPLOAD_DIR}
-FLYWAY_ENABLED=true
-EOF
-
-write_file "/etc/systemd/system/${BACKEND_SERVICE}.service" 0644 root root <<EOF
+#===============================================================================
+# PHASE 5: SYSTEMD SERVICE
+#===============================================================================
+log "Installing systemd unit ${SERVICE_NAME}.service..."
+cat > "/etc/systemd/system/${SERVICE_NAME}.service" << EOF
 [Unit]
-Description=Ticketing Backend (Spring Boot)
-After=network-online.target postgresql.service
-Wants=network-online.target
+Description=rest-template Spring Boot backend
+After=network.target postgresql.service
 Requires=postgresql.service
 
 [Service]
 Type=simple
 User=${APP_USER}
-Group=${APP_USER}
-WorkingDirectory=${APP_ROOT}
-EnvironmentFile=${ENV_DIR}/backend.env
-ExecStart=${JAVA_HOME}/bin/java -XX:+UseSerialGC -Xms256m -Xmx768m -jar ${APP_ROOT}/backend-app.jar
-Restart=always
-RestartSec=5
+WorkingDirectory=${BACKEND_DIR}
+ExecStart=${JAVA_HOME_DIR}/bin/java -Xms256m -Xmx512m -jar ${JAR_FILE} --spring.profiles.active=deploy
 SuccessExitStatus=143
-StandardOutput=append:${LOG_DIR}/backend.log
-StandardError=append:${LOG_DIR}/backend.log
-NoNewPrivileges=true
-PrivateTmp=true
-ProtectSystem=full
-ProtectHome=true
-ReadWritePaths=${DATA_DIR}
-UMask=0027
+Restart=on-failure
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target
 EOF
+systemctl daemon-reload
+systemctl enable "${SERVICE_NAME}"
 
-#--------------------------- 7. FRONTEND BUILD ---------------------------------
-log "Building React frontend"
-cd "$FRONTEND_DIR"
-write_file "$ENV_DIR/frontend.env" 0640 root "$APP_USER" <<EOF
-NODE_ENV=production
-PORT=${FRONTEND_PORT}
-HOST=127.0.0.1
-EOF
-
-# Frontend request paths already begin with /api, so the base must be the origin.
-write_file "$FRONTEND_DIR/.env.production" 0644 "$APP_USER" "$APP_USER" <<EOF
-REACT_APP_API_BASE_URL=${PUBLIC_ORIGIN}
-VITE_API_BASE_URL=${PUBLIC_ORIGIN}
-EOF
-
-npm_run() { runuser -u "$APP_USER" -- env HOME="/home/$APP_USER" \
-  NODE_OPTIONS="--max-old-space-size=${NODE_BUILD_MEM}" CI=false npm "$@"; }
-
-if [[ -f package-lock.json ]]; then
-  npm_run ci --no-audit --no-fund || npm_run install --legacy-peer-deps --no-audit --no-fund
+#===============================================================================
+# PHASE 6: FRONTEND (clone/pull, configure, build)
+#===============================================================================
+log "Cloning/updating frontend repository..."
+if [[ -d "${FRONTEND_DIR}/.git" ]]; then
+    sudo -u "${APP_USER}" git -C "${FRONTEND_DIR}" fetch --all --prune
+    sudo -u "${APP_USER}" git -C "${FRONTEND_DIR}" reset --hard origin/HEAD
 else
-  npm_run install --legacy-peer-deps --no-audit --no-fund
+    rm -rf "${FRONTEND_DIR}"
+    sudo -u "${APP_USER}" git clone "${FRONTEND_REPO}" "${FRONTEND_DIR}"
 fi
 
-npm_run run build
-
-FRONTEND_BUILD_DIR=""
-for d in build dist out; do
-  [[ -d "$FRONTEND_DIR/$d" ]] && { FRONTEND_BUILD_DIR="$FRONTEND_DIR/$d"; break; }
-done
-
-[[ -n "$FRONTEND_BUILD_DIR" ]] || die "frontend build produced no build, dist, or out directory"
-FRONTEND_REVISION=$(runuser -u "$APP_USER" -- git -C "$FRONTEND_DIR" rev-parse --short=12 HEAD)
-FRONTEND_RELEASE_DIR="${FRONTEND_RELEASE_ROOT}/${FRONTEND_REVISION}-$(date +%Y%m%d%H%M%S)"
-install -d -o "$APP_USER" -g "$APP_USER" -m 0750 "$FRONTEND_RELEASE_DIR"
-rsync -a --delete "$FRONTEND_BUILD_DIR/" "$FRONTEND_RELEASE_DIR/"
-chown -R "$APP_USER:$APP_USER" "$FRONTEND_RELEASE_DIR"
-rm -f "${FRONTEND_CURRENT}.new"
-ln -s "$FRONTEND_RELEASE_DIR" "${FRONTEND_CURRENT}.new"
-mv -Tf "${FRONTEND_CURRENT}.new" "$FRONTEND_CURRENT"
-FRONTEND_EXEC="$(command -v serve) -s ${FRONTEND_CURRENT} -l tcp://127.0.0.1:${FRONTEND_PORT}"
-info "frontend release: ${FRONTEND_RELEASE_DIR}"
-
-write_file "/etc/systemd/system/${FRONTEND_SERVICE}.service" 0644 root root <<EOF
-[Unit]
-Description=Ticketing Frontend (Node)
-After=network-online.target ${BACKEND_SERVICE}.service
-Wants=network-online.target
-
-[Service]
-Type=simple
-User=${APP_USER}
-Group=${APP_USER}
-WorkingDirectory=${FRONTEND_CURRENT}
-Environment=HOME=/home/${APP_USER}
-EnvironmentFile=${ENV_DIR}/frontend.env
-ExecStart=${FRONTEND_EXEC}
-Restart=always
-RestartSec=5
-StandardOutput=append:${LOG_DIR}/frontend.log
-StandardError=append:${LOG_DIR}/frontend.log
-NoNewPrivileges=true
-PrivateTmp=true
-
-[Install]
-WantedBy=multi-user.target
+log "Writing frontend .env.production..."
+cat > "${FRONTEND_DIR}/.env.production" << 'EOF'
+# Base URL of the backend API. Left empty so the Vite build falls back to the
+# same-origin '/api' default; nginx proxies /api/ to the local Spring Boot app.
+VITE_API_BASE_URL=
 EOF
+chown "${APP_USER}:${APP_USER}" "${FRONTEND_DIR}/.env.production"
 
-#----------------------------- 8. NGINX ----------------------------------------
-log "Configuring Nginx reverse proxy"
-rm -f /etc/nginx/conf.d/00-websocket-map.conf
+log "Building frontend (npm ci + npm run build, Vite outputs dist/)..."
+cd "${FRONTEND_DIR}"
+if [[ -f package-lock.json ]]; then
+    sudo -u "${APP_USER}" npm ci
+else
+    sudo -u "${APP_USER}" npm install
+fi
+sudo -u "${APP_USER}" npm run build
+[[ -f "${FRONTEND_DIR}/dist/index.html" ]] || error "Frontend build produced no dist/index.html."
 
-write_file /etc/nginx/conf.d/ticketing.conf 0644 root root <<EOF
-map \$http_upgrade \$connection_upgrade { default upgrade; '' close; }
-
-upstream ticketing_api { server 127.0.0.1:${BACKEND_PORT}; keepalive 16; }
-upstream ticketing_web { server 127.0.0.1:${FRONTEND_PORT}; keepalive 16; }
-
+#===============================================================================
+# PHASE 7: NGINX
+#===============================================================================
+log "Configuring nginx reverse proxy and static hosting..."
+cat > /etc/nginx/conf.d/rest-template.conf << EOF
 server {
-    listen ${HTTP_PORT};
-    listen [::]:${HTTP_PORT};
-    server_name ${PUBLIC_IP};
+    listen 80;
+    server_name ${SERVER_IP} _;
+    root ${NGINX_ROOT};
+    index index.html;
 
-    client_max_body_size ${NGINX_MAX_UPLOAD_SIZE};
-    add_header X-Content-Type-Options nosniff always;
-    add_header X-Frame-Options SAMEORIGIN always;
-    add_header Referrer-Policy strict-origin-when-cross-origin always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 
-    proxy_http_version 1.1;
-    proxy_set_header Host              \$host;
-    proxy_set_header X-Real-IP         \$remote_addr;
-    proxy_set_header X-Forwarded-For   \$proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto \$scheme;
-    proxy_set_header Upgrade           \$http_upgrade;
-    proxy_set_header Connection        \$connection_upgrade;
-    proxy_read_timeout 300s;
-    proxy_send_timeout 300s;
-
-    location /api/ { proxy_pass http://ticketing_api; }
-    location /uploads/ { proxy_pass http://ticketing_api; }
-    location /v3/api-docs { proxy_pass http://ticketing_api; }
-    location /swagger-ui/ { proxy_pass http://ticketing_api; }
-
-    location /actuator/health {
-        proxy_pass http://ticketing_api/actuator/health;
-        access_log off;
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        expires 6M; access_log off; add_header Cache-Control "public, immutable";
     }
 
-    location / { proxy_pass http://ticketing_web; }
+    location /api/ {
+        proxy_pass http://${BACKEND_BIND}:${BACKEND_PORT}/api/;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_connect_timeout 30s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+        proxy_buffering off;
+        client_max_body_size 20m;
+    }
+
+    location / { try_files \$uri \$uri/ /index.html; }
+    location ~ /\. { deny all; access_log off; log_not_found off; }
 }
 EOF
 
-nginx -t
-systemctl enable nginx >/dev/null
+# Disable the distro default server block if it conflicts on :80
+if grep -q "listen\s*80" /etc/nginx/nginx.conf && grep -q "server_name\s*_" /etc/nginx/nginx.conf; then
+    sed -i 's|^\(\s*\)listen\s\+80;|\1listen 8081;|' /etc/nginx/nginx.conf || true
+    sed -i 's|^\(\s*\)listen\s\+\[::\]:80;|\1listen [::]:8081;|' /etc/nginx/nginx.conf || true
+fi
 
-#--------------------------- 9. START EVERYTHING -------------------------------
-log "Starting services"
-systemctl daemon-reload
-systemctl enable "${BACKEND_SERVICE}" "${FRONTEND_SERVICE}" >/dev/null
-systemctl restart "${BACKEND_SERVICE}"
-systemctl restart "${FRONTEND_SERVICE}"
-systemctl reload-or-restart nginx
+rm -rf "${NGINX_ROOT:?}"/*
+cp -r "${FRONTEND_DIR}/dist/." "${NGINX_ROOT}/"
+chown -R nginx:nginx "${NGINX_ROOT}"
+chmod -R 755 "${NGINX_ROOT}"
+nginx -t || error "nginx configuration test failed."
 
-wait_for_port() {
-  local port="$1" label="$2" tries="${3:-90}"
-  for ((i=0; i<tries; i++)); do
-    (exec 3<>"/dev/tcp/127.0.0.1/${port}") 2>/dev/null && { exec 3<&-; info "$label up on :$port"; return 0; }
+#===============================================================================
+# PHASE 8: SELINUX
+#===============================================================================
+if command -v getenforce &>/dev/null && getenforce | grep -qi "enforcing"; then
+    log "Configuring SELinux booleans and contexts..."
+    setsebool -P httpd_can_network_connect 1 || true
+    setsebool -P httpd_can_network_relay 1 || true
+    semanage fcontext -a -t httpd_sys_content_t "${NGINX_ROOT}(/.*)?" 2>/dev/null \
+        || semanage fcontext -m -t httpd_sys_content_t "${NGINX_ROOT}(/.*)?" 2>/dev/null || true
+    restorecon -R "${NGINX_ROOT}" || true
+fi
+
+#===============================================================================
+# PHASE 9: FIREWALL
+#===============================================================================
+log "Configuring firewalld (HTTP + SSH ${SSH_PORT})..."
+systemctl enable firewalld --now
+firewall-cmd --permanent --add-service=http
+firewall-cmd --permanent --add-port=${SSH_PORT}/tcp
+firewall-cmd --reload
+
+#===============================================================================
+# PHASE 10: START & VERIFY
+#===============================================================================
+log "Starting backend service..."
+systemctl restart "${SERVICE_NAME}"
+
+log "Waiting for backend on ${BACKEND_BIND}:${BACKEND_PORT}..."
+BACKEND_UP=0
+for i in {1..45}; do
+    if ss -tln | grep -q ":${BACKEND_PORT} "; then BACKEND_UP=1; break; fi
     sleep 2
-  done
-  warn "$label did not answer on :$port within $((tries*2))s"
-  return 1
-}
+done
+[[ ${BACKEND_UP} -eq 1 ]] || error "Backend failed to start. Check: journalctl -u ${SERVICE_NAME} -n 100"
 
-BACKEND_OK=0; FRONTEND_OK=0
-wait_for_port "$BACKEND_PORT"  "backend"  120 && BACKEND_OK=1
-wait_for_port "$FRONTEND_PORT" "frontend" 60  && FRONTEND_OK=1
-HTTP_CODE=$(curl -s -H "Host: ${PUBLIC_IP}" -o /dev/null -w '%{http_code}' \
-  "http://127.0.0.1:${HTTP_PORT}/" || true)
-HTTP_CODE="${HTTP_CODE:-000}"
-systemctl is-active --quiet "$BACKEND_SERVICE" || BACKEND_OK=0
-systemctl is-active --quiet "$FRONTEND_SERVICE" || FRONTEND_OK=0
-NGINX_OK=0
-if [[ "$HTTP_CODE" =~ ^(2|3)[0-9][0-9]$ ]] && systemctl is-active --quiet nginx; then
-  NGINX_OK=1
+log "Starting nginx..."
+systemctl enable nginx
+systemctl restart nginx
+
+FE_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/ || echo "000")
+API_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/api/employees/all || echo "000")
+
+echo ""
+echo -e "${GREEN}============================================================"
+echo "  DEPLOYMENT COMPLETE"
+echo -e "============================================================${NC}"
+echo ""
+echo -e "  ${BLUE}Frontend:${NC}  http://${SERVER_IP}/            (HTTP ${FE_CODE})"
+echo -e "  ${BLUE}API:${NC}       http://${SERVER_IP}/api/        (HTTP ${API_CODE} on /api/employees/all)"
+echo -e "  ${BLUE}Database:${NC}  ${DB_NAME} on ${DB_HOST}:${DB_PORT}"
+echo ""
+echo -e "  ${YELLOW}Useful commands:${NC}"
+echo "    journalctl -u ${SERVICE_NAME} -f"
+echo "    sudo -u postgres psql -d \"${DB_NAME}\""
+echo "    tail -f /var/log/nginx/error.log"
+echo ""
+
+if [[ "${FE_CODE}" == "200" && "${API_CODE}" == "200" ]]; then
+    echo -e "  ${GREEN}✓ Frontend and API verified locally.${NC}"
+elif [[ "${API_CODE}" == "502" ]]; then
+    echo -e "  ${RED}✗ API returned 502 — backend not reachable through nginx. Check backend logs.${NC}"
 else
-  warn "Nginx returned HTTP ${HTTP_CODE}"
+    warn "Unexpected HTTP codes — verify manually with the commands above."
 fi
-
-#------------------------------- 10. SUMMARY -----------------------------------
-cat <<EOF
-
-$(printf '=%.0s' {1..72})
- DEPLOYMENT SUMMARY
-$(printf '=%.0s' {1..72})
- Application URL : ${PUBLIC_ORIGIN}/
- API base path   : ${PUBLIC_ORIGIN}/api
- Frontend        : 127.0.0.1:${FRONTEND_PORT}  [$([[ $FRONTEND_OK == 1 ]] && echo UP || echo CHECK-LOGS)]
- Backend         : ${BACKEND_BIND}:${BACKEND_PORT}  [$([[ $BACKEND_OK == 1 ]] && echo UP || echo CHECK-LOGS)]
- Nginx / status  : ${HTTP_CODE}  [$([[ $NGINX_OK == 1 ]] && echo UP || echo CHECK-LOGS)]
- Database        : ${DB_NAME} @ ${DB_HOST}:${DB_PORT} (user ${DB_USER})
- Database auth   : md5 (loopback only)
- Secrets         : ${ENV_DIR}/db.env (600), ${ENV_DIR}/backend.env (640)
- Logs            : ${LOG_DIR}/backend.log, ${LOG_DIR}/frontend.log
- Deploy log      : ${DEPLOY_LOG}
-
- Manage:
-   systemctl status ${BACKEND_SERVICE} ${FRONTEND_SERVICE} nginx
-   journalctl -u ${BACKEND_SERVICE} -f
-   tail -f ${LOG_DIR}/backend.log
-
- Re-deploy latest code: sudo bash $0
-$(printf '=%.0s' {1..72})
-EOF
-
-if (( BACKEND_OK == 0 || FRONTEND_OK == 0 || NGINX_OK == 0 )); then
-  warn "one or more services are not listening yet — inspect the logs above"
-  exit 1
-fi
-log "Deployment finished successfully"
